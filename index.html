@@ -307,7 +307,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 1.4</span>
+    <span class="version">Version 1.5</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -350,7 +350,7 @@ const UPGRADES = [
   { id: 'w_orbit', cls: 'warrior', name: 'Orbit Blades', max: 8, desc: 'One more blade spins around you.', apply: p => { p.blades++; } },
   { id: 'w_slam', cls: 'warrior', name: 'Ground Slam', max: 8, desc: 'A shockwave that damages and stuns demons.', apply: p => { p.slam++; } },
   { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 8, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
-  { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 8, desc: 'Every demon you kill heals 0.25% of your max HP per level.', apply: p => { p.blood++; } },
+  { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 8, desc: 'Every demon you kill heals 0.2% of your max HP per level.', apply: p => { p.blood++; } },
   { id: 'w_thorns', cls: 'warrior', name: 'Thorn Armor', max: 8, desc: 'Demons that hit you take the damage back, and more.', apply: p => { p.thorns++; } },
   { id: 'd_wolf', cls: 'druid', name: 'Pack Call', max: 4, desc: 'Summon one more spirit wolf.', apply: p => { p.wolves++; } },
   { id: 'd_fang', cls: 'druid', name: 'Sharp Fangs', max: 5, desc: 'Wolf damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
@@ -377,9 +377,60 @@ const ETYPES = {
   runner: { r: 9, hp: 9, speed: 150, dmg: 6, xp: 1, color: '#ff8a2a', spikes: 5 },
   brute: { r: 20, hp: 70, speed: 58, dmg: 16, xp: 4, color: '#b026ff', spikes: 9 },
   wisp: { r: 12, hp: 24, speed: 72, dmg: 8, xp: 3, color: '#4fd8ff', spikes: 6 },
-  boss: { r: 44, hp: 900, speed: 52, dmg: 30, xp: 40, color: '#ff2a4d', spikes: 12 }
+  boss: { r: 44, hp: 900, speed: 52, dmg: 30, xp: 40, color: '#ff2a4d', spikes: 12 },
+  king: { r: 62, hp: 3600, speed: 44, dmg: 40, xp: 120, color: '#ff1a3c', spikes: 0 }
 };
 const TYPE_IDX = Object.keys(ETYPES);
+// The Demon King: a big black horned face (2D), glowing red
+function drawKing(g, R) {
+  g.lineJoin = 'round';
+  for (const s of [-1, 1]) {
+    g.beginPath();
+    g.moveTo(s * R * 0.32, -R * 0.78);
+    g.quadraticCurveTo(s * R * 1.3, -R * 0.85, s * R * 1.08, -R * 1.62);
+    g.quadraticCurveTo(s * R * 0.98, -R * 1.02, s * R * 0.66, -R * 0.52);
+    g.closePath();
+    g.shadowColor = '#ff1a3c'; g.shadowBlur = R * 0.35;
+    const hg = g.createLinearGradient(0, -R * 1.6, 0, -R * 0.5);
+    hg.addColorStop(0, '#3a0a14'); hg.addColorStop(1, '#0b0b12');
+    g.fillStyle = hg; g.fill();
+    g.strokeStyle = '#ff1a3c'; g.lineWidth = 2.5; g.stroke();
+  }
+  const fg = g.createRadialGradient(-R * 0.25, -R * 0.3, R * 0.1, 0, 0, R * 1.05);
+  fg.addColorStop(0, '#24242e'); fg.addColorStop(0.7, '#0b0b10'); fg.addColorStop(1, '#000000');
+  g.shadowColor = '#ff1a3c'; g.shadowBlur = R * 0.6;
+  g.fillStyle = fg;
+  g.beginPath();
+  g.moveTo(0, -R * 0.98);
+  g.bezierCurveTo(R * 0.95, -R * 1.0, R * 1.08, -R * 0.1, R * 0.82, R * 0.45);
+  g.bezierCurveTo(R * 0.6, R * 0.9, R * 0.25, R * 1.05, 0, R * 1.05);
+  g.bezierCurveTo(-R * 0.25, R * 1.05, -R * 0.6, R * 0.9, -R * 0.82, R * 0.45);
+  g.bezierCurveTo(-R * 1.08, -R * 0.1, -R * 0.95, -R * 1.0, 0, -R * 0.98);
+  g.closePath(); g.fill();
+  g.strokeStyle = '#ff1a3c'; g.lineWidth = 3; g.stroke();
+  g.shadowBlur = 0;
+  // angry brows
+  g.strokeStyle = '#ff4d6a'; g.lineWidth = 4; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-R * 0.62, -R * 0.42); g.lineTo(-R * 0.12, -R * 0.2); g.moveTo(R * 0.62, -R * 0.42); g.lineTo(R * 0.12, -R * 0.2); g.stroke();
+  // burning eyes
+  for (const s of [-1, 1]) {
+    g.beginPath();
+    g.moveTo(s * R * 0.14, -R * 0.12); g.lineTo(s * R * 0.58, -R * 0.3); g.lineTo(s * R * 0.5, -R * 0.02); g.closePath();
+    g.shadowColor = '#ff6a00'; g.shadowBlur = R * 0.4;
+    g.fillStyle = '#ff3b1a'; g.fill();
+    g.shadowBlur = 0;
+    g.fillStyle = '#ffe14a';
+    g.beginPath(); g.arc(s * R * 0.38, -R * 0.14, R * 0.05, 0, TAU); g.fill();
+  }
+  // jagged mouth
+  g.fillStyle = '#12000a'; g.strokeStyle = '#ff1a3c'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(-R * 0.5, R * 0.35); g.quadraticCurveTo(0, R * 0.62, R * 0.5, R * 0.35); g.quadraticCurveTo(0, R * 0.85, -R * 0.5, R * 0.35); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#f2e6e6';
+  for (let i = 0; i < 6; i++) {
+    const x = -R * 0.4 + i * R * 0.16, y = R * 0.42 + Math.sin((i / 5) * Math.PI) * R * 0.12;
+    g.beginPath(); g.moveTo(x - R * 0.05, y); g.lineTo(x + R * 0.05, y); g.lineTo(x, y + R * 0.12); g.closePath(); g.fill();
+  }
+}
 const sprites = {};
 function buildSprites() {
   for (const k in ETYPES) {
@@ -390,6 +441,7 @@ function buildSprites() {
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.translate(size / 2, size / 2);
     g.beginPath();
+    if (k === 'king') { drawKing(g, t.r); sprites[k] = { c, size }; continue; }
     for (let i = 0; i < t.spikes * 2; i++) {
       const a = (i * Math.PI) / t.spikes - Math.PI / 2, rr = i % 2 ? t.r * 0.62 : t.r;
       i ? g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : g.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
@@ -772,6 +824,7 @@ let p = null, enemies = [], bullets = [], ebullets = [], gems = [], wolves = [],
 let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, clock = 0, shock = null, hudT = 0;
 // Co-op: every player has their own wolves, bears, bolts, tornados and grenades.
 // use(pl) points the shared names at that player's things so the weapon code works for anyone.
+let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null;
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const RING = 380;
 function use(pl) { p = pl; wolves = pl._wolves; bears = pl._bears; bullets = pl._bullets; tornados = pl._tornados; grenades = pl._grenades; }
@@ -796,6 +849,7 @@ function newPlayer(cls) {
 function resetWorld() {
   enemies = []; ebullets = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
+  nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null;
 }
 function startGame() {
   coop = null;
@@ -881,8 +935,8 @@ function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.dead) return;
   e.hp -= dmg;
   e.flash = 0.1;
-  if (kx || ky) { const k = e.type === 'boss' ? 0.15 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
-  if (stun && e.type !== 'boss') e.stun = Math.max(e.stun, stun);
+  if (kx || ky) { const k = e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
+  if (stun && e.type !== 'boss' && e.type !== 'king') e.stun = Math.max(e.stun, stun);
   addText(e.x, e.y - e.r, Math.round(dmg), dmg >= 40 ? '#ffd54a' : '#ffffff');
   Sound.sfx('hit');
   if (e.hp <= 0) killEnemy(e);
@@ -892,7 +946,7 @@ function killEnemy(e) {
   kills++;
   const t = ETYPES[e.type];
   // Blood-thirst: the warrior who got the kill heals
-  if (p && p.blood && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.0025 * p.blood);
+  if (p && p.blood && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.002 * p.blood);
   if (e.type === 'boss') bossesKilled++;
   if (coop) { killFx.push([Math.round(e.x), Math.round(e.y), TYPE_IDX.indexOf(e.type)]); if (killFx.length > 60) killFx.shift(); }
   for (let i = 0; i < (e.type === 'boss' ? 40 : 8); i++) {
@@ -906,7 +960,13 @@ function killEnemy(e) {
   }
   Sound.sfx('kill');
   const [sx, sy] = toScreen(e.x, e.y);
-  if (e.type === 'boss') {
+  if (e.type === 'king') {
+    kingsKilled++;
+    Sound.sfx('level');
+    Sound.setTempo(Math.min(130, 116 + bossCount * 4));
+    shake = 20;
+    for (let i = 0; i < 15; i++) setTimeout(() => flyStar(sx, sy), i * 90);
+  } else if (e.type === 'boss') {
     Sound.sfx('level');
     Sound.setTempo(Math.min(130, 116 + bossCount * 4));
     for (let i = 0; i < 5; i++) setTimeout(() => flyStar(sx, sy), i * 120);
@@ -1034,7 +1094,7 @@ function spawnEnemy(type) {
 }
 function spawnAt(type, x, y) {
   const t = ETYPES[type];
-  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : 1);
+  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : 1) * (coop ? 1 + 0.6 * (players.length - 1) : 1);
   const e = {
     type, x, y, r: t.r, hp: t.hp * mult, maxHp: t.hp * mult,
     speed: t.speed * (1 + Math.min(0.35, time / 600)), dmg: t.dmg * (1 + time / 300), kx: 0, ky: 0, stun: 0, flash: 0,
@@ -1278,7 +1338,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '1.4';
+const GAME_VERSION = '1.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -1550,7 +1610,7 @@ function buildSnapshot() {
     };
   }
   return {
-    t: +time.toFixed(2), k: kills, bk: bossesKilled, over: coop.over ? 1 : 0, p: pl,
+    t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
     e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
@@ -1572,6 +1632,12 @@ function coopDeath(pl) {
   effects.push({ kind: 'death', x: pl.x, y: pl.y, r: 0, life: 0.5, max: 0.5 });
   if (pl === me) youFell();
   checkAllDead();
+}
+function showWait(on) {
+  if (!me || me.dead) return;
+  const b = $('coopBanner');
+  if (on) { b.textContent = 'Waiting for your team to pick their skills…'; b.classList.remove('hidden'); }
+  else if (b.textContent.startsWith('Waiting')) b.classList.add('hidden');
 }
 function youFell() {
   shake = 24; Sound.sfx('die');
@@ -1654,6 +1720,11 @@ function onSnapshot(s) {
   coop.lastK = kills;
   if ((s.bk || 0) > coop.lastBk) { for (let i = 0; i < 5; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 120); }
   coop.lastBk = s.bk || 0;
+  if ((s.kk || 0) > (coop.lastKk || 0)) { for (let i = 0; i < 15; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 90); }
+  coop.lastKk = s.kk || 0;
+  if ((s.sv || 0) > (coop.lastSv || 0)) { banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 }; Sound.sfx('boss'); Sound.setTempo(140); shake = 22; }
+  coop.lastSv = s.sv || 0;
+  coop.waiting = !!s.wait;
   // demons, smoothed by id
   const nm = new Map();
   for (const a of (s.e || [])) {
@@ -1683,10 +1754,23 @@ function onSnapshot(s) {
   // players
   const list = [me];
   wolves = []; bears = [];
+  const nw = new Map(), nb = new Map();
+  if (!coop.wmap) { coop.wmap = new Map(); coop.bmap = new Map(); }
   for (const [id, v] of Object.entries(s.p || {})) {
     if (!v) continue;
-    for (const w of (v.w || [])) wolves.push({ x: w[0], y: w[1], ang: w[2] });
-    for (const b of (v.b || [])) bears.push({ x: b[0], y: b[1], hp: b[2], maxHp: 100, dead: !!b[3], respawn: b[4], flash: 0 });
+    (v.w || []).forEach((w, i) => {
+      const key = id + ':' + i;
+      const o = coop.wmap.get(key) || { x: w[0], y: w[1], ang: w[2] };
+      o.tx = w[0]; o.ty = w[1]; o.ta = w[2];
+      nw.set(key, o); wolves.push(o);
+    });
+    (v.b || []).forEach((b, i) => {
+      const key = id + ':' + i;
+      const o = coop.bmap.get(key) || { x: b[0], y: b[1], flash: 0 };
+      o.tx = b[0]; o.ty = b[1]; o.hp = b[2]; o.maxHp = 100; o.dead = !!b[3]; o.respawn = b[4];
+      if (o.dead) { o.x = o.tx; o.y = o.ty; }
+      nb.set(key, o); bears.push(o);
+    });
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
@@ -1701,17 +1785,28 @@ function onSnapshot(s) {
     q.skin = skinFrom(v.s); q.dead = !!v.d; q.blades = v.bl || 0; q.bladeAng = v.ba || 0;
     list.push(q);
   }
+  coop.wmap = nw; coop.bmap = nb;
   players = list;
+  showWait(coop.waiting && !coop.shownOffer);
   if (s.over) { coop.over = true; showCoopOver(''); }
 }
 function guestUpdate(dt) {
   const s = coop.snap;
   if (performance.now() - coop.lastSnap > 12000) { coopLost('Lost connection to the host.'); return; }
   if (!s) return;
-  time += dt;
-  nearObs = obstaclesNear(me.x, me.y, Math.max(W, H) * 0.9);
-  moveLocal(dt);
+  if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
+  if (!coop.waiting) {
+    time += dt;
+    nearObs = obstaclesNear(me.x, me.y, Math.max(W, H) * 0.9);
+    moveLocal(dt);
+  }
   const k = Math.min(1, dt * 10);
+  for (const w of wolves) {
+    if (w.tx === undefined) continue;
+    w.x += (w.tx - w.x) * k; w.y += (w.ty - w.y) * k;
+    const da = Math.atan2(Math.sin(w.ta - w.ang), Math.cos(w.ta - w.ang)); w.ang += da * k;
+  }
+  for (const b of bears) if (b.tx !== undefined && !b.dead) { b.x += (b.tx - b.x) * k; b.y += (b.ty - b.y) * k; }
   for (const e of enemies) { e.x += (e.tx - e.x) * k; e.y += (e.ty - e.y) * k; e.flash -= dt; }
   for (const q of coop.others.values()) { q.x += (q.tx - q.x) * k; q.y += (q.ty - q.y) * k; }
   for (const b of bullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
@@ -1760,8 +1855,16 @@ function update(dt) {
   if (state === S.DYING) { stateTimer -= dt; if (stateTimer <= 0) gameOver(); return; }
   if (state !== S.PLAYING) return;
   if (coop && coop.role === 'guest') { guestUpdate(dt); return; }
+  if (coop) {
+    hostTick(dt);
+    // co-op: the world waits until every player has picked a skill
+    coop.waiting = players.some(q => !q.dead && q.offer);
+    showWait(coop.waiting && !me.offer);
+    if (coop.waiting || coop.over) { hudT -= dt; if (hudT <= 0) { hudT = 0.1; updateHUD(); } return; }
+  }
 
   time += dt;
+  if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
   const gc = groupCenter();
   nearObs = obstaclesNear(gc.x, gc.y, Math.max(W, H) * 0.9 + (coop ? RING : 0));
   moveLocal(dt);
@@ -1791,6 +1894,20 @@ function update(dt) {
     const n = 1 + Math.floor(time / 75);
     for (let i = 0; i < n && enemies.length < 240; i++) spawnEnemy(pickType());
   }
+  if (time >= nextSurge) {
+    nextSurge += 300; surgeCount++;
+    surgeLeft = 80 + 25 * (players.length - 1); surgeT = 0;
+    spawnEnemy('king');
+    banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 };
+    Sound.sfx('boss'); Sound.setTempo(140); shake = 22;
+  }
+  if (surgeLeft > 0) {
+    surgeT -= dt;
+    if (surgeT <= 0) {
+      surgeT = 0.12;
+      for (let i = 0; i < 3 && surgeLeft > 0 && enemies.length < 320; i++) { spawnEnemy(pickType()); surgeLeft--; }
+    }
+  }
   if (time >= nextBoss) {
     spawnEnemy('boss');
     bossCount++;
@@ -1810,7 +1927,7 @@ function update(dt) {
     if (!tp) continue;
     let dx = tp.x - e.x, dy = tp.y - e.y;
     let d = Math.hypot(dx, dy) || 1;
-    if (d > far && e.type !== 'boss') {
+    if (d > far && e.type !== 'boss' && e.type !== 'king') {
       const a = Math.atan2(tp.vy || rand(-1, 1), tp.vx || rand(-1, 1)) + rand(-0.8, 0.8), rr = Math.hypot(W, H) / 2 + 40;
       e.x = tp.x + Math.cos(a) * rr; e.y = tp.y + Math.sin(a) * rr;
       continue;
@@ -1838,6 +1955,15 @@ function update(dt) {
     if (e.type === 'necro') {
       e.sumT -= dt;
       if (e.sumT <= 0 && d < 650) { e.sumT = 5.5; summon(e); }
+    }
+    if (e.type === 'king') {
+      e.sumT -= dt; e.shootT -= dt;
+      if (e.sumT <= 0) { e.sumT = 7; summon(e); summon(e); }
+      if (e.shootT <= 0 && d < 700) {
+        e.shootT = 4;
+        for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + rand(0, 0.2); ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 170, vy: Math.sin(a) * 170, life: 4, dmg: 14 * (1 + time / 300), king: true }); }
+        effects.push({ kind: 'summon', x: e.x, y: e.y, r: 120, life: 0.6, max: 0.6 });
+      }
     }
     e.x += e.kx * dt; e.y += e.ky * dt;
     pushOut(e, e.r * 0.8, e.speed * dt * 0.7);
@@ -1876,8 +2002,7 @@ function update(dt) {
   effects = effects.filter(f => f.life > 0);
   enemies = enemies.filter(e => !e.dead);
 
-  if (!coop) { if (me.pending > 0 && state === S.PLAYING) openLevelUp(rollOptions()); }
-  else hostTick(dt);
+  if (!coop && me.pending > 0 && state === S.PLAYING) openLevelUp(rollOptions());
   hudT -= dt;
   if (hudT <= 0) { hudT = 0.1; updateHUD(); }
 }
@@ -1950,9 +2075,13 @@ function updateWeapons(dt) {
       else { const a = clock * 1.2 + i * TAU / wolves.length; tx = p.x + Math.cos(a) * 50; ty = p.y + Math.sin(a) * 50; }
       const dx = tx - wf.x, dy = ty - wf.y, d = Math.hypot(dx, dy) || 1;
       if ((wf.x - p.x) ** 2 + (wf.y - p.y) ** 2 > 700 * 700) { wf.x = p.x; wf.y = p.y; }
-      const sp = Math.min(d / dt, w.wspeed * (wf.tgt ? 1 : 0.8));
-      wf.x += dx / d * sp * dt; wf.y += dy / d * sp * dt;
-      if (d > 2) wf.ang = Math.atan2(dy, dx);
+      // steer smoothly instead of snapping: speed eases in and out, turning is gradual
+      const sp = w.wspeed * (wf.tgt ? 1 : 0.8) * Math.min(1, d / 40);
+      const kk = Math.min(1, dt * 7);
+      wf.vx = (wf.vx || 0) + (dx / d * sp - (wf.vx || 0)) * kk;
+      wf.vy = (wf.vy || 0) + (dy / d * sp - (wf.vy || 0)) * kk;
+      wf.x += wf.vx * dt; wf.y += wf.vy * dt;
+      if (Math.hypot(wf.vx, wf.vy) > 20) { const ta = Math.atan2(wf.vy, wf.vx); const da = Math.atan2(Math.sin(ta - wf.ang), Math.cos(ta - wf.ang)); wf.ang += da * Math.min(1, dt * 10); }
       if (wf.tgt && d < wf.tgt.r + 12 && wf.bite <= 0) { wf.bite = 0.45; damageEnemy(wf.tgt, w.dmg, dx / d * 90, dy / d * 90, 0); }
     });
     if (p.storm) {
@@ -2288,6 +2417,30 @@ function render() {
   }
   ctx.globalAlpha = 1;
   ctx.restore();
+  // Demon King health bar and the 5-minute announcement
+  const king = enemies.find(e => e.type === 'king' && !e.dead);
+  if (king) {
+    const bw = Math.min(420, W * 0.7), bx = (W - bw) / 2, by = 76;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; ctx.fillRect(bx - 2, by - 2, bw + 4, 14);
+    ctx.fillStyle = '#ff1a3c'; ctx.shadowColor = '#ff1a3c'; ctx.shadowBlur = 12;
+    ctx.fillRect(bx, by, bw * Math.max(0, king.hp / king.maxHp), 10);
+    ctx.shadowBlur = 0;
+    ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffb3c0';
+    ctx.fillText('DEMON KING', W / 2, by + 26);
+  }
+  if (banner) {
+    const a = Math.min(1, banner.life, (3.5 - banner.life) * 3);
+    ctx.globalAlpha = Math.max(0, a);
+    ctx.textAlign = 'center';
+    ctx.font = '900 ' + Math.round(Math.min(64, W * 0.08)) + 'px ui-monospace, Menlo, monospace';
+    ctx.shadowColor = '#ff1a3c'; ctx.shadowBlur = 30; ctx.fillStyle = '#ff3b5c';
+    ctx.fillText(banner.text, W / 2, H * 0.36);
+    ctx.shadowBlur = 0;
+    ctx.font = '700 ' + Math.round(Math.min(20, W * 0.035)) + 'px ui-monospace, Menlo, monospace';
+    ctx.fillStyle = '#ffd0d8';
+    ctx.fillText(banner.sub, W / 2, H * 0.36 + 36);
+    ctx.globalAlpha = 1;
+  }
   // joystick
   if (stick.active && state === S.PLAYING) {
     const dx = stick.x - stick.ox, dy = stick.y - stick.oy, d = Math.hypot(dx, dy), k = d > 50 ? 50 / d : 1;
