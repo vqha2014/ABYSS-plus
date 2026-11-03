@@ -355,7 +355,7 @@ const CLASSES = {
 const UPGRADES = [
   { id: 'h_dmg', cls: 'hunter', name: 'Sharp Bolts', max: 5, desc: 'Bolt damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'h_rate', cls: 'hunter', name: 'Quick Draw', max: 5, desc: 'Shoot 15% faster.', apply: p => { p.w.cd *= 0.85; } },
-  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. Next levels: one more line of bolts.', apply: p => { if (p.w.tandem < 2) p.w.tandem = 2; else p.w.count++; } },
+  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: the bolts spread out in a fan (3, then 4, then 5 directions).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
   { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 3, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
   { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 5, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Active skill (button or Space): throw a grenade that blasts demons far away. Next levels: shorter cooldown and a bigger blast.', apply: p => { p.grenade++; } },
@@ -2273,7 +2273,7 @@ function updateWeapons(dt) {
         t.shot = w.cd;
         const base = Math.atan2(tgt.y - p.y, tgt.x - p.x);
         for (let i = 0; i < w.count; i++) {
-          const a = base + (i - (w.count - 1) / 2) * 0.13;
+          const a = base + (i - (w.count - 1) / 2) * 0.2;
           // Multishot: bolts in the same line fly one behind the other
           for (let j = 0; j < w.tandem; j++) {
             bullets.push({ x: p.x - Math.cos(a) * j * 26, y: p.y - Math.sin(a) * j * 26, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, life: (w.range + j * 26) / w.speed, pierce: w.pierce, hit: [] });
