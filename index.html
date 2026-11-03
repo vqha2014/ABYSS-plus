@@ -167,6 +167,16 @@
   .lb-list li.me { color: #fff; } .lb-list li.me .s { color: var(--green); }
   .lb-list li.empty { color: var(--muted); }
   .lb-panel .lb-list li { border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: clamp(0.8rem, 3vw, 0.95rem); }
+  .code-box { margin-top: 1.2rem; color: var(--muted); font-size: 0.8rem; letter-spacing: 0.2em; }
+  .code-box b { display: block; font-size: clamp(2.4rem, 10vw, 3.4rem); letter-spacing: 0.3em; color: var(--cyan); text-shadow: 0 0 20px rgba(0, 240, 255, 0.5); }
+  .roster { list-style: none; margin: 1rem auto 0; max-width: 320px; text-align: left; }
+  .roster li { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0.7rem; margin-top: 0.4rem; border-radius: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); color: #dbe2f1; }
+  .roster i { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+  .roster small { margin-left: auto; color: var(--muted); }
+  .code-input { text-transform: uppercase; letter-spacing: 0.4em; }
+  .coop-msg { min-height: 1.4em; color: var(--gold); }
+  #coopBanner { position: absolute; top: 5.4rem; left: 50%; transform: translateX(-50%); z-index: 8; pointer-events: none; padding: 0.4rem 1rem; border-radius: 999px; background: rgba(5, 8, 22, 0.75); border: 1px solid rgba(255, 59, 92, 0.5); color: #ffb3c0; font-size: 0.8rem; letter-spacing: 0.08em; white-space: nowrap; }
+  #leaveBtn { width: auto !important; padding: 0 0.9rem; border-radius: 999px !important; font-size: 0.75rem !important; letter-spacing: 0.1em; }
   #footer {
     position: absolute; left: 0; right: 0; bottom: 0; z-index: 11; pointer-events: none;
     display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
@@ -198,6 +208,7 @@
   <div class="top-controls">
     <button id="pauseBtn" class="hidden" aria-label="Pause">II</button>
     <button id="soundBtn" aria-label="Sound on/off" aria-pressed="true">♪</button>
+    <button id="leaveBtn" class="hidden">Leave</button>
   </div>
 
   <div id="startScreen" class="screen">
@@ -207,7 +218,8 @@
       <p class="info">The Demon Legion is pouring out of the Abyss. Your orb attacks on its own: just move to survive. Every level up, pick a new skill.</p>
       <input class="name-input" id="nameInput" type="text" maxlength="12" placeholder="Your name" autocomplete="off" spellcheck="false" aria-label="Your name">
       <div class="classes" id="classList"></div>
-      <button class="btn" id="startBtn">Start</button><br>
+      <button class="btn" id="startBtn">Start</button>
+      <button class="btn btn-alt" id="coopBtn" style="margin-left:0.6rem">Co-op</button><br>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
@@ -273,8 +285,29 @@
     <span class="cd"></span><span class="cdt" id="skillCdText"></span>
   </button>
 
+  <div id="coopScreen" class="screen hidden">
+    <div class="screen-content">
+      <div class="title small">Co-op</div>
+      <p class="info">Play with up to 3 friends. Everyone has to stay inside the ring, and XP is shared equally between all players. Your class is the one you picked on the main screen.</p>
+      <div id="coopMenu">
+        <button class="btn" id="createBtn">Create room</button>
+        <input class="name-input code-input" id="codeInput" type="text" maxlength="4" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Room code">
+        <button class="btn btn-alt" id="joinBtn">Join room</button>
+      </div>
+      <div id="lobby" class="hidden">
+        <div class="code-box">ROOM CODE<b id="roomCode">----</b></div>
+        <ul class="roster" id="roster"></ul>
+        <button class="btn" id="coopStartBtn">Start</button>
+        <p class="info" id="lobbyNote"></p>
+      </div>
+      <p class="info coop-msg" id="coopMsg"></p>
+      <button class="home" id="coopBackBtn">◂ Back</button>
+    </div>
+  </div>
+  <div id="coopBanner" class="hidden"></div>
+
   <div id="footer">
-    <span class="version">Version 1.2</span>
+    <span class="version">Version 1.4</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -294,8 +327,8 @@ const CLASSES = {
   hunter: { name: 'Hunter', color: '#ffd54a', hp: 80, speed: 175, armor: 0, regen: 0,
     desc: 'Long-range bolts with very high damage. Keep your distance and pick them off.',
     icon: '<svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4H13M20 4V11M4 20l3-1M4 20l1-3"/></svg>' },
-  warrior: { name: 'Warrior', color: '#ff3b5c', hp: 150, speed: 150, armor: 2, regen: 0,
-    desc: 'Tough and close-range. Cleave and stun whole groups at once.',
+  warrior: { name: 'Warrior', color: '#ff3b5c', hp: 150, speed: 140, armor: 1, regen: 0,
+    desc: 'Tough and close-range. Starts slow, but grows into the strongest fighter late in the run.',
     icon: '<svg viewBox="0 0 24 24"><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6Z"/><path d="M12 8V15M9 11H15"/></svg>' },
   druid: { name: 'Druid', color: '#39ff6a', hp: 100, speed: 162, armor: 0, regen: 0.6,
     desc: 'Summons spirit wolves and calls down storms from nature.',
@@ -309,14 +342,16 @@ const UPGRADES = [
   { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. Next levels: one more line of bolts.', apply: p => { if (p.w.tandem < 2) p.w.tandem = 2; else p.w.count++; } },
   { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 3, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
   { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 5, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
+  { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Active skill (button or Space): throw a grenade that blasts demons far away. Next levels: shorter cooldown and a bigger blast.', apply: p => { p.grenade++; } },
   { id: 'h_volley', cls: 'hunter', name: 'Arrow Rain', max: 5, desc: 'Every 3 seconds, arrows rain down on nearby demons.', apply: p => { p.volley++; } },
-  { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 5, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
-  { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 5, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
-  { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 5, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
-  { id: 'w_orbit', cls: 'warrior', name: 'Orbit Blades', max: 5, desc: 'One more blade spins around you.', apply: p => { p.blades++; } },
-  { id: 'w_slam', cls: 'warrior', name: 'Ground Slam', max: 5, desc: 'A shockwave that damages and stuns demons.', apply: p => { p.slam++; } },
-  { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 5, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
-  { id: 'w_thorns', cls: 'warrior', name: 'Thorn Armor', max: 5, desc: 'Demons that hit you take the damage back, and more.', apply: p => { p.thorns++; } },
+  { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
+  { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
+  { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
+  { id: 'w_orbit', cls: 'warrior', name: 'Orbit Blades', max: 8, desc: 'One more blade spins around you.', apply: p => { p.blades++; } },
+  { id: 'w_slam', cls: 'warrior', name: 'Ground Slam', max: 8, desc: 'A shockwave that damages and stuns demons.', apply: p => { p.slam++; } },
+  { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 8, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
+  { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 8, desc: 'Every demon you kill heals 0.25% of your max HP per level.', apply: p => { p.blood++; } },
+  { id: 'w_thorns', cls: 'warrior', name: 'Thorn Armor', max: 8, desc: 'Demons that hit you take the damage back, and more.', apply: p => { p.thorns++; } },
   { id: 'd_wolf', cls: 'druid', name: 'Pack Call', max: 4, desc: 'Summon one more spirit wolf.', apply: p => { p.wolves++; } },
   { id: 'd_fang', cls: 'druid', name: 'Sharp Fangs', max: 5, desc: 'Wolf damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'd_run', cls: 'druid', name: 'Wild Run', max: 5, desc: 'Wolves run 12% faster.', apply: p => { p.w.wspeed *= 1.12; } },
@@ -324,7 +359,7 @@ const UPGRADES = [
   { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 5, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
   { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 5, desc: 'Heal 0.6 more HP every second.', apply: p => { p.regen += 0.6; } },
   { id: 'd_bear', cls: 'druid', name: 'Spirit Bear', max: 3, desc: 'A bear follows you, draws demons onto itself and fights. It comes back 10 seconds after it falls.', apply: p => { p.bears++; } },
-  { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 5, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 56; } },
+  { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 5, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 104; } },
   { id: 'g_speed', cls: 'all', name: 'Swift Feet', max: 5, desc: 'Move 10% faster.', apply: p => { p.speed *= 1.1; } },
   { id: 'g_hp', cls: 'all', name: 'Vitality', max: 5, desc: '+25 max HP and heal 25.', apply: p => { p.maxHp += 25; p.hp = Math.min(p.maxHp, p.hp + 25); } },
   { id: 'g_magnet', cls: 'all', name: 'Magnet', max: 4, desc: 'Collect XP from 40% farther away.', apply: p => { p.magnet *= 1.4; } },
@@ -344,6 +379,7 @@ const ETYPES = {
   wisp: { r: 12, hp: 24, speed: 72, dmg: 8, xp: 3, color: '#4fd8ff', spikes: 6 },
   boss: { r: 44, hp: 900, speed: 52, dmg: 30, xp: 40, color: '#ff2a4d', spikes: 12 }
 };
+const TYPE_IDX = Object.keys(ETYPES);
 const sprites = {};
 function buildSprites() {
   for (const k in ETYPES) {
@@ -733,7 +769,13 @@ try { selClass = localStorage.getItem('abyssPlusClass') || 'hunter'; if (!CLASSE
 let best = {};
 try { best = JSON.parse(localStorage.getItem('abyssPlusBest') || '{}') || {}; } catch (e) { best = {}; }
 let p = null, enemies = [], bullets = [], ebullets = [], gems = [], wolves = [], tornados = [], effects = [], particles = [], texts = [], bears = [], grenades = [];
-let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, pendingLevels = 0, shake = 0, clock = 0, shock = null, hudT = 0;
+let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, clock = 0, shock = null, hudT = 0;
+// Co-op: every player has their own wolves, bears, bolts, tornados and grenades.
+// use(pl) points the shared names at that player's things so the weapon code works for anyone.
+let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
+const RING = 380;
+function use(pl) { p = pl; wolves = pl._wolves; bears = pl._bears; bullets = pl._bullets; tornados = pl._tornados; grenades = pl._grenades; }
+function unuse(pl) { pl._bullets = bullets; pl._tornados = tornados; pl._grenades = grenades; }
 const PR = 14;
 
 function newPlayer(cls) {
@@ -741,20 +783,28 @@ function newPlayer(cls) {
   const pl = {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 5, inv: 0, ups: {}, volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
-    thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0,
+    thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, pending: 0, dead: false, choosing: false, offer: null,
+    _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
     t: { shot: 0.3, volley: 3, slam: 4, storm: 2, tornado: 4 }, bladeAng: 0, vx: 0, vy: 0
   };
   if (cls === 'hunter') pl.w = { cd: 0.5, dmg: 14, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
-  else if (cls === 'warrior') pl.w = { cd: 1.0, dmg: 24, radius: 85 };
+  else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
   else { pl.w = { dmg: 9, wspeed: 240 }; pl.wolves = 2; }
   return pl;
 }
 
+function resetWorld() {
+  enemies = []; ebullets = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
+  time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
+}
 function startGame() {
-  p = newPlayer(selClass);
-  enemies = []; bullets = []; ebullets = []; gems = []; wolves = []; tornados = []; effects = []; particles = []; texts = [];
-  bears = []; grenades = [];
-  time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; pendingLevels = 0; shake = 0; shock = null;
+  coop = null;
+  resetWorld();
+  me = newPlayer(selClass);
+  me.name = playerName || 'Player';
+  players = [me];
+  use(me);
+  $('leaveBtn').classList.add('hidden'); $('coopBanner').classList.add('hidden');
   try { localStorage.setItem('abyssPlusClass', selClass); } catch (e) {}
   ['startScreen', 'overScreen', 'pauseScreen', 'levelScreen'].forEach(id => $(id).classList.add('hidden'));
   closeShop();
@@ -767,7 +817,7 @@ function startGame() {
   Sound.startMusic(); Sound.setTempo(116);
 }
 function pauseGame() {
-  if (state !== S.PLAYING) return;
+  if (state !== S.PLAYING || coop) return;
   prevState = state; state = S.PAUSED;
   stick.active = false;
   $('pauseScreen').classList.remove('hidden');
@@ -806,7 +856,7 @@ function showClasses() {
 }
 
 // ===== Helpers =====
-const toScreen = (x, y) => [x - p.x + W / 2, y - p.y + H / 2];
+const toScreen = (x, y) => [x - me.x + W / 2, y - me.y + H / 2];
 function nearestEnemy(x, y, maxD) {
   let best = null, bd = maxD * maxD;
   for (const e of enemies) {
@@ -841,6 +891,10 @@ function killEnemy(e) {
   e.dead = true;
   kills++;
   const t = ETYPES[e.type];
+  // Blood-thirst: the warrior who got the kill heals
+  if (p && p.blood && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.0025 * p.blood);
+  if (e.type === 'boss') bossesKilled++;
+  if (coop) { killFx.push([Math.round(e.x), Math.round(e.y), TYPE_IDX.indexOf(e.type)]); if (killFx.length > 60) killFx.shift(); }
   for (let i = 0; i < (e.type === 'boss' ? 40 : 8); i++) {
     const a = rand(0, TAU), s = rand(1, e.type === 'boss' ? 8 : 4);
     particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: rand(2, 4.5), life: 1, decay: rand(0.025, 0.045), color: t.color });
@@ -859,14 +913,13 @@ function killEnemy(e) {
   } else if (kills % 15 === 0) flyStar(sx, sy);
 }
 function hurtPlayer(d, src) {
-  if (p.inv > 0 || state !== S.PLAYING) return;
+  if (p.inv > 0 || state !== S.PLAYING || p.dead || p.choosing) return;
   const raw = d;
   d = Math.max(1, d - p.armor);
   p.hp -= d;
   p.inv = 0.7;
-  shake = Math.max(shake, 8);
   addText(p.x, p.y - 24, '-' + Math.round(d), '#ff3b5c');
-  Sound.sfx('hurt');
+  if (p === me) { shake = Math.max(shake, 8); Sound.sfx('hurt'); }
   // Thorn Armor: the demon that hit you takes damage back
   if (p.thorns && src && !src.dead) {
     const dx = src.x - p.x, dy = src.y - p.y, dd = Math.hypot(dx, dy) || 1;
@@ -893,9 +946,17 @@ function gainXp(v) {
     p.xp -= p.xpNext;
     p.lvl++;
     p.xpNext = Math.round(4 + p.lvl * 2.6 + p.lvl * p.lvl * 0.18);
-    pendingLevels++;
+    p.pending++;
   }
 }
+// XP is split equally between all players in the game
+function shareXp(v) {
+  const part = v / players.length;
+  for (const pl of players) { if (pl.dead) continue; use(pl); gainXp(part); unuse(pl); }
+  use(me);
+}
+function hurtTarget(pl, d, src) { use(pl); hurtPlayer(d, src); unuse(pl); use(me); }
+function cardOf(id) { return id === 'heal' ? HEAL_CARD : UPGRADES.find(u => u.id === id); }
 
 // ===== Level up =====
 function rollOptions() {
@@ -906,14 +967,14 @@ function rollOptions() {
   if (opts.length < 3 || p.hp < p.maxHp * 0.35) { if (opts.length >= 3) opts.pop(); opts.push(HEAL_CARD); }
   return opts;
 }
-function openLevelUp() {
-  state = S.LEVELUP;
+function openLevelUp(opts) {
+  if (!coop) state = S.LEVELUP;
   stick.active = false;
   Sound.sfx('level');
   const list = $('cardList');
   list.textContent = '';
   const clsCol = CLASSES[p.cls].color;
-  rollOptions().forEach((u, i) => {
+  opts.forEach((u, i) => {
     const lv = p.ups[u.id] || 0;
     const b = document.createElement('button');
     b.className = 'card';
@@ -935,20 +996,41 @@ function openLevelUp() {
   $('levelScreen').classList.remove('hidden');
 }
 function chooseUpgrade(u) {
+  if (coop) {
+    $('levelScreen').classList.add('hidden');
+    if (coop.role === 'guest') { coop.pickSeq++; coop.pick = { id: u.id, n: coop.pickSeq }; coop.pickedKey = coop.shownOffer; coop.shownOffer = null; guestSend(true); }
+    else { coop.shownOffer = null; applyPick(me, u.id); }
+    return;
+  }
   if (state !== S.LEVELUP) return;
-  u.apply(p);
-  if (u.max) p.ups[u.id] = (p.ups[u.id] || 0) + 1;
-  pendingLevels--;
+  u.apply(me);
+  if (u.max) me.ups[u.id] = (me.ups[u.id] || 0) + 1;
+  me.pending--;
   $('levelScreen').classList.add('hidden');
   state = S.PLAYING;
   updateHUD(true);
-  if (pendingLevels > 0) openLevelUp();
+  if (me.pending > 0) openLevelUp(rollOptions());
+}
+function applyPick(pl, id) {
+  const u = cardOf(id);
+  if (!u || !pl.offer || !pl.offer.includes(id)) return;
+  use(pl);
+  u.apply(pl);
+  if (u.max) pl.ups[id] = (pl.ups[id] || 0) + 1;
+  pl.pending--;
+  pl.offer = null; pl.choosing = false;
+  unuse(pl); use(me);
 }
 
 // ===== Spawning =====
+function groupCenter() {
+  let x = 0, y = 0, n = 0;
+  for (const pl of players) if (!pl.dead) { x += pl.x; y += pl.y; n++; }
+  return n ? { x: x / n, y: y / n } : { x: me.x, y: me.y };
+}
 function spawnEnemy(type) {
-  const a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60;
-  return spawnAt(type, p.x + Math.cos(a) * d, p.y + Math.sin(a) * d);
+  const c = groupCenter(), a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60 + (coop ? RING * 0.5 : 0);
+  return spawnAt(type, c.x + Math.cos(a) * d, c.y + Math.sin(a) * d);
 }
 function spawnAt(type, x, y) {
   const t = ETYPES[type];
@@ -959,6 +1041,7 @@ function spawnAt(type, x, y) {
     bladeCd: 0, shootT: rand(1, 2.5), dead: false, wob: rand(0, TAU),
     atkCd: 0, dash: 0, wind: 0, dashT: rand(1, 3), dvx: 0, dvy: 0, sumT: rand(2, 4)
   };
+  e.id = nextEid++;
   enemies.push(e);
   return e;
 }
@@ -1135,9 +1218,11 @@ function drawScenery(S2) {
 }
 
 // ===== Hunter active skill: grenade (every 10 seconds) =====
+const grenadeCdOf = pl => [12, 11, 10][Math.max(0, Math.min(2, pl.grenade - 1))];
 function throwGrenade() {
-  if (state !== S.PLAYING || !p || p.cls !== 'hunter' || p.grenadeCd > 0) return;
-  p.grenadeCd = 10;
+  if (coop && coop.role === 'guest') { if (me.grenade > 0 && me.grenadeCd <= 0) { coop.gr++; guestSend(true); } return; }
+  if (state !== S.PLAYING || !p || p.cls !== 'hunter' || p.grenade <= 0 || p.grenadeCd > 0 || p.dead) return;
+  p.grenadeCd = grenadeCdOf(p);
   const tgt = nearestEnemy(p.x, p.y, 380);
   const tx = tgt ? tgt.x : p.x + (p.vx || 1) * 200, ty = tgt ? tgt.y : p.y + (p.vy || 0) * 200;
   grenades.push({ sx: p.x, sy: p.y, tx, ty, t: 0, dur: 0.45 });
@@ -1145,7 +1230,7 @@ function throwGrenade() {
   updateHUD();
 }
 function explodeGrenade(x, y) {
-  const R = 160;
+  const R = 160 + 30 * Math.max(0, p.grenade - 1);
   effects.push({ kind: 'blast', x, y, r: R, life: 0.5, max: 0.5 });
   for (let i = 0; i < 40; i++) {
     const a = rand(0, TAU), s = rand(2, 9);
@@ -1162,10 +1247,10 @@ function explodeGrenade(x, y) {
 
 // ===== Druid bears: follow you, tank for you, revive after 10 seconds =====
 function updateBears(dt) {
-  while (bears.length < p.bears) bears.push({ x: p.x + rand(-30, 30), y: p.y + rand(-30, 30), hp: 140 * p.bearHp, maxHp: 140 * p.bearHp, dead: false, respawn: 0, atk: 0, ang: 0, flash: 0 });
+  while (bears.length < p.bears) bears.push({ x: p.x + rand(-30, 30), y: p.y + rand(-30, 30), hp: 260 * p.bearHp, maxHp: 260 * p.bearHp, dead: false, respawn: 0, atk: 0, ang: 0, flash: 0 });
   const threat = nearestEnemy(p.x, p.y, 260);
   bears.forEach((b, i) => {
-    b.maxHp = 140 * p.bearHp * (1 + time / 400);
+    b.maxHp = 260 * p.bearHp * (1 + time / 400);
     if (b.dead) {
       b.respawn -= dt;
       if (b.respawn <= 0) { b.dead = false; b.hp = b.maxHp; b.x = p.x + rand(-30, 30); b.y = p.y + rand(-30, 30); }
@@ -1193,7 +1278,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '1.2';
+const GAME_VERSION = '1.4';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -1223,17 +1308,17 @@ async function refreshGlobal() {
     renderBoard();
   } catch (e) {}
 }
-function submitScore() {
-  const s = Math.floor(time);
+function submitScore(sec, mode) {
+  const s = Math.floor(sec);
   if (s < 1) return;
-  const entry = { n: playerName || 'Player', s, t: Date.now(), v: GAME_VERSION, d: DEVICE, c: p.cls, k: kills };
+  const entry = { n: playerName || 'Player', s, t: Date.now(), v: GAME_VERSION, d: DEVICE, c: me.cls, k: kills, m: mode || '' };
   lastEntry = { n: entry.n, s };
   board = sortRows(board.concat([entry])).slice(0, 10);
   try { localStorage.setItem('abyssPlusBoard', JSON.stringify(board)); } catch (e) {}
   if (globalBoard) globalBoard = sortRows(globalBoard.concat([entry])).slice(0, 10);
   fetch(LB_URL + '/abyss.json', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ n: entry.n, s, v: entry.v, d: entry.d, c: entry.c, k: entry.k, t: { '.sv': 'timestamp' } })
+    body: JSON.stringify({ n: entry.n, s, v: entry.v, d: entry.d, c: entry.c, k: entry.k, m: entry.m, t: { '.sv': 'timestamp' } })
   }).then(() => refreshGlobal()).catch(() => {});
 }
 function fillList(list, rows) {
@@ -1250,6 +1335,7 @@ function fillList(list, rows) {
     m.textContent = [fmtDate(e.t), e.v ? 'v' + String(e.v).slice(0, 8) : ''].filter(Boolean).join(' · ');
     if (DEVICE_ICONS[e.d]) { const dv = document.createElement('span'); dv.className = 'dev'; dv.innerHTML = DEVICE_ICONS[e.d]; m.appendChild(dv); }
     if (CLASSES[e.c]) { const c = document.createElement('span'); c.textContent = ' ' + CLASSES[e.c].name; c.style.color = CLASSES[e.c].color; m.appendChild(c); }
+    if (e.m === 'co') m.append(' \u00b7 co-op');
     info.append(n, m);
     const s = document.createElement('span'); s.className = 's'; s.textContent = fmtTime(e.s);
     li.append(r, info, s);
@@ -1267,9 +1353,401 @@ function openModal() { renderBoard(); $('lbModal').classList.remove('hidden'); r
 function closeModal() { $('lbModal').classList.add('hidden'); }
 function showBoard(v) { if (v) { renderBoard(); refreshGlobal(); } $('leaderboard').classList.toggle('hidden', !v); }
 
+// ===== Co-op multiplayer (rooms on Firebase) =====
+const ROOM_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const myId = (() => { let s = ''; for (let i = 0; i < 10; i++) s += 'abcdefghijkmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 35)]; return s; })();
+const HEX = /^#[0-9a-fA-F]{6}$/;
+let lobby = null;
+function api(path, method, body) {
+  return fetch(LB_URL + path + '.json', {
+    method, headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body)
+  }).then(r => r.ok ? r.json() : null).catch(() => null);
+}
+function applyAt(root, path, data, patch) {
+  const parts = path.split('/').filter(Boolean);
+  if (!parts.length) return patch ? Object.assign(root && typeof root === 'object' ? root : {}, data) : data;
+  if (!root || typeof root !== 'object') root = {};
+  let cur = root;
+  for (let i = 0; i < parts.length - 1; i++) { if (!cur[parts[i]] || typeof cur[parts[i]] !== 'object') cur[parts[i]] = {}; cur = cur[parts[i]]; }
+  const last = parts[parts.length - 1];
+  if (patch) cur[last] = Object.assign(cur[last] && typeof cur[last] === 'object' ? cur[last] : {}, data);
+  else if (data === null) delete cur[last];
+  else cur[last] = data;
+  return root;
+}
+// Live updates from the database (server-sent events, no extra library)
+function stream(path, onData) {
+  if (typeof EventSource !== 'function') return { close() {} };
+  const es = new EventSource(LB_URL + path + '.json');
+  let root = null;
+  const handle = (ev, patch) => { try { const m = JSON.parse(ev.data); if (!m) return; root = applyAt(root, m.path, m.data, patch); onData(root); } catch (e) {} };
+  es.addEventListener('put', e => handle(e, false));
+  es.addEventListener('patch', e => handle(e, true));
+  return es;
+}
+function skinInfo() { const c = skinCol(); return { m: c.main, l: c.light, d: c.dark }; }
+function skinFrom(s) { return s && HEX.test(s.m) && HEX.test(s.l) && HEX.test(s.d) ? { main: s.m, light: s.l, dark: s.d } : ORB_COLORS[0]; }
+function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0 }; }
+function coopMsg(t) { $('coopMsg').textContent = t || ''; }
+function openCoop() {
+  $('startScreen').classList.add('hidden'); showBoard(false);
+  $('coopScreen').classList.remove('hidden');
+  $('coopMenu').classList.remove('hidden'); $('lobby').classList.add('hidden');
+  coopMsg('');
+}
+function closeStreams(list) { (list || []).forEach(es => { try { es.close(); } catch (e) {} }); }
+async function createRoom() {
+  coopMsg('Creating a room…');
+  for (let i = 0; i < 5; i++) {
+    let code = '';
+    for (let j = 0; j < 4; j++) code += ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)];
+    const exists = await api('/rooms/' + code + '/meta', 'GET');
+    if (exists) continue;
+    const ok = await api('/rooms/' + code, 'PUT', { meta: { host: myId, started: false, at: { '.sv': 'timestamp' } }, players: { [myId]: myInfo() } });
+    if (!ok) { coopMsg('Can’t reach the game server. Co-op works on the GitHub link (not inside Claude) and needs internet.'); return; }
+    enterLobby(code, 'host');
+    return;
+  }
+  coopMsg('Please try again.');
+}
+async function joinRoom() {
+  const code = $('codeInput').value.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4}$/.test(code)) { coopMsg('Type the 4-character room code.'); return; }
+  coopMsg('Joining…');
+  const meta = await api('/rooms/' + code + '/meta', 'GET');
+  if (!meta) { coopMsg('No room with that code. Check the code with the host.'); return; }
+  if (meta.started) { coopMsg('That game has already started.'); return; }
+  const roster = await api('/rooms/' + code + '/players', 'GET') || {};
+  if (Object.keys(roster).length >= 4) { coopMsg('That room is full (4 players).'); return; }
+  await api('/rooms/' + code + '/players/' + myId, 'PUT', myInfo());
+  enterLobby(code, 'guest');
+}
+function enterLobby(code, role) {
+  lobby = { code, role, roster: {}, streams: [] };
+  coopMsg('');
+  $('coopMenu').classList.add('hidden'); $('lobby').classList.remove('hidden');
+  $('roomCode').textContent = code;
+  $('coopStartBtn').classList.toggle('hidden', role !== 'host');
+  $('lobbyNote').textContent = role === 'host' ? 'Share this code with your friends. Press Start when everyone is in.' : 'Waiting for the host to start…';
+  lobby.streams.push(stream('/rooms/' + code + '/players', data => {
+    if (coop && coop.role === 'host') { onPlayersInput(data || {}); return; }
+    if (!lobby) return;
+    lobby.roster = data || {};
+    renderRoster();
+  }));
+  lobby.streams.push(stream('/rooms/' + code + '/meta', m => {
+    if (coop && coop.role === 'guest') { if (!m || m.ended) coopLost('The host left the game.'); return; }
+    if (!lobby) return;
+    if (!m) { leaveLobby('The host closed the room.'); return; }
+    if (m.started && lobby.role === 'guest') startCoop('guest');
+  }));
+}
+function renderRoster() {
+  const ul = $('roster');
+  ul.textContent = '';
+  for (const [id, v] of Object.entries(lobby.roster)) {
+    if (!v) continue;
+    const li = document.createElement('li');
+    const dot = document.createElement('i');
+    const cl = CLASSES[v.c] ? v.c : 'hunter';
+    dot.style.background = CLASSES[cl].color; dot.style.boxShadow = '0 0 8px ' + CLASSES[cl].color;
+    const nm = document.createElement('span'); nm.textContent = String(v.n || 'Player').slice(0, 12) + (id === myId ? ' (you)' : '');
+    const tag = document.createElement('small'); tag.textContent = CLASSES[cl].name;
+    li.append(dot, nm, tag);
+    ul.appendChild(li);
+  }
+}
+async function leaveLobby(text) {
+  if (lobby) {
+    closeStreams(lobby.streams);
+    if (lobby.role === 'host') api('/rooms/' + lobby.code, 'DELETE');
+    else api('/rooms/' + lobby.code + '/players/' + myId, 'DELETE');
+  }
+  lobby = null;
+  $('coopMenu').classList.remove('hidden'); $('lobby').classList.add('hidden');
+  coopMsg(text || '');
+}
+async function hostStart() {
+  if (!lobby) return;
+  await api('/rooms/' + lobby.code + '/meta', 'PATCH', { started: true });
+  startCoop('host');
+}
+
+function startCoop(role) {
+  const roster = lobby.roster || {};
+  coop = {
+    role, code: lobby.code, streams: lobby.streams, snap: null, lastSnap: performance.now(), sendT: 0, sending: false,
+    pickSeq: 0, pick: null, gr: 0, shownOffer: null, pickedKey: null, emap: new Map(), others: new Map(),
+    lastK: 0, lastBk: 0, hostT: 0, over: false
+  };
+  lobby = null;
+  resetWorld();
+  me = newPlayer(selClass);
+  me.id = myId; me.name = (playerName || 'Player').slice(0, 12); me.skin = skinCol();
+  players = [me];
+  if (role === 'host') {
+    for (const [id, v] of Object.entries(roster)) {
+      if (id === myId || !v) continue;
+      const q = newPlayer(CLASSES[v.c] ? v.c : 'hunter');
+      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true;
+      q.x = q.tx = rand(-50, 50); q.y = q.ty = rand(-50, 50); q.seen = performance.now();
+      players.push(q);
+    }
+  } else {
+    coop.streams.push(stream('/rooms/' + coop.code + '/state', onSnapshot));
+  }
+  use(me);
+  ['startScreen', 'overScreen', 'pauseScreen', 'levelScreen', 'coopScreen'].forEach(id => $(id).classList.add('hidden'));
+  closeShop(); closeModal(); showBoard(false);
+  $('hud').classList.remove('hidden');
+  $('pauseBtn').classList.add('hidden');
+  $('leaveBtn').classList.remove('hidden');
+  $('coopBanner').classList.add('hidden');
+  state = S.PLAYING;
+  updateHUD(true);
+  Sound.unlock(); Sound.resume(); Sound.sfx('level');
+  Sound.startMusic(); Sound.setTempo(116);
+}
+
+// Host: read what the guests send (their position, skill picks, grenade presses)
+function onPlayersInput(data) {
+  if (!coop || coop.over) return;
+  for (const q of players) {
+    if (!q.remote) continue;
+    const v = data[q.id];
+    if (!v) { if (!q.dead) { q.dead = true; q.left = true; q.deathTime = time; checkAllDead(); } continue; }
+    if (typeof v.x === 'number' && typeof v.y === 'number') { q.tx = v.x; q.ty = v.y; }
+    q.seen = performance.now();
+    if (v.pick && typeof v.pick.n === 'number' && v.pick.n > (q.lastPick || 0)) { q.lastPick = v.pick.n; applyPick(q, String(v.pick.id)); }
+    if (typeof v.gr === 'number' && v.gr > (q.lastGr || 0)) { q.lastGr = v.gr; use(q); throwGrenade(); unuse(q); use(me); }
+  }
+}
+function hostTick(dt) {
+  if (coop.over) return;
+  // skill choices: the game keeps running, the player is protected while choosing
+  for (const q of players) {
+    if (q.dead || q.pending <= 0 || q.offer) continue;
+    use(q); q.offer = rollOptions().map(u => u.id); q.choosing = true; unuse(q); use(me);
+  }
+  if (me.offer && coop.shownOffer !== me.offer.join()) { coop.shownOffer = me.offer.join(); openLevelUp(me.offer.map(cardOf)); }
+  for (const q of players) if (q.remote && !q.dead && performance.now() - q.seen > 12000) { q.dead = true; q.left = true; q.deathTime = time; checkAllDead(); }
+  coop.hostT -= dt;
+  if (coop.hostT <= 0 && !coop.sending) {
+    coop.hostT = 0.16;
+    coop.sending = true;
+    api('/rooms/' + coop.code + '/state', 'PUT', buildSnapshot()).finally(() => { if (coop) coop.sending = false; });
+  }
+}
+function buildSnapshot() {
+  const r = Math.round, pl = {};
+  for (const q of players) {
+    pl[q.id] = {
+      x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
+      d: q.dead ? 1 : 0, dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade,
+      bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark },
+      w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
+      b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn)])
+    };
+  }
+  return {
+    t: +time.toFixed(2), k: kills, bk: bossesKilled, over: coop.over ? 1 : 0, p: pl,
+    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0)]),
+    g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
+    bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
+    eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
+    tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
+    gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
+    fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), +(f.seed || 0).toFixed(1)]; }),
+    kx: killFx.splice(0, killFx.length)
+  };
+}
+function coopDeath(pl) {
+  if (pl.dead) return;
+  pl.dead = true; pl.hp = 0; pl.deathTime = time;
+  const c = pl.skin || skinCol();
+  for (let i = 0; i < 70; i++) {
+    const a = rand(0, TAU), sp = rand(3, 12);
+    particles.push({ x: pl.x, y: pl.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: rand(4, 10), life: 1, decay: 0.014, color: i % 2 ? c.main : c.light });
+  }
+  effects.push({ kind: 'death', x: pl.x, y: pl.y, r: 0, life: 0.5, max: 0.5 });
+  if (pl === me) youFell();
+  checkAllDead();
+}
+function youFell() {
+  shake = 24; Sound.sfx('die');
+  $('skillBtn').classList.add('hidden');
+  $('levelScreen').classList.add('hidden');
+  $('coopBanner').textContent = 'You fell. Your team fights on…';
+  $('coopBanner').classList.remove('hidden');
+}
+function checkAllDead() {
+  if (!coop || coop.role !== 'host' || coop.over) return;
+  if (players.every(q => q.dead)) {
+    coop.over = true;
+    api('/rooms/' + coop.code + '/state', 'PUT', buildSnapshot());
+    showCoopOver('');
+    const code = coop.code;
+    setTimeout(() => api('/rooms/' + code, 'DELETE'), 8000);
+  }
+}
+function showCoopOver(note) {
+  if (state === S.OVER) return;
+  state = S.OVER;
+  const sec = me.dead ? (me.deathTime || time) : time;
+  $('oTime').textContent = fmtTime(sec);
+  $('oLvl').textContent = me.lvl;
+  $('oKills').textContent = kills;
+  const isBest = sec > (best[me.cls] || 0);
+  if (isBest) { best[me.cls] = sec; try { localStorage.setItem('abyssPlusBest', JSON.stringify(best)); } catch (e) {} }
+  $('oBest').textContent = note || ('Co-op · ' + players.length + ' players · ' + (isBest ? 'new best for ' : 'best for ') + CLASSES[me.cls].name + ': ' + fmtTime(best[me.cls] || 0));
+  $('hud').classList.add('hidden');
+  $('skillBtn').classList.add('hidden');
+  $('leaveBtn').classList.add('hidden');
+  $('coopBanner').classList.add('hidden');
+  $('levelScreen').classList.add('hidden');
+  $('againBtn').classList.add('hidden');
+  $('overScreen').classList.remove('hidden');
+  if (!note) submitScore(sec, 'co');
+  closeStreams(coop && coop.streams);
+  showBoard(true);
+}
+function coopLost(text) {
+  if (!coop || state === S.OVER) return;
+  coop.over = true;
+  showCoopOver(text);
+}
+function leaveCoop() {
+  if (!coop) return;
+  if (coop.role === 'host') { api('/rooms/' + coop.code + '/meta', 'PATCH', { ended: true }); const code = coop.code; setTimeout(() => api('/rooms/' + code, 'DELETE'), 3000); }
+  else api('/rooms/' + coop.code + '/players/' + myId, 'DELETE');
+  closeStreams(coop.streams);
+  coop = null;
+  backToStart();
+}
+function backToStart() {
+  if (coop) { closeStreams(coop.streams); coop = null; }
+  ['overScreen', 'levelScreen', 'pauseScreen', 'coopScreen'].forEach(id => $(id).classList.add('hidden'));
+  $('hud').classList.add('hidden'); $('skillBtn').classList.add('hidden'); $('leaveBtn').classList.add('hidden'); $('coopBanner').classList.add('hidden');
+  state = S.START; p = null; me = null; players = [];
+  showClasses();
+  $('startScreen').classList.remove('hidden');
+  showBoard(true);
+}
+
+// Guest: send my position and choices, draw the world the host sends
+function guestSend(force) {
+  if (!coop || coop.role !== 'guest' || coop.over) return;
+  if (coop.sending && !force) return;
+  coop.sending = true;
+  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr };
+  if (coop.pick) body.pick = coop.pick;
+  api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
+}
+const FX_LIFE = { cleave: 0.25, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+function onSnapshot(s) {
+  if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
+  coop.snap = s; coop.lastSnap = performance.now();
+  if (Math.abs(time - (s.t || 0)) > 0.6) time = s.t || 0;
+  kills = s.k || 0;
+  // stars, same rules as solo: every 15 kills, 5 per boss
+  if (Math.floor(kills / 15) > Math.floor(coop.lastK / 15)) flyStar(W / 2, H / 2);
+  coop.lastK = kills;
+  if ((s.bk || 0) > coop.lastBk) { for (let i = 0; i < 5; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 120); }
+  coop.lastBk = s.bk || 0;
+  // demons, smoothed by id
+  const nm = new Map();
+  for (const a of (s.e || [])) {
+    const [id, ti, x, y, hp, fl] = a, type = TYPE_IDX[ti];
+    if (!type) continue;
+    let e = coop.emap.get(id);
+    if (!e) e = { id, type, x, y, r: ETYPES[type].r, maxHp: 100, wob: rand(0, TAU) };
+    e.tx = x; e.ty = y; e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0;
+    nm.set(id, e);
+  }
+  coop.emap = nm;
+  enemies = [...nm.values()];
+  gems = (s.g || []).map(([x, y, v]) => ({ x, y, v: v === 2 ? 20 : v === 1 ? 4 : 1 }));
+  const mv = ([x, y, vx, vy]) => ({ x, y, vx, vy });
+  bullets = (s.bu || []).map(mv); ebullets = (s.eb || []).map(mv);
+  tornados = (s.tn || []).map(([x, y, r]) => ({ x, y, r, spin: clock * 8 }));
+  grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
+  for (const f of (s.fx || [])) {
+    const [kind, x, y, r, seed] = f;
+    if (kind === 'death') { for (let i = 0; i < 40; i++) { const a = rand(0, TAU), sp = rand(3, 10); particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: rand(3, 8), life: 1, decay: 0.016, color: i % 2 ? '#ffffff' : '#7df9ff' }); } continue; }
+    if (FX_LIFE[kind]) effects.push({ kind, x, y, r, seed, life: FX_LIFE[kind], max: FX_LIFE[kind] });
+  }
+  for (const [x, y, ti] of (s.kx || [])) {
+    const col = (ETYPES[TYPE_IDX[ti]] || ETYPES.imp).color;
+    for (let i = 0; i < 6; i++) { const a = rand(0, TAU), sp = rand(1, 4); particles.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: rand(2, 4), life: 1, decay: 0.04, color: col }); }
+  }
+  // players
+  const list = [me];
+  wolves = []; bears = [];
+  for (const [id, v] of Object.entries(s.p || {})) {
+    if (!v) continue;
+    for (const w of (v.w || [])) wolves.push({ x: w[0], y: w[1], ang: w[2] });
+    for (const b of (v.b || [])) bears.push({ x: b[0], y: b[1], hp: b[2], maxHp: 100, dead: !!b[3], respawn: b[4], flash: 0 });
+    if (id === myId) {
+      me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
+      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
+      if (v.d && !me.dead) { me.dead = true; me.deathTime = v.dt || time; youFell(); }
+      const key = Array.isArray(v.of) ? v.of.join() : '';
+      if (key && key !== coop.shownOffer && key !== coop.pickedKey) { coop.shownOffer = key; openLevelUp(v.of.map(cardOf).filter(Boolean)); }
+      continue;
+    }
+    let q = coop.others.get(id);
+    if (!q) { q = { id, x: v.x, y: v.y }; coop.others.set(id, q); }
+    q.tx = v.x; q.ty = v.y; q.cls = CLASSES[v.c] ? v.c : 'hunter'; q.name = String(v.n || 'Player').slice(0, 12);
+    q.skin = skinFrom(v.s); q.dead = !!v.d; q.blades = v.bl || 0; q.bladeAng = v.ba || 0;
+    list.push(q);
+  }
+  players = list;
+  if (s.over) { coop.over = true; showCoopOver(''); }
+}
+function guestUpdate(dt) {
+  const s = coop.snap;
+  if (performance.now() - coop.lastSnap > 12000) { coopLost('Lost connection to the host.'); return; }
+  if (!s) return;
+  time += dt;
+  nearObs = obstaclesNear(me.x, me.y, Math.max(W, H) * 0.9);
+  moveLocal(dt);
+  const k = Math.min(1, dt * 10);
+  for (const e of enemies) { e.x += (e.tx - e.x) * k; e.y += (e.ty - e.y) * k; e.flash -= dt; }
+  for (const q of coop.others.values()) { q.x += (q.tx - q.x) * k; q.y += (q.ty - q.y) * k; }
+  for (const b of bullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
+  for (const b of ebullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
+  for (const tn of tornados) tn.spin += dt * 8;
+  for (const g of grenades) g.t = Math.min(g.dur, g.t + dt);
+  for (const f of effects) f.life -= dt;
+  effects = effects.filter(f => f.life > 0);
+  coop.sendT -= dt;
+  if (coop.sendT <= 0) { coop.sendT = 0.1; guestSend(false); }
+  hudT -= dt;
+  if (hudT <= 0) { hudT = 0.1; updateHUD(); }
+}
+
 // ===== Update =====
 const keys = {};
 const stick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
+function moveLocal(dt) {
+  if (me.dead) return;
+  let mx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), my = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+  if (stick.active) {
+    const dx = stick.x - stick.ox, dy = stick.y - stick.oy, d = Math.hypot(dx, dy);
+    if (d > 6) { const k = Math.min(1, d / 50); mx = dx / d * k; my = dy / d * k; }
+  }
+  const ml = Math.hypot(mx, my);
+  if (ml > 1) { mx /= ml; my /= ml; }
+  me.x += mx * me.speed * dt; me.y += my * me.speed * dt;
+  pushOut(me, PR, 0);
+  // Co-op ring: nobody can walk too far from the team
+  if (coop) {
+    const c = groupCenter(), dx = me.x - c.x, dy = me.y - c.y, d = Math.hypot(dx, dy);
+    if (d > RING) { me.x = c.x + dx / d * RING; me.y = c.y + dy / d * RING; }
+  }
+  if (ml > 0.1) { me.vx = mx; me.vy = my; }
+}
+
 function update(dt) {
   if (state === S.PAUSED || state === S.LEVELUP) return;
   clock += dt;
@@ -1281,34 +1759,35 @@ function update(dt) {
   shake *= 0.88;
   if (state === S.DYING) { stateTimer -= dt; if (stateTimer <= 0) gameOver(); return; }
   if (state !== S.PLAYING) return;
+  if (coop && coop.role === 'guest') { guestUpdate(dt); return; }
 
   time += dt;
-  // movement
-  let mx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), my = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
-  if (stick.active) {
-    const dx = stick.x - stick.ox, dy = stick.y - stick.oy, d = Math.hypot(dx, dy);
-    if (d > 6) { const k = Math.min(1, d / 50); mx = dx / d * k; my = dy / d * k; }
-  }
-  const ml = Math.hypot(mx, my);
-  if (ml > 1) { mx /= ml; my /= ml; }
-  nearObs = obstaclesNear(p.x, p.y, Math.max(W, H) * 0.9);
-  p.x += mx * p.speed * dt; p.y += my * p.speed * dt;
-  pushOut(p, PR, 0);
-  if (ml > 0.1) { p.vx = mx; p.vy = my; }
-  p.hp = Math.min(p.maxHp, p.hp + p.regen * dt);
-  p.inv -= dt;
+  const gc = groupCenter();
+  nearObs = obstaclesNear(gc.x, gc.y, Math.max(W, H) * 0.9 + (coop ? RING : 0));
+  moveLocal(dt);
 
-  updateWeapons(dt);
-  // Hunter grenade
-  p.grenadeCd = Math.max(0, p.grenadeCd - dt);
-  for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
-  grenades = grenades.filter(g => !g.done);
-  if (p.cls === 'druid') updateBears(dt);
+  // every player's skills (host runs them for everyone)
+  for (const pl of players) {
+    if (pl.dead) continue;
+    if (pl.remote) { pl.x += (pl.tx - pl.x) * Math.min(1, dt * 12); pl.y += (pl.ty - pl.y) * Math.min(1, dt * 12); }
+    pl.hp = Math.min(pl.maxHp, pl.hp + pl.regen * dt);
+    pl.inv -= dt;
+    use(pl);
+    updateWeapons(dt);
+    p.grenadeCd = Math.max(0, p.grenadeCd - dt);
+    for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
+    grenades = grenades.filter(g => !g.done);
+    if (p.cls === 'druid') updateBears(dt);
+    unuse(pl);
+  }
+  use(me);
+  allBears = [];
+  for (const pl of players) for (const b of pl._bears) allBears.push(b);
 
   // spawning
   spawnT -= dt;
   if (spawnT <= 0) {
-    spawnT = Math.max(0.25, 1.2 - time * 0.004);
+    spawnT = Math.max(0.25, 1.2 - time * 0.004) / (coop ? 1 + (players.length - 1) * 0.5 : 1);
     const n = 1 + Math.floor(time / 75);
     for (let i = 0; i < n && enemies.length < 240; i++) spawnEnemy(pickType());
   }
@@ -1321,21 +1800,24 @@ function update(dt) {
     shake = 14;
   }
 
-  // demons
+  // demons: each one hunts the closest living player
   const far = Math.max(W, H) * 1.3;
   for (const e of enemies) {
     if (e.dead) continue;
     e.flash -= dt; e.bladeCd -= dt;
-    let dx = p.x - e.x, dy = p.y - e.y;
+    let tp = null, bestD = Infinity;
+    for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2; if (dd < bestD) { bestD = dd; tp = pl; } }
+    if (!tp) continue;
+    let dx = tp.x - e.x, dy = tp.y - e.y;
     let d = Math.hypot(dx, dy) || 1;
     if (d > far && e.type !== 'boss') {
-      const a = Math.atan2(p.vy || rand(-1, 1), p.vx || rand(-1, 1)) + rand(-0.8, 0.8), rr = Math.hypot(W, H) / 2 + 40;
-      e.x = p.x + Math.cos(a) * rr; e.y = p.y + Math.sin(a) * rr;
+      const a = Math.atan2(tp.vy || rand(-1, 1), tp.vx || rand(-1, 1)) + rand(-0.8, 0.8), rr = Math.hypot(W, H) / 2 + 40;
+      e.x = tp.x + Math.cos(a) * rr; e.y = tp.y + Math.sin(a) * rr;
       continue;
     }
     // Bears draw nearby demons onto themselves
     let tb = null, mvx = dx, mvy = dy, md = d;
-    for (const b of bears) {
+    for (const b of allBears) {
       if (b.dead) continue;
       const bx = b.x - e.x, by = b.y - e.y, bd = Math.hypot(bx, by);
       if (bd < 150 && bd < md) { tb = b; mvx = bx; mvy = by; md = bd || 1; }
@@ -1367,21 +1849,26 @@ function update(dt) {
         ebullets.push({ x: e.x, y: e.y, vx: dx / d * 190, vy: dy / d * 190, life: 4, dmg: 9 * (1 + time / 300) });
       }
     }
-    if (d < e.r + PR) hurtPlayer(e.dmg, e);
+    if (d < e.r + PR) hurtTarget(tp, e.dmg, e);
   }
   for (const b of ebullets) {
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-    if ((b.x - p.x) ** 2 + (b.y - p.y) ** 2 < (PR + 6) ** 2) { hurtPlayer(b.dmg); b.life = 0; }
+    for (const pl of players) {
+      if (pl.dead || b.life <= 0) continue;
+      if ((b.x - pl.x) ** 2 + (b.y - pl.y) ** 2 < (PR + 6) ** 2) { hurtTarget(pl, b.dmg); b.life = 0; }
+    }
   }
   ebullets = ebullets.filter(b => b.life > 0);
 
-  // gems
-  const mag = p.magnet;
+  // gems fly to the closest living player; XP is shared
   for (const g of gems) {
-    const dx = p.x - g.x, dy = p.y - g.y, d = Math.hypot(dx, dy) || 1;
+    let tp = null, bd = Infinity;
+    for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - g.x) ** 2 + (pl.y - g.y) ** 2; if (dd < bd) { bd = dd; tp = pl; } }
+    if (!tp) continue;
+    const dx = tp.x - g.x, dy = tp.y - g.y, d = Math.sqrt(bd) || 1, mag = tp.magnet;
     if (d < mag) g.pull = true;
     if (g.pull) { const sp = 380 + (mag - Math.min(d, mag)) * 4; g.x += dx / d * sp * dt; g.y += dy / d * sp * dt; }
-    if (d < PR + 6) { g.taken = true; gainXp(g.v); Sound.sfx('gem'); }
+    if (d < PR + 6) { g.taken = true; shareXp(g.v); if (tp === me) Sound.sfx('gem'); }
   }
   gems = gems.filter(g => !g.taken);
 
@@ -1389,7 +1876,8 @@ function update(dt) {
   effects = effects.filter(f => f.life > 0);
   enemies = enemies.filter(e => !e.dead);
 
-  if (pendingLevels > 0 && state === S.PLAYING) openLevelUp();
+  if (!coop) { if (me.pending > 0 && state === S.PLAYING) openLevelUp(rollOptions()); }
+  else hostTick(dt);
   hudT -= dt;
   if (hudT <= 0) { hudT = 0.1; updateHUD(); }
 }
@@ -1519,23 +2007,24 @@ function updateWeapons(dt) {
 }
 
 function updateHUD(force) {
-  if (!p) return;
-  $('hpFill').style.width = (p.hp / p.maxHp * 100) + '%';
-  $('hpText').textContent = Math.ceil(p.hp) + ' / ' + Math.round(p.maxHp);
-  $('xpFill').style.width = (p.xp / p.xpNext * 100) + '%';
-  $('hLvl').textContent = p.lvl;
+  if (!me) return;
+  $('hpFill').style.width = (Math.max(0, me.hp) / me.maxHp * 100) + '%';
+  $('hpText').textContent = Math.max(0, Math.ceil(me.hp)) + ' / ' + Math.round(me.maxHp);
+  $('xpFill').style.width = (me.xp / me.xpNext * 100) + '%';
+  $('hLvl').textContent = me.lvl;
   $('hTime').textContent = fmtTime(time);
   $('hKills').textContent = kills;
   const sb = $('skillBtn');
-  if (p.cls === 'hunter' && (state === S.PLAYING || state === S.LEVELUP)) {
+  if (me.cls === 'hunter' && me.grenade > 0 && !me.dead && (state === S.PLAYING || state === S.LEVELUP)) {
     sb.classList.remove('hidden');
-    sb.style.setProperty('--p', (p.grenadeCd / 10 * 100) + '%');
-    $('skillCdText').textContent = p.grenadeCd > 0 ? Math.ceil(p.grenadeCd) : '';
-    sb.classList.toggle('ready', p.grenadeCd <= 0);
+    sb.style.setProperty('--p', (me.grenadeCd / grenadeCdOf(me) * 100) + '%');
+    $('skillCdText').textContent = me.grenadeCd > 0 ? Math.ceil(me.grenadeCd) : '';
+    sb.classList.toggle('ready', me.grenadeCd <= 0);
   } else sb.classList.add('hidden');
 }
 
 function die() {
+  if (coop) { coopDeath(p); return; }
   state = S.DYING; stateTimer = 1.6; shake = 28;
   stick.active = false;
   const c = skinCol(), [sx, sy] = [W / 2, H / 2];
@@ -1557,8 +2046,9 @@ function gameOver() {
   $('oKills').textContent = kills;
   $('oBest').textContent = (isBest ? 'New best for ' : 'Best for ') + CLASSES[p.cls].name + ': ' + fmtTime(best[p.cls] || 0);
   $('hud').classList.add('hidden');
+  $('againBtn').classList.remove('hidden');
   $('overScreen').classList.remove('hidden');
-  submitScore();
+  submitScore(time, '');
   showBoard(true);
 }
 
@@ -1580,6 +2070,12 @@ function render() {
   vg.addColorStop(0, 'rgba(5, 8, 22, 0)'); vg.addColorStop(1, 'rgba(60, 0, 30, 0.45)');
   ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
   if (!p) return;
+  if (!coop || coop.role === 'host') use(me);
+  if (coop && coop.role === 'host') {
+    // draw everyone's helpers, not only mine
+    wolves = players.flatMap(q => q._wolves); bears = allBears; bullets = players.flatMap(q => q._bullets);
+    tornados = players.flatMap(q => q._tornados); grenades = players.flatMap(q => q._grenades);
+  }
 
   ctx.save();
   if (shake > 0.4) ctx.translate(rand(-shake, shake), rand(-shake, shake));
@@ -1680,8 +2176,38 @@ function render() {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'; ctx.fillRect(x - 18, y - 28, 36, 4);
     ctx.fillStyle = '#39ff6a'; ctx.fillRect(x - 18, y - 28, 36 * Math.max(0, b.hp / b.maxHp), 4);
   }
+  // co-op: the ring and your teammates
+  if (coop) {
+    const c = groupCenter(), [rx, ry] = S2(c.x, c.y);
+    const edge = Math.hypot(me.x - c.x, me.y - c.y) / RING;
+    ctx.save();
+    ctx.setLineDash([14, 10]);
+    ctx.lineDashOffset = -clock * 30;
+    ctx.strokeStyle = edge > 0.85 ? 'rgba(255, 59, 92, 0.85)' : 'rgba(0, 240, 255, 0.45)';
+    ctx.lineWidth = edge > 0.85 ? 3 : 2;
+    ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(rx, ry, RING + PR, 0, TAU); ctx.stroke();
+    ctx.restore();
+    for (const q of players) {
+      if (q === me || q.dead) continue;
+      const [x, y] = S2(q.x, q.y), col = q.skin || ORB_COLORS[0];
+      ctx.strokeStyle = CLASSES[q.cls].color; ctx.lineWidth = 2; ctx.shadowColor = CLASSES[q.cls].color; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
+      ctx.shadowBlur = 0;
+      drawOrb(ctx, x, y, PR, col);
+      if (q.blades) for (let i = 0; i < q.blades; i++) {
+        const a = q.bladeAng + i * TAU / q.blades;
+        ctx.save(); ctx.translate(x + Math.cos(a) * 72, y + Math.sin(a) * 72); ctx.rotate(a + Math.PI / 2);
+        ctx.fillStyle = '#ffd0d8';
+        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(5, 0); ctx.lineTo(0, 12); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#dbe2f1';
+      ctx.fillText(q.name || 'Player', x, y - PR - 14);
+    }
+  }
   // player
-  if (state !== S.DYING && state !== S.OVER) {
+  if (state !== S.DYING && state !== S.OVER && !me.dead) {
     const [x, y] = [W / 2, H / 2];
     const cc = CLASSES[p.cls].color;
     if (p.inv > 0 && Math.floor(clock * 20) % 2) ctx.globalAlpha = 0.5;
@@ -1810,7 +2336,7 @@ cv.addEventListener('pointermove', e => {
 
 const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
 window.addEventListener('keydown', e => {
-  if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); startGame(); } return; }
+  if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Enter' && e.target.id === 'nameInput') { e.preventDefault(); e.target.blur(); startGame(); } return; }
   if (!$('lbModal').classList.contains('hidden')) { if (e.code === 'Escape') closeModal(); return; }
   if (!$('shopModal').classList.contains('hidden')) { if (e.code === 'Escape') closeShop(); return; }
   if (KEYMAP[e.code]) { e.preventDefault(); keys[KEYMAP[e.code]] = true; return; }
@@ -1821,9 +2347,9 @@ window.addEventListener('keydown', e => {
   }
   if (state === S.PLAYING && (e.code === 'Space' || e.code === 'KeyE')) { e.preventDefault(); throwGrenade(); return; }
   if (e.code === 'Space' || e.code === 'Enter') {
-    if (state === S.START || state === S.OVER) { e.preventDefault(); startGame(); }
+    if ((state === S.START || state === S.OVER) && $('coopScreen').classList.contains('hidden') && !coop) { e.preventDefault(); startGame(); }
     else if (state === S.PAUSED) { e.preventDefault(); resumeGame(); }
-  } else if (e.code === 'KeyP' || e.code === 'Escape') {
+  } else if ((e.code === 'KeyP' || e.code === 'Escape') && !coop) {
     if (state === S.PAUSED) resumeGame(); else pauseGame();
   } else if (e.code === 'KeyM') toggleSound();
 });
@@ -1831,8 +2357,16 @@ window.addEventListener('keyup', e => { if (KEYMAP[e.code]) keys[KEYMAP[e.code]]
 window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
 $('startBtn').addEventListener('click', startGame);
+$('coopBtn').addEventListener('click', openCoop);
+$('createBtn').addEventListener('click', createRoom);
+$('joinBtn').addEventListener('click', joinRoom);
+$('coopStartBtn').addEventListener('click', hostStart);
+$('coopBackBtn').addEventListener('click', () => { if (lobby) leaveLobby(''); $('coopScreen').classList.add('hidden'); backToStart(); });
+$('leaveBtn').addEventListener('click', leaveCoop);
+$('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); joinRoom(); } });
+window.addEventListener('pagehide', () => { if (lobby && lobby.role === 'guest') api('/rooms/' + lobby.code + '/players/' + myId, 'DELETE'); });
 $('againBtn').addEventListener('click', startGame);
-$('classBtn').addEventListener('click', () => { $('overScreen').classList.add('hidden'); state = S.START; p = null; showClasses(); $('startScreen').classList.remove('hidden'); });
+$('classBtn').addEventListener('click', backToStart);
 $('pauseBtn').addEventListener('click', pauseGame);
 $('resumeBtn').addEventListener('click', resumeGame);
 $('soundBtn').addEventListener('click', toggleSound);
