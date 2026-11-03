@@ -213,7 +213,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 1.0</span>
+    <span class="version">Version 1.1</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -530,6 +530,51 @@ const Sound = (() => {
     if (!AC) return;
     actx = new AC();
     master = actx.createGain(); master.gain.value = enabled ? 0.45 : 0; master.connect(actx.destination);
+    musicBus = actx.createGain(); musicBus.gain.value = 0.5; musicBus.connect(master);
+    noiseBuf = actx.createBuffer(1, actx.sampleRate, actx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  }
+  // ----- Background music: an original dark synthwave loop (D minor) -----
+  let musicBus = null, noiseBuf = null, mTimer = null, mStep = 0, mNext = 0, bpm = 116;
+  const midi = n => 440 * Math.pow(2, (n - 69) / 12);
+  const CH = [[50, 53, 57], [46, 50, 53], [48, 52, 55], [45, 48, 52]];
+  const ARP = [0, 1, 2, 1, 0, 2, 1, 2, 0, 1, 2, 1, 2, 1, 0, 1];
+  function inst(f, t, dur, type, vol, cutoff) {
+    const o = actx.createOscillator(), g = actx.createGain(), fl = actx.createBiquadFilter();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    fl.type = 'lowpass'; fl.frequency.value = cutoff;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(fl); fl.connect(g); g.connect(musicBus); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function hiss(t, dur, vol, type, freq) {
+    const s = actx.createBufferSource(); s.buffer = noiseBuf;
+    const fl = actx.createBiquadFilter(); fl.type = type; fl.frequency.value = freq;
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    s.connect(fl); fl.connect(g); g.connect(musicBus); s.start(t); s.stop(t + dur + 0.05);
+  }
+  function kick(t) {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.9, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
+    o.connect(g); g.connect(musicBus); o.start(t); o.stop(t + 0.3);
+  }
+  function step(s, t) {
+    const i = s % 16, ch = CH[Math.floor(s / 16) % 4];
+    if (i % 4 === 0) kick(t);
+    if (i % 2 === 1) hiss(t, 0.03, 0.08, 'highpass', 8000);
+    if (i === 4 || i === 12) hiss(t, 0.16, 0.26, 'bandpass', 1500);
+    if (i % 2 === 0) inst(midi(ch[0] - 24), t, 0.22, 'sawtooth', 0.32, 420);
+    inst(midi(ch[ARP[i]] + 12), t, 0.12, 'square', 0.06, 2000);
+    if (i === 0) for (const n of ch) inst(midi(n), t, (60 / bpm) * 3.8, 'triangle', 0.035, 1200);
+  }
+  function tick() {
+    if (!actx) return;
+    const sd = 60 / bpm / 4;
+    while (mNext < actx.currentTime + 0.15) { step(mStep, mNext); mNext += sd; mStep++; }
   }
   function tone(f, t, dur, type, vol, f2) {
     const o = actx.createOscillator(), g = actx.createGain();
@@ -546,6 +591,8 @@ const Sound = (() => {
     suspend() { held = true; if (actx && actx.state === 'running') actx.suspend().catch(() => {}); },
     resume() { held = false; if (actx && actx.state !== 'running') actx.resume().catch(() => {}); },
     isEnabled: () => enabled,
+    startMusic() { if (!actx || mTimer) return; mStep = 0; mNext = actx.currentTime + 0.1; mTimer = setInterval(tick, 25); },
+    setTempo(b) { bpm = b; },
     setEnabled(v) {
       enabled = v;
       try { localStorage.setItem('levelPlusSound', v ? 'on' : 'off'); } catch (e) {}
@@ -613,6 +660,7 @@ function startGame() {
   state = S.PLAYING;
   updateHUD(true);
   Sound.unlock(); Sound.resume(); Sound.sfx('level');
+  Sound.startMusic(); Sound.setTempo(116);
 }
 function pauseGame() {
   if (state !== S.PLAYING) return;
@@ -695,6 +743,7 @@ function killEnemy(e) {
   const [sx, sy] = toScreen(e.x, e.y);
   if (e.type === 'boss') {
     Sound.sfx('level');
+    Sound.setTempo(Math.min(130, 116 + bossCount * 4));
     for (let i = 0; i < 5; i++) setTimeout(() => flyStar(sx, sy), i * 120);
   } else if (kills % 15 === 0) flyStar(sx, sy);
 }
@@ -785,6 +834,143 @@ function pickType() {
   return 'imp';
 }
 
+// ===== World scenery: endless ground made of chunks, the same every time you pass =====
+const CHUNK = 520;
+const chunkCache = new Map(), decoSprites = new Map();
+let nearObs = [];
+function hash2(x, y) {
+  let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263)) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) || 1;
+}
+function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return (s >>> 0) / 4294967296; }; }
+function getChunk(cx, cy) {
+  const key = cx + ',' + cy;
+  let ch = chunkCache.get(key);
+  if (ch) return ch;
+  const r = rng(hash2(cx, cy));
+  ch = { obs: [], deco: [] };
+  const nObs = 2 + Math.floor(r() * 3);
+  for (let i = 0; i < nObs; i++) {
+    const x = cx * CHUNK + r() * CHUNK, y = cy * CHUNK + r() * CHUNK;
+    const kind = r() < 0.55 ? 'crystal' : 'pillar';
+    const rad = Math.round((kind === 'crystal' ? 22 + r() * 22 : 26 + r() * 20) / 4) * 4;
+    if (x * x + y * y < 200 * 200) continue;
+    if (ch.obs.some(o => (o.x - x) ** 2 + (o.y - y) ** 2 < (o.r + rad + 50) ** 2)) continue;
+    ch.obs.push({ x, y, r: rad, kind, v: Math.floor(r() * 3) });
+  }
+  const nDeco = 8 + Math.floor(r() * 6);
+  for (let i = 0; i < nDeco; i++) {
+    const k = r();
+    const kind = k < 0.12 ? 'pool' : k < 0.4 ? 'rune' : k < 0.75 ? 'grass' : 'shard';
+    ch.deco.push({ x: cx * CHUNK + r() * CHUNK, y: cy * CHUNK + r() * CHUNK, kind, v: Math.floor(r() * 3) });
+  }
+  if (chunkCache.size > 300) chunkCache.clear();
+  chunkCache.set(key, ch);
+  return ch;
+}
+function chunksAround(x, y, rad) {
+  const out = [];
+  for (let cx = Math.floor((x - rad) / CHUNK); cx <= Math.floor((x + rad) / CHUNK); cx++)
+    for (let cy = Math.floor((y - rad) / CHUNK); cy <= Math.floor((y + rad) / CHUNK); cy++) out.push(getChunk(cx, cy));
+  return out;
+}
+function obstaclesNear(x, y, rad) { const out = []; for (const ch of chunksAround(x, y, rad)) for (const o of ch.obs) out.push(o); return out; }
+// Keep a body outside the rocks; demons also slide sideways so they walk around them
+function pushOut(o, rad, slide) {
+  for (const ob of nearObs) {
+    const dx = o.x - ob.x, dy = o.y - ob.y, m = ob.r + rad;
+    if (Math.abs(dx) > m || Math.abs(dy) > m) continue;
+    const d = Math.hypot(dx, dy);
+    if (d >= m || d < 0.001) continue;
+    o.x = ob.x + dx / d * m; o.y = ob.y + dy / d * m;
+    if (slide) { const s = (o.wob || 0) > Math.PI ? 1 : -1; o.x += -dy / d * slide * s; o.y += dx / d * slide * s; }
+  }
+}
+function spriteOf(key, size, draw) {
+  let s = decoSprites.get(key);
+  if (s) return s;
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(size * dpr); c.height = Math.ceil(size * dpr);
+  const g = c.getContext('2d');
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.translate(size / 2, size / 2);
+  draw(g, size);
+  s = { c, size };
+  decoSprites.set(key, s);
+  return s;
+}
+function obstacleSprite(o) {
+  const size = o.r * 3;
+  return spriteOf(o.kind + o.r + '_' + o.v, size, (g) => {
+    const R = o.r;
+    g.fillStyle = 'rgba(0, 0, 0, 0.45)';
+    g.beginPath(); g.ellipse(R * 0.15, R * 0.3, R * 1.05, R * 0.8, 0, 0, TAU); g.fill();
+    if (o.kind === 'crystal') {
+      const shape = [[0, -1.05], [0.8, -0.5], [0.95, 0.35], [0.25, 1], [-0.7, 0.75], [-0.95, -0.2]].map(([x, y], i) => [x * R * (1 + ((i + o.v) % 3) * 0.06), y * R]);
+      g.beginPath(); shape.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
+      g.shadowColor = '#b026ff'; g.shadowBlur = R * 0.6;
+      g.fillStyle = 'rgba(70, 25, 150, 0.75)'; g.fill();
+      g.strokeStyle = '#c56bff'; g.lineWidth = 2.2; g.stroke();
+      g.shadowBlur = 0;
+      g.strokeStyle = 'rgba(224, 179, 255, 0.55)'; g.lineWidth = 1.2;
+      g.beginPath(); shape.forEach(([x, y]) => { g.moveTo(-R * 0.1, -R * 0.15); g.lineTo(x, y); }); g.stroke();
+      g.strokeStyle = 'rgba(0, 240, 255, 0.7)'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(shape[0][0], shape[0][1]); g.lineTo(shape[1][0], shape[1][1]); g.stroke();
+    } else {
+      g.shadowColor = '#ff4fd8'; g.shadowBlur = R * 0.5;
+      g.fillStyle = 'rgba(38, 16, 52, 0.92)';
+      g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fill();
+      g.strokeStyle = '#ff4fd8'; g.lineWidth = 2.2; g.stroke();
+      g.shadowBlur = 0;
+      g.strokeStyle = 'rgba(255, 79, 216, 0.45)'; g.lineWidth = 1.2;
+      g.beginPath(); g.arc(0, 0, R * 0.68, 0, TAU); g.stroke();
+      g.beginPath(); g.arc(0, 0, R * 0.35, 0, TAU); g.stroke();
+      g.strokeStyle = 'rgba(255, 180, 240, 0.4)';
+      g.beginPath(); g.moveTo(R * 0.2, -R * 0.95); g.lineTo(R * 0.05, -R * 0.5); g.lineTo(R * 0.3, -R * 0.2);
+      g.moveTo(-R * 0.9, R * 0.3); g.lineTo(-R * 0.5, R * 0.2); g.stroke();
+    }
+  });
+}
+function decoSprite(d) {
+  if (d.kind === 'pool') return spriteOf('pool' + d.v, 180 + d.v * 50, (g, s) => {
+    const gr = g.createRadialGradient(0, 0, 0, 0, 0, s / 2);
+    gr.addColorStop(0, 'rgba(255, 40, 90, 0.16)'); gr.addColorStop(0.6, 'rgba(176, 38, 255, 0.07)'); gr.addColorStop(1, 'rgba(176, 38, 255, 0)');
+    g.fillStyle = gr; g.fillRect(-s / 2, -s / 2, s, s);
+  });
+  if (d.kind === 'rune') return spriteOf('rune' + d.v, 48, (g) => {
+    g.strokeStyle = 'rgba(0, 240, 255, 0.22)'; g.lineWidth = 1.4;
+    g.beginPath(); g.arc(0, 0, 18, 0, TAU); g.stroke();
+    g.beginPath();
+    const n = 3 + d.v;
+    for (let i = 0; i <= n; i++) { const a = i * TAU / n - Math.PI / 2; i ? g.lineTo(Math.cos(a) * 12, Math.sin(a) * 12) : g.moveTo(Math.cos(a) * 12, Math.sin(a) * 12); }
+    g.stroke();
+  });
+  if (d.kind === 'grass') return spriteOf('grass' + d.v, 30, (g) => {
+    g.strokeStyle = 'rgba(57, 255, 106, 0.32)'; g.lineWidth = 1.6; g.lineCap = 'round';
+    g.beginPath();
+    for (let i = 0; i < 3 + d.v; i++) { const x = (i - 1.5) * 4; g.moveTo(x, 8); g.quadraticCurveTo(x + 2, 0, x + (i % 2 ? 4 : -3), -8 - (i % 3) * 2); }
+    g.stroke();
+  });
+  return spriteOf('shard' + d.v, 24, (g) => {
+    g.fillStyle = 'rgba(0, 240, 255, 0.28)'; g.strokeStyle = 'rgba(125, 249, 255, 0.5)'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(0, -9 + d.v); g.lineTo(5, 5); g.lineTo(-5, 6); g.closePath(); g.fill(); g.stroke();
+  });
+}
+function drawScenery(S2) {
+  const chs = chunksAround(p.x, p.y, Math.max(W, H) * 0.75);
+  for (const ch of chs) for (const d of ch.deco) {
+    const sp = decoSprite(d), [x, y] = S2(d.x, d.y);
+    if (x < -sp.size || y < -sp.size || x > W + sp.size || y > H + sp.size) continue;
+    ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2, sp.size, sp.size);
+  }
+  for (const ch of chs) for (const o of ch.obs) {
+    const sp = obstacleSprite(o), [x, y] = S2(o.x, o.y);
+    if (x < -sp.size || y < -sp.size || x > W + sp.size || y > H + sp.size) continue;
+    ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2, sp.size, sp.size);
+  }
+}
+
 // ===== Update =====
 const keys = {};
 const stick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
@@ -809,7 +995,9 @@ function update(dt) {
   }
   const ml = Math.hypot(mx, my);
   if (ml > 1) { mx /= ml; my /= ml; }
+  nearObs = obstaclesNear(p.x, p.y, Math.max(W, H) * 0.9);
   p.x += mx * p.speed * dt; p.y += my * p.speed * dt;
+  pushOut(p, PR, 0);
   if (ml > 0.1) { p.vx = mx; p.vy = my; }
   p.hp = Math.min(p.maxHp, p.hp + p.regen * dt);
   p.inv -= dt;
@@ -828,6 +1016,7 @@ function update(dt) {
     bossCount++;
     nextBoss += 120;
     Sound.sfx('boss');
+    Sound.setTempo(134);
     shake = 14;
   }
 
@@ -850,6 +1039,7 @@ function update(dt) {
       e.x += dx / d * sp * dt; e.y += dy / d * sp * dt;
     }
     e.x += e.kx * dt; e.y += e.ky * dt;
+    pushOut(e, e.r * 0.8, e.speed * dt * 0.7);
     e.kx *= 0.86; e.ky *= 0.86;
     if (e.type === 'wisp' && d < 430) {
       e.shootT -= dt;
@@ -1062,6 +1252,7 @@ function render() {
   ctx.save();
   if (shake > 0.4) ctx.translate(rand(-shake, shake), rand(-shake, shake));
   const S2 = (x, y) => [x - p.x + W / 2, y - p.y + H / 2];
+  drawScenery(S2);
 
   // gems
   for (const g of gems) {
@@ -1214,6 +1405,7 @@ function resize() {
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
   cv.style.width = W + 'px'; cv.style.height = H + 'px';
   buildSprites();
+  decoSprites.clear();
 }
 
 // ===== Input =====
