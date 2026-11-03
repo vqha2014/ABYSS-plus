@@ -239,7 +239,7 @@
 
   <div id="pauseScreen" class="screen hidden">
     <div class="screen-content">
-      <div class="title small">Paused</div>
+      <div class="title small" id="pauseTitle">Paused</div>
       <button class="btn" id="resumeBtn">Resume</button>
       <div class="stars-line"><svg class="star-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0L13.2 10.8L24 12L13.2 13.2L12 24L10.8 13.2L0 12L10.8 10.8Z" fill="#cfe8ff"/><circle cx="12" cy="12" r="3.2" fill="#fff"/></svg> <span id="pauseStars">0</span> stars</div>
       <button class="btn btn-alt" id="shopBtn">Skins</button><br>
@@ -256,7 +256,9 @@
         <div><b id="oKills">0</b><span>KILLS</span></div>
       </div>
       <div class="best" id="oBest">Best: 0:00</div>
-      <button class="btn" id="againBtn">Play again</button><br>
+      <button class="btn" id="againBtn">Play again</button>
+      <button class="btn hidden" id="retryBtn">Retry together</button>
+      <p class="info hidden" id="retryNote"></p><br>
       <button class="btn btn-alt" id="classBtn">Change class</button><br>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
@@ -318,7 +320,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 1.7</span>
+    <span class="version">Version 1.8</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -931,7 +933,15 @@ function startGame() {
   Sound.startMusic(); Sound.setTempo(116);
 }
 function pauseGame() {
-  if (state !== S.PLAYING || coop) return;
+  if (coop) {
+    // co-op: pause the whole team
+    if (state !== S.PLAYING || coop.over || coop.paused) return;
+    coop.paused = true; coop.pausedBy = me.name;
+    api('/rooms/' + coop.code + '/meta', 'PATCH', { paused: true, pausedBy: me.name });
+    updatePauseUI();
+    return;
+  }
+  if (state !== S.PLAYING) return;
   prevState = state; state = S.PAUSED;
   stick.active = false;
   $('pauseScreen').classList.remove('hidden');
@@ -942,6 +952,13 @@ function pauseGame() {
   Sound.suspend();
 }
 function resumeGame() {
+  if (coop) {
+    if (!coop.paused) return;
+    coop.paused = false;
+    api('/rooms/' + coop.code + '/meta', 'PATCH', { paused: false });
+    updatePauseUI();
+    return;
+  }
   if (state !== S.PAUSED) return;
   state = prevState;
   $('pauseScreen').classList.add('hidden');
@@ -950,6 +967,15 @@ function resumeGame() {
   showBoard(false); closeModal();
   updateHUD();
   Sound.resume();
+}
+function updatePauseUI() {
+  if (!coop || state !== S.PLAYING) return;
+  const on = !!coop.paused;
+  $('pauseTitle').textContent = on && coop.pausedBy ? 'Paused by ' + coop.pausedBy : 'Paused';
+  $('pauseScreen').classList.toggle('hidden', !on);
+  $('pauseBtn').classList.toggle('hidden', on);
+  if (on) { stick.active = false; for (const k in keys) keys[k] = false; updateStarsUI(); }
+  else closeShop();
 }
 function showClasses() {
   const list = $('classList');
@@ -1456,7 +1482,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '1.7';
+const GAME_VERSION = '1.8';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -1613,8 +1639,19 @@ function enterLobby(code, role) {
     lobby.roster = data || {};
     renderRoster();
   }));
+  lobby.streams.push(stream('/rooms/' + code + '/retry', d => { if (coop) { coop.retry = d || {}; updateRetryUI(); checkRetry(); } }));
   lobby.streams.push(stream('/rooms/' + code + '/meta', m => {
-    if (coop && coop.role === 'guest') { if (!m || m.ended) coopLost('The host left the game.'); return; }
+    if (coop) {
+      if (coop.role === 'guest' && (!m || m.ended)) {
+        if (state === S.OVER) { $('retryBtn').classList.add('hidden'); $('retryNote').textContent = 'The host left the room.'; $('retryNote').classList.remove('hidden'); }
+        else coopLost('The host left the game.');
+        return;
+      }
+      if (!m) return;
+      if (coop.role === 'guest' && state === S.OVER && (m.round || 0) > (coop.round || 0)) { startRound('guest', m.round); return; }
+      if (!!m.paused !== !!coop.paused || m.pausedBy !== coop.pausedBy) { coop.paused = !!m.paused; coop.pausedBy = m.pausedBy || ''; updatePauseUI(); }
+      return;
+    }
     if (!lobby) return;
     if (!m) { leaveLobby('The host closed the room.'); return; }
     if (m.started && lobby.role === 'guest') startCoop('guest');
@@ -1651,12 +1688,13 @@ async function hostStart() {
   startCoop('host');
 }
 
-function startCoop(role) {
+function startCoop(role, round) {
   const roster = lobby.roster || {};
+  if (lobby.stateStream) closeStreams([lobby.stateStream]);
   coop = {
     role, code: lobby.code, streams: lobby.streams, snap: null, lastSnap: performance.now(), sendT: 0, sending: false,
     pickSeq: 0, pick: null, gr: 0, shownOffer: null, pickedKey: null, emap: new Map(), others: new Map(),
-    lastK: 0, lastBk: 0, hostT: 0, over: false
+    lastK: 0, lastBk: 0, hostT: 0, over: false, round: round || 0, retry: {}, paused: false, pausedBy: '', lastRoster: 1
   };
   lobby = null;
   resetWorld();
@@ -1672,14 +1710,16 @@ function startCoop(role) {
       players.push(q);
     }
   } else {
-    coop.streams.push(stream('/rooms/' + coop.code + '/state', onSnapshot));
+    coop.stateStream = stream('/rooms/' + coop.code + '/state', onSnapshot);
+    guestSend(true);
   }
   use(me);
   setSkillIcons();
   ['startScreen', 'overScreen', 'pauseScreen', 'levelScreen', 'coopScreen'].forEach(id => $(id).classList.add('hidden'));
+  $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden');
   closeShop(); closeModal(); showBoard(false);
   $('hud').classList.remove('hidden');
-  $('pauseBtn').classList.add('hidden');
+  $('pauseBtn').classList.remove('hidden');
   $('leaveBtn').classList.remove('hidden');
   $('coopBanner').classList.add('hidden');
   state = S.PLAYING;
@@ -1690,7 +1730,12 @@ function startCoop(role) {
 
 // Host: read what the guests send (their position, skill picks, grenade presses)
 function onPlayersInput(data) {
-  if (!coop || coop.over) return;
+  if (!coop) return;
+  if (coop.over) {
+    for (const q of players) if (q.remote && !data[q.id]) q.left = true;
+    updateRetryUI(); checkRetry();
+    return;
+  }
   for (const q of players) {
     if (!q.remote) continue;
     const v = data[q.id];
@@ -1731,7 +1776,7 @@ function buildSnapshot() {
     };
   }
   return {
-    t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
+    rd: coop.round || 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
     e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
@@ -1792,7 +1837,7 @@ function youFell() {
   shake = 24; Sound.sfx('die');
   hideSkills();
   $('levelScreen').classList.add('hidden');
-  $('coopBanner').textContent = 'You fell. A teammate can revive you by standing on you for 10 seconds.';
+  $('coopBanner').textContent = 'You fell. A teammate can revive you by standing on you for 5 seconds.';
   $('coopBanner').classList.remove('hidden');
 }
 function checkAllDead() {
@@ -1801,8 +1846,6 @@ function checkAllDead() {
     coop.over = true;
     api('/rooms/' + coop.code + '/state', 'PUT', buildSnapshot());
     showCoopOver('');
-    const code = coop.code;
-    setTimeout(() => api('/rooms/' + code, 'DELETE'), 8000);
   }
 }
 function showCoopOver(note) {
@@ -1823,8 +1866,49 @@ function showCoopOver(note) {
   $('againBtn').classList.add('hidden');
   $('overScreen').classList.remove('hidden');
   if (!note) submitScore(sec, 'co');
-  closeStreams(coop && coop.streams);
+  $('classBtn').textContent = 'Leave room';
+  if (!note && coop) { coop.retry = coop.retry || {}; $('retryBtn').classList.remove('hidden'); $('retryNote').classList.remove('hidden'); updateRetryUI(); }
+  else { $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden'); }
+  $('pauseScreen').classList.add('hidden');
   showBoard(true);
+}
+// ===== Retry together: when everyone presses Retry, a new run starts for the whole team =====
+function retryNeeded() {
+  if (!coop) return 1;
+  return coop.role === 'host' ? players.filter(q => !q.left).length : coop.lastRoster || 1;
+}
+function updateRetryUI() {
+  if (!coop || state !== S.OVER) return;
+  const ready = Object.keys(coop.retry || {}).length, need = retryNeeded(), mine = !!(coop.retry || {})[myId];
+  $('retryBtn').textContent = mine ? 'Waiting… (' + ready + '/' + need + ')' : 'Retry together (' + ready + '/' + need + ')';
+  $('retryNote').textContent = mine ? 'The new run starts when everyone presses Retry.' : 'Press Retry to play again with the same team.';
+}
+function pressRetry() {
+  if (!coop || state !== S.OVER) return;
+  api('/rooms/' + coop.code + '/retry/' + myId, 'PUT', true);
+  coop.retry = Object.assign({}, coop.retry, { [myId]: true });
+  updateRetryUI(); checkRetry();
+}
+function checkRetry() {
+  if (!coop || coop.role !== 'host' || state !== S.OVER || coop.restarting) return;
+  const need = players.filter(q => !q.left);
+  if (!need.length || !need.every(q => (coop.retry || {})[q.id])) return;
+  coop.restarting = true;
+  hostRetry();
+}
+async function hostRetry() {
+  const round = (coop.round || 0) + 1, code = coop.code;
+  const roster = {};
+  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark } };
+  await api('/rooms/' + code + '/state', 'PUT', { rd: round, t: 0, over: 0 });
+  await api('/rooms/' + code + '/retry', 'DELETE');
+  await api('/rooms/' + code + '/meta', 'PATCH', { round, paused: false });
+  lobby = { code, role: 'host', roster, streams: coop.streams };
+  startCoop('host', round);
+}
+function startRound(role, round) {
+  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, stateStream: coop.stateStream };
+  startCoop(role, round);
 }
 function coopLost(text) {
   if (!coop || state === S.OVER) return;
@@ -1833,6 +1917,7 @@ function coopLost(text) {
 }
 function leaveCoop() {
   if (!coop) return;
+  if (coop.stateStream) coop.streams.push(coop.stateStream);
   if (coop.role === 'host') { api('/rooms/' + coop.code + '/meta', 'PATCH', { ended: true }); const code = coop.code; setTimeout(() => api('/rooms/' + code, 'DELETE'), 3000); }
   else api('/rooms/' + coop.code + '/players/' + myId, 'DELETE');
   closeStreams(coop.streams);
@@ -1840,7 +1925,9 @@ function leaveCoop() {
   backToStart();
 }
 function backToStart() {
-  if (coop) { closeStreams(coop.streams); coop = null; }
+  if (coop) { leaveCoop(); return; }
+  $('classBtn').textContent = 'Change class';
+  $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden');
   ['overScreen', 'levelScreen', 'pauseScreen', 'coopScreen'].forEach(id => $(id).classList.add('hidden'));
   $('hud').classList.add('hidden'); hideSkills(); $('leaveBtn').classList.add('hidden'); $('coopBanner').classList.add('hidden');
   state = S.START; p = null; me = null; players = [];
@@ -1862,6 +1949,7 @@ function guestSend(force) {
 const FX_LIFE = { smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
+  if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
   coop.snap = s; coop.lastSnap = performance.now();
   if (Math.abs(time - (s.t || 0)) > 0.6) time = s.t || 0;
   kills = s.k || 0;
@@ -1940,6 +2028,7 @@ function onSnapshot(s) {
   }
   coop.wmap = nw; coop.bmap = nb;
   players = list;
+  coop.lastRoster = Object.values(s.p || {}).filter(v => v && !v.lf).length;
   showWait(coop.waiting && !coop.shownOffer);
   if (s.over) { coop.over = true; showCoopOver(''); }
 }
@@ -1948,7 +2037,7 @@ function guestUpdate(dt) {
   if (performance.now() - coop.lastSnap > 12000) { coopLost('Lost connection to the host.'); return; }
   if (!s) return;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
-  if (!coop.waiting) {
+  if (!coop.waiting && !coop.paused) {
     time += dt;
     nearObs = obstaclesNear(me.x, me.y, Math.max(W, H) * 0.9);
     moveLocal(dt);
@@ -2013,7 +2102,7 @@ function update(dt) {
     // co-op: the world waits until every player has picked a skill
     coop.waiting = players.some(q => !q.dead && q.offer);
     showWait(coop.waiting && !me.offer);
-    if (coop.waiting || coop.over) { hudT -= dt; if (hudT <= 0) { hudT = 0.1; updateHUD(); } return; }
+    if (coop.waiting || coop.paused || coop.over) { hudT -= dt; if (hudT <= 0) { hudT = 0.1; updateHUD(); } return; }
   }
 
   time += dt;
@@ -2049,7 +2138,7 @@ function update(dt) {
     if (!q.dead || q.left) continue;
     const near = players.some(o => !o.dead && (o.x - q.x) ** 2 + (o.y - q.y) ** 2 < 45 * 45);
     q.revive = near ? (q.revive || 0) + dt : Math.max(0, (q.revive || 0) - dt * 0.5);
-    if (q.revive >= 10) revivePlayer(q);
+    if (q.revive >= 5) revivePlayer(q);
   }
   allBears = [];
   for (const pl of players) for (const b of pl._bears) allBears.push(b);
@@ -2529,11 +2618,11 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, 45, 0, TAU); ctx.stroke();
       if (q.revive > 0) {
         ctx.strokeStyle = '#39ff6a'; ctx.lineWidth = 5; ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 12;
-        ctx.beginPath(); ctx.arc(x, y, 45, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, q.revive / 10)); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, 45, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, q.revive / 5)); ctx.stroke();
         ctx.shadowBlur = 0;
       }
       ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#b8ffd0';
-      ctx.fillText(q.revive > 0 ? 'Reviving ' + Math.ceil(10 - q.revive) + 's' : (q === me ? 'Wait for a teammate' : 'Stand here 10s to revive'), x, y + 62);
+      ctx.fillText(q.revive > 0 ? 'Reviving ' + Math.ceil(5 - q.revive) + 's' : (q === me ? 'Wait for a teammate' : 'Stand here 5s to revive'), x, y + 62);
     }
     for (const q of players) {
       if (q === me || q.dead) continue;
@@ -2551,7 +2640,11 @@ function render() {
         ctx.restore();
       }
       ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#dbe2f1';
-      ctx.fillText(q.name || 'Player', x, y - PR - 14);
+      ctx.fillText(q.name || 'Player', x, y - PR - 22);
+      const hpK = Math.max(0, Math.min(1, (q.hp || 0) / (q.maxHp || 1)));
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'; ctx.fillRect(x - 21, y - PR - 15, 42, 6);
+      ctx.fillStyle = hpK > 0.5 ? '#39ff6a' : hpK > 0.25 ? '#ffd54a' : '#ff3b5c';
+      ctx.fillRect(x - 20, y - PR - 14, 40 * hpK, 4);
     }
   }
   // player
@@ -2744,7 +2837,7 @@ window.addEventListener('keydown', e => {
   if (e.code === 'Space' || e.code === 'Enter') {
     if ((state === S.START || state === S.OVER) && $('coopScreen').classList.contains('hidden') && !coop) { e.preventDefault(); startGame(); }
     else if (state === S.PAUSED) { e.preventDefault(); resumeGame(); }
-  } else if ((e.code === 'KeyP' || e.code === 'Escape') && !coop) {
+  } else if (e.code === 'KeyP' || e.code === 'Escape') {
     if (state === S.PAUSED) resumeGame(); else pauseGame();
   } else if (e.code === 'KeyM') toggleSound();
 });
@@ -2758,6 +2851,7 @@ $('joinBtn').addEventListener('click', joinRoom);
 $('coopStartBtn').addEventListener('click', hostStart);
 $('coopBackBtn').addEventListener('click', () => { if (lobby) leaveLobby(''); $('coopScreen').classList.add('hidden'); backToStart(); });
 $('leaveBtn').addEventListener('click', leaveCoop);
+$('retryBtn').addEventListener('click', pressRetry);
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); joinRoom(); } });
 window.addEventListener('pagehide', () => { if (lobby && lobby.role === 'guest') api('/rooms/' + lobby.code + '/players/' + myId, 'DELETE'); });
 $('againBtn').addEventListener('click', startGame);
