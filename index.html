@@ -320,7 +320,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 2.0</span>
+    <span class="version">Version 2.1</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -355,7 +355,7 @@ const CLASSES = {
 const UPGRADES = [
   { id: 'h_dmg', cls: 'hunter', name: 'Sharp Bolts', max: 5, desc: 'Bolt damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'h_rate', cls: 'hunter', name: 'Quick Draw', max: 5, desc: 'Shoot 15% faster.', apply: p => { p.w.cd *= 0.85; } },
-  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: the bolts spread out in a fan (3, then 4, then 5 directions).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
+  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
   { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 3, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
   { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 5, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Active skill (button or Space): throw a grenade that blasts demons far away. Next levels: shorter cooldown and a bigger blast.', apply: p => { p.grenade++; } },
@@ -1181,7 +1181,8 @@ function spawnEnemy(type) {
 }
 function spawnAt(type, x, y) {
   const t = ETYPES[type];
-  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : 1);
+  // co-op: demons get a little tougher for each extra player (+20% HP each)
+  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : 1) * (coop ? 1 + 0.2 * (players.length - 1) : 1);
   const e = {
     type, x, y, r: t.r, hp: t.hp * mult, maxHp: t.hp * mult,
     speed: t.speed * (1 + Math.min(0.35, time / 600)), dmg: t.dmg * (1 + time / 300), kx: 0, ky: 0, stun: 0, flash: 0,
@@ -1482,7 +1483,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.0';
+const GAME_VERSION = '2.1';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2312,10 +2313,12 @@ function updateWeapons(dt) {
         t.shot = w.cd;
         const base = Math.atan2(tgt.y - p.y, tgt.x - p.x);
         for (let i = 0; i < w.count; i++) {
-          const a = base + (i - (w.count - 1) / 2) * 0.2;
+          // parallel lines: every bolt flies the same way, shifted sideways from the next one
+          const a = base, off = (i - (w.count - 1) / 2) * 16;
+          const sx = p.x - Math.sin(a) * off, sy = p.y + Math.cos(a) * off;
           // Multishot: bolts in the same line fly one behind the other
           for (let j = 0; j < w.tandem; j++) {
-            bullets.push({ x: p.x - Math.cos(a) * j * 26, y: p.y - Math.sin(a) * j * 26, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, life: (w.range + j * 26) / w.speed, pierce: w.pierce, hit: [] });
+            bullets.push({ x: sx - Math.cos(a) * j * 26, y: sy - Math.sin(a) * j * 26, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, life: (w.range + j * 26) / w.speed, pierce: w.pierce, hit: [] });
           }
         }
         Sound.sfx('shoot');
