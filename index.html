@@ -334,7 +334,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 2.4</span>
+    <span class="version">Version 2.5</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -381,7 +381,7 @@ const UPGRADES = [
   { id: 'w_orbit', cls: 'warrior', name: 'Orbit Blades', max: 8, desc: 'One more blade spins around you.', apply: p => { p.blades++; } },
   { id: 'w_slam', cls: 'warrior', name: 'Ground Slam', max: 8, desc: 'A shockwave that damages and stuns demons.', apply: p => { p.slam++; } },
   { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 8, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
-  { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 8, desc: 'Every demon you kill heals 0.2% of your max HP per level.', apply: p => { p.blood++; } },
+  { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 5, desc: 'Every demon you kill heals 0.2% of your max HP per level.', apply: p => { p.blood++; } },
   { id: 'w_thorns', cls: 'warrior', name: 'Thorn Armor', max: 8, desc: 'Demons that hit you take the damage back, and more.', apply: p => { p.thorns++; } },
   { id: 'd_wolf', cls: 'druid', name: 'Pack Call', max: 4, desc: 'Summon one more spirit wolf.', apply: p => { p.wolves++; } },
   { id: 'd_fang', cls: 'druid', name: 'Sharp Fangs', max: 5, desc: 'Wolf damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
@@ -1606,7 +1606,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.4';
+const GAME_VERSION = '2.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
