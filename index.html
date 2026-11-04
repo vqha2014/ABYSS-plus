@@ -125,21 +125,30 @@
   .shop-note { text-align: center; color: var(--muted); font-size: 0.72rem; margin-top: 0.9rem; }
   .panel .btn { display: block; margin: 1.2rem auto 0; padding: 0.7rem 2rem; font-size: 1rem; }
 
-  #skillBtn, #skill2Btn {
+  #skillBtn, #skill2Btn, #ultBtn {
     position: absolute; right: calc(1.2rem + env(safe-area-inset-right, 0px)); bottom: 4.4rem; z-index: 9; width: 74px; height: 74px;
     border-radius: 50%; border: 2px solid var(--gold); background: rgba(5, 8, 22, 0.6); color: var(--gold); cursor: pointer;
     display: grid; place-items: center; touch-action: none; -webkit-tap-highlight-color: transparent; overflow: hidden;
     box-shadow: 0 0 18px rgba(255, 213, 74, 0.35);
   }
-  #skillBtn svg, #skill2Btn svg { width: 34px; height: 34px; fill: none; stroke: var(--gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-  #skillBtn .cd, #skill2Btn .cd { position: absolute; inset: 0; background: conic-gradient(rgba(5, 8, 22, 0.8) var(--p, 0%), transparent 0); }
-  #skillBtn .cdt, #skill2Btn .cdt { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 1.15rem; text-shadow: 0 0 6px #000; }
+  #skillBtn svg, #skill2Btn svg, #ultBtn svg { width: 34px; height: 34px; fill: none; stroke: var(--gold); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #skillBtn .cd, #skill2Btn .cd, #ultBtn .cd { position: absolute; inset: 0; background: conic-gradient(rgba(5, 8, 22, 0.8) var(--p, 0%), transparent 0); }
+  #skillBtn .cdt, #skill2Btn .cdt, #ultBtn .cdt { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 1.15rem; text-shadow: 0 0 6px #000; }
   #skill2Btn { bottom: calc(4.4rem + 86px); border-color: #9fd0ff; box-shadow: 0 0 18px rgba(159, 208, 255, 0.35); }
   #skill2Btn svg { stroke: #cfe8ff; }
-  #healPicker { position: absolute; right: calc(1.2rem + 86px + env(safe-area-inset-right, 0px)); bottom: 4.4rem; z-index: 9; display: flex; flex-direction: column; gap: 0.4rem; }
+  #healPicker { position: absolute; right: calc(1.2rem + 172px + env(safe-area-inset-right, 0px)); bottom: 4.4rem; z-index: 9; display: flex; flex-direction: column; gap: 0.4rem; }
   #healPicker button { padding: 0.5rem 0.9rem; border-radius: 999px; border: 1px solid rgba(57, 255, 106, 0.6); background: rgba(5, 8, 22, 0.85); color: #b8ffd0; font-family: inherit; font-size: 0.85rem; text-align: left; cursor: pointer; touch-action: manipulation; }
   #healPicker button b { color: #fff; }
-  #skillBtn.ready, #skill2Btn.ready { animation: readyPulse 1.2s ease-in-out infinite; }
+  #ultBtn { right: calc(1.2rem + 86px + env(safe-area-inset-right, 0px)); border-color: #ff4fd8; box-shadow: 0 0 18px rgba(255, 79, 216, 0.4); }
+  #ultBtn svg { stroke: #ff9de9; }
+  #ultBtn.active { background: rgba(255, 79, 216, 0.35); box-shadow: 0 0 34px rgba(255, 79, 216, 0.8); }
+  #formBtn {
+    position: absolute; right: calc(1.2rem + 96px + env(safe-area-inset-right, 0px)); bottom: calc(4.4rem + 86px); z-index: 9;
+    width: 54px; height: 54px; border-radius: 50%; border: 2px solid #39ff6a; background: rgba(5, 8, 22, 0.7); cursor: pointer;
+    display: grid; place-items: center; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  }
+  #formBtn svg { width: 30px; height: 30px; fill: none; stroke: #a8ffbf; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  #skillBtn.ready, #skill2Btn.ready, #ultBtn.ready { animation: readyPulse 1.2s ease-in-out infinite; }
   @keyframes readyPulse { 50% { box-shadow: 0 0 32px rgba(255, 213, 74, 0.75); } }
   .name-input {
     display: block; margin: 1rem auto 0; width: min(240px, 70vw); padding: 0.6rem 1rem; background: transparent;
@@ -297,6 +306,11 @@
     <span class="cd"></span><span class="cdt" id="skill2CdText"></span>
   </button>
   <div id="healPicker" class="hidden"></div>
+  <button id="ultBtn" class="hidden" aria-label="Ultimate (Q)">
+    <svg viewBox="0 0 24 24"><path d="M12 2L14.5 9H22L16 13.5L18.5 21L12 16.5L5.5 21L8 13.5L2 9H9.5Z"/></svg>
+    <span class="cd"></span><span class="cdt" id="ultCdText"></span>
+  </button>
+  <button id="formBtn" class="hidden" aria-label="Switch form (F)"><svg viewBox="0 0 24 24" id="formIcon"></svg></button>
 
   <div id="coopScreen" class="screen hidden">
     <div class="screen-content">
@@ -320,7 +334,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 2.1</span>
+    <span class="version">Version 2.3</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -358,7 +372,7 @@ const UPGRADES = [
   { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
   { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 3, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
   { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 5, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
-  { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Active skill (button or Space): throw a grenade that blasts demons far away. Next levels: shorter cooldown and a bigger blast.', apply: p => { p.grenade++; } },
+  { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
   { id: 'h_volley', cls: 'hunter', name: 'Arrow Rain', max: 5, desc: 'Every 3 seconds, arrows rain down on nearby demons.', apply: p => { p.volley++; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
@@ -407,31 +421,36 @@ const TYPE_IDX = Object.keys(ETYPES);
 function drawKing(g, R) {
   g.lineJoin = 'round'; g.lineCap = 'round';
   const lava = '#ff7a1a';
-  // shoulder plates
+  // molten glow behind the head
+  const back = g.createRadialGradient(0, -R * 0.9, R * 0.2, 0, -R * 0.9, R * 1.9);
+  back.addColorStop(0, 'rgba(255, 120, 30, 0.45)'); back.addColorStop(1, 'rgba(255, 90, 20, 0)');
+  g.fillStyle = back; g.beginPath(); g.arc(0, -R * 0.9, R * 1.9, 0, TAU); g.fill();
+  // great blade horns: wide, flat and curved like axe blades, the tip hooks back inward
   for (const sd of [-1, 1]) {
+    const P = (x, y) => [sd * R * x, R * y];
+    const ob = P(0.82, -0.4), ib = P(0.6, -0.82), tip = P(1.06, -1.86);
     g.beginPath();
-    g.moveTo(sd * R * 0.45, R * 0.75);
-    g.quadraticCurveTo(sd * R * 1.35, R * 0.55, sd * R * 1.6, R * 1.25);
-    g.lineTo(sd * R * 0.55, R * 1.35);
+    g.moveTo(...ob);
+    g.quadraticCurveTo(...P(1.02, -0.3), ...P(1.24, -0.04));               // lower edge dips down into a sharp point
+    g.bezierCurveTo(...P(1.48, -0.42), ...P(1.74, -1.12), ...tip);          // outer edge: from the point, up and back in
+    g.bezierCurveTo(...P(1.34, -1.38), ...P(1.22, -0.86), ...ib);          // inner edge: hollow curve back to the helm
     g.closePath();
-    const pg = g.createLinearGradient(sd * R * 0.5, R * 0.6, sd * R * 1.5, R * 1.3);
-    pg.addColorStop(0, '#2a2522'); pg.addColorStop(1, '#0c0a09');
-    g.fillStyle = pg; g.fill();
-    g.strokeStyle = 'rgba(255, 122, 26, 0.75)'; g.lineWidth = 2; g.stroke();
-  }
-  // great curved horns
-  for (const sd of [-1, 1]) {
-    g.beginPath();
-    g.moveTo(sd * R * 0.42, -R * 0.62);
-    g.bezierCurveTo(sd * R * 1.15, -R * 0.75, sd * R * 1.55, -R * 1.05, sd * R * 1.25, -R * 1.7);
-    g.bezierCurveTo(sd * R * 1.2, -R * 1.2, sd * R * 0.95, -R * 0.95, sd * R * 0.6, -R * 0.3);
-    g.closePath();
-    const hg = g.createLinearGradient(0, -R * 1.7, 0, -R * 0.3);
-    hg.addColorStop(0, '#5a2a12'); hg.addColorStop(0.5, '#231a17'); hg.addColorStop(1, '#0d0b0a');
-    g.shadowColor = lava; g.shadowBlur = R * 0.3;
+    const hg = g.createLinearGradient(sd * R * 1.7, -R * 1.5, sd * R * 0.5, -R * 0.6);
+    hg.addColorStop(0, '#7a3a16'); hg.addColorStop(0.35, '#3a2a24'); hg.addColorStop(1, '#141011');
+    g.shadowColor = lava; g.shadowBlur = R * 0.35;
     g.fillStyle = hg; g.fill();
     g.shadowBlur = 0;
-    g.strokeStyle = lava; g.lineWidth = 2.2; g.stroke();
+    g.strokeStyle = lava; g.lineWidth = 2.5; g.stroke();
+    // bright beveled edge along the outside of the blade
+    g.beginPath();
+    g.moveTo(...P(1.27, -0.1));
+    g.bezierCurveTo(...P(1.45, -0.46), ...P(1.66, -1.1), ...P(1.1, -1.76));
+    g.strokeStyle = 'rgba(255, 190, 120, 0.55)'; g.lineWidth = 3; g.stroke();
+    // dark pits on the metal
+    g.fillStyle = 'rgba(10, 6, 6, 0.65)';
+    for (const [x, y, r] of [[1.3, -0.75, 0.03], [1.42, -1.0, 0.025], [1.33, -1.28, 0.028], [1.18, -0.6, 0.022], [1.25, -1.5, 0.02]]) {
+      g.beginPath(); g.arc(sd * R * x, R * y, R * r, 0, TAU); g.fill();
+    }
   }
   // helm
   g.beginPath();
@@ -478,7 +497,7 @@ function drawKing(g, R) {
 const sprites = {};
 function buildSprites() {
   for (const k in ETYPES) {
-    const t = ETYPES[k], pad = t.r * 0.9, size = Math.ceil((t.r + pad) * 2);
+    const t = ETYPES[k], pad = t.r * (k === 'king' ? 1.95 : 0.9), size = Math.ceil((t.r + pad) * 2);
     const c = document.createElement('canvas');
     c.width = Math.ceil(size * dpr); c.height = Math.ceil(size * dpr);
     const g = c.getContext('2d');
@@ -619,6 +638,28 @@ function flyStar(x, y) {
 }
 
 // Paladin visuals: the aura area and the golden immortality bubble
+function drawUltFx(x, y, q) {
+  if (!(q.ultT > 0)) return;
+  const pulse = 0.6 + 0.4 * Math.sin(clock * 10);
+  if (q.cls === 'hunter') {
+    ctx.strokeStyle = 'rgba(255, 213, 74, ' + pulse + ')'; ctx.lineWidth = 3; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 18;
+    ctx.beginPath(); ctx.arc(x, y, PR + 12, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
+  } else if (q.cls === 'warrior') {
+    ctx.fillStyle = 'rgba(255, 59, 92, ' + (0.15 * pulse) + ')';
+    ctx.beginPath(); ctx.arc(x, y, PR + 20, 0, TAU); ctx.fill();
+  } else if (q.cls === 'druid') {
+    // werewolf: pointed ears, werebear: round ears
+    ctx.fillStyle = q.form === 'bear' ? '#7a4f2a' : '#8a96b8'; ctx.strokeStyle = '#a8ffbf'; ctx.lineWidth = 2;
+    ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 10;
+    for (const sd of [-1, 1]) {
+      ctx.beginPath();
+      if (q.form === 'bear') ctx.arc(x + sd * PR * 0.75, y - PR * 0.8, PR * 0.42, 0, TAU);
+      else { ctx.moveTo(x + sd * PR * 0.25, y - PR * 0.85); ctx.lineTo(x + sd * PR * 0.95, y - PR * 1.7); ctx.lineTo(x + sd * PR * 0.95, y - PR * 0.45); ctx.closePath(); }
+      ctx.fill(); ctx.stroke();
+    }
+    ctx.shadowBlur = 0;
+  }
+}
 function drawHoly(x, y, q) {
   if (q.aura) {
     ctx.fillStyle = 'rgba(255, 233, 168, 0.05)'; ctx.strokeStyle = 'rgba(255, 233, 168, 0.22)'; ctx.lineWidth = 1.5;
@@ -896,7 +937,8 @@ function newPlayer(cls) {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 5, inv: 0, ups: {}, volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
     thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0,
-    healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1, pending: 0, dead: false, choosing: false, offer: null,
+    healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
+    ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
     t: { shot: 0.3, volley: 3, slam: 4, storm: 2, tornado: 4 }, bladeAng: 0, vx: 0, vy: 0
   };
@@ -1020,6 +1062,7 @@ function addText(x, y, s, col) {
 function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.dead) return;
   dmg *= (p && p.auraMul) || 1;
+  if (p && p.cls === 'hunter' && p.ultT > 0) dmg *= p.ultMul;
   e.hp -= dmg;
   e.flash = 0.1;
   if (kx || ky) { const k = e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
@@ -1377,6 +1420,85 @@ function throwGrenade() {
   Sound.sfx('swing');
   updateHUD();
 }
+// ===== Ultimates: unlock at level 6, rank II at 12, rank III at 18 =====
+const ULT_CD = 45, ULT_TIME = 10;
+const ultRank = c => !c ? 0 : c.lvl >= 18 ? 3 : c.lvl >= 12 ? 2 : c.lvl >= 6 ? 1 : 0;
+const formMul = (c, f) => c.cls === 'druid' && c.ultT > 0 && c.form === f ? [1, 1.5, 2, 2.5][c.ultR] : 1;
+const FORM_ICONS = {
+  wolf: '<path d="M5 4L9 9H15L19 4L18 12C18 16 15 19 12 20C9 19 6 16 6 12Z"/><path d="M10 13H10.5M13.5 13H14M11 16.5L12 17.5L13 16.5"/>',
+  bear: '<circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="6.5" r="2.5"/><path d="M5 12C5 7.5 8 6 12 6C16 6 19 7.5 19 12C19 17 16 20 12 20C8 20 5 17 5 12Z"/><ellipse cx="12" cy="15" rx="2.5" ry="1.8"/>'
+};
+function setBearHp(c, on) {
+  if (on && !c.ultHp) { c.ultHp = Math.round(c.maxHp * [0, 0.3, 0.45, 0.6][c.ultR]); c.maxHp += c.ultHp; c.hp += c.ultHp; }
+  if (!on && c.ultHp) { c.maxHp -= c.ultHp; c.hp = Math.min(c.hp, c.maxHp); c.ultHp = 0; }
+}
+function castUlt(c) {
+  const r = ultRank(c);
+  if (!c || c.dead || !r || c.ultCd > 0) return;
+  c.ultR = r; c.ultCd = ULT_CD; c.ultT = ULT_TIME;
+  if (c.cls === 'hunter') c.ultMul = [1, 2, 2.5, 3][r];
+  else if (c.cls === 'warrior') { c.ultHp = [0, 50, 75, 100][r]; c.maxHp += c.ultHp; c.hp += c.ultHp; c.waveT = 0; }
+  else if (c.cls === 'druid') { c.roarT = 0; if (c.form === 'bear') setBearHp(c, true); }
+  else if (c.cls === 'paladin') {
+    // Sanctuary: everyone in the circle is immortal; fallen teammates inside get up at once
+    c.ultT = 0.8;
+    const R = 220, dur = [0, 1.5, 2, 2.5][r];
+    effects.push({ kind: 'sanct', x: c.x, y: c.y, r: R, life: 0.8, max: 0.8, owner: c });
+    for (const q of players) {
+      if ((q.x - c.x) ** 2 + (q.y - c.y) ** 2 > R * R) continue;
+      if (q.dead && !q.left) revivePlayer(q);
+      if (!q.dead) q.shieldT = Math.max(q.shieldT || 0, dur);
+    }
+  }
+  if (c === me) Sound.sfx('boss');
+}
+function endUlt(c) {
+  if (c.cls === 'warrior' && c.ultHp) { c.maxHp -= c.ultHp; c.hp = Math.min(c.hp, c.maxHp); c.ultHp = 0; }
+  if (c.cls === 'druid') setBearHp(c, false);
+  c.ultMul = 1;
+}
+function tickUlt(c, dt) {
+  if (c.ultT <= 0) return;
+  c.ultT -= dt;
+  if (c.cls === 'warrior') {
+    c.waveT -= dt;
+    if (c.waveT <= 0) {
+      c.waveT = 0.8;
+      const R = 210, dmg = [0, 100, 150, 250][c.ultR];
+      effects.push({ kind: 'wave', x: c.x, y: c.y, r: R, life: 0.45, max: 0.45, owner: c });
+      for (const e of enemiesNear(c.x, c.y, R)) { const dx = e.x - c.x, dy = e.y - c.y, d = Math.hypot(dx, dy) || 1; damageEnemy(e, dmg, dx / d * 260, dy / d * 260, 0); }
+      if (c === me) Sound.sfx('slam');
+    }
+  } else if (c.cls === 'druid') {
+    c.roarT -= dt;
+    if (c.roarT <= 0) {
+      // the roar scares demons away
+      c.roarT = 2.5;
+      effects.push({ kind: 'roar', x: c.x, y: c.y, r: 300, life: 0.6, max: 0.6, owner: c });
+      for (const e of enemiesNear(c.x, c.y, 300)) if (e.type !== 'boss' && e.type !== 'king') { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
+      if (c === me) Sound.sfx('boss');
+    }
+  }
+  if (c.ultT <= 0) { c.ultT = 0; endUlt(c); }
+}
+function setForm(c, f) {
+  if (!c || c.cls !== 'druid' || (f !== 'wolf' && f !== 'bear') || c.form === f) return;
+  if (c.ultT > 0 && c.form === 'bear') setBearHp(c, false);
+  c.form = f;
+  if (c.ultT > 0 && f === 'bear') setBearHp(c, true);
+}
+function ultPress() {
+  if (!me || state !== S.PLAYING || me.dead || !ultRank(me) || me.ultCd > 0) return;
+  if (coop && coop.role === 'guest') { coop.ul = (coop.ul || 0) + 1; guestSend(true); return; }
+  castUlt(me); updateHUD();
+}
+function formPress() {
+  if (!me || me.cls !== 'druid') return;
+  const f = me.form === 'bear' ? 'wolf' : 'bear';
+  if (coop && coop.role === 'guest') { me.form = f; coop.fm = f; guestSend(true); updateHUD(); return; }
+  setForm(me, f); updateHUD();
+}
+
 // ===== Paladin actives =====
 const healCdOf = c => Math.max(6, 15 - 1.5 * ((c.ups && c.ups.p_heal) || 0));
 const SHIELD_TIMES = [1, 1.5, 2, 2.5];
@@ -1404,7 +1526,7 @@ function healRequest(targetId) {
 }
 function skill1() {
   if (!me || state !== S.PLAYING) return;
-  if (me.cls === 'hunter') { throwGrenade(); return; }
+  if (me.cls === 'hunter') return;
   if (me.cls !== 'paladin' || me.dead || me.healCd > 0) return;
   const alive = players.filter(q => !q.dead);
   if (!coop || alive.length < 2) { healRequest(me.id); return; }
@@ -1431,7 +1553,7 @@ const SKILL_ICONS = {
   paladin: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V16.5M7.5 12H16.5"/>'
 };
 function setSkillIcons() { $('skillIcon').innerHTML = SKILL_ICONS[me && me.cls] || SKILL_ICONS.hunter; }
-function hideSkills() { $('skillBtn').classList.add('hidden'); $('skill2Btn').classList.add('hidden'); $('healPicker').classList.add('hidden'); }
+function hideSkills() { ['skillBtn', 'skill2Btn', 'ultBtn', 'formBtn', 'healPicker'].forEach(id => $(id).classList.add('hidden')); }
 function explodeGrenade(x, y) {
   const R = 160 + 30 * Math.max(0, p.grenade - 1);
   effects.push({ kind: 'blast', x, y, r: R, life: 0.5, max: 0.5 });
@@ -1477,13 +1599,13 @@ function updateBears(dt) {
     b.x += b.vx * dt; b.y += b.vy * dt;
     if (Math.hypot(b.vx, b.vy) > 15) b.ang = Math.atan2(b.vy, b.vx);
     pushOut(b, 16, 0);
-    if (tgt && d < tgt.r + 20 && b.atk <= 0) { b.atk = 0.8; damageEnemy(tgt, p.w.dmg * 0.6, dx / d * 140, dy / d * 140, 0); }
+    if (tgt && d < tgt.r + 20 && b.atk <= 0) { b.atk = 0.8; damageEnemy(tgt, p.w.dmg * 0.6 * formMul(p, 'bear'), dx / d * 140, dy / d * 140, 0); }
   });
 }
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.1';
+const GAME_VERSION = '2.3';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -1776,6 +1898,8 @@ function onPlayersInput(data) {
     if (typeof v.gr === 'number' && v.gr > (q.lastGr || 0)) { q.lastGr = v.gr; use(q); throwGrenade(); unuse(q); use(me); }
     if (v.hl && typeof v.hl.n === 'number' && v.hl.n > (q.lastHl || 0)) { q.lastHl = v.hl.n; castHeal(q, players.find(o => o.id === v.hl.t) || q); use(me); }
     if (typeof v.sh === 'number' && v.sh > (q.lastSh || 0)) { q.lastSh = v.sh; castShield(q); use(me); }
+    if (typeof v.ul === 'number' && v.ul > (q.lastUl || 0)) { q.lastUl = v.ul; castUlt(q); use(me); }
+    if (typeof v.fm === 'string') setForm(q, v.fm);
   }
 }
 function hostTick(dt) {
@@ -1804,10 +1928,10 @@ function buildSnapshot() {
   for (const q of players) {
     pl[q.id] = {
       x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
-      d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
+      d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
-      b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn)])
+      b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn), +(b.ang || 0).toFixed(2)])
     };
   }
   return {
@@ -1976,12 +2100,12 @@ function guestSend(force) {
   if (!coop || coop.role !== 'guest' || coop.over) return;
   if (coop.sending && !force) return;
   coop.sending = true;
-  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr, sh: coop.sh || 0 };
+  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr, sh: coop.sh || 0, ul: coop.ul || 0, fm: coop.fm || me.form || 'wolf' };
   if (coop.hl) body.hl = coop.hl;
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -2040,13 +2164,13 @@ function onSnapshot(s) {
     (v.b || []).forEach((b, i) => {
       const key = id + ':' + i;
       const o = coop.bmap.get(key) || { x: b[0], y: b[1], flash: 0 };
-      track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.dead = !!b[3]; o.respawn = b[4];
+      track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.dead = !!b[3]; o.respawn = b[4]; o.ang = b[5] || 0;
       if (o.dead) { o.x = o.ax; o.y = o.ay; }
       nb.set(key, o); bears.push(o);
     });
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
-      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
+      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
       if (v.d && !me.dead) { me.dead = true; me.deathTime = v.dt || time; youFell(); }
       else if (!v.d && me.dead) { me.dead = false; me.deathTime = 0; $('coopBanner').classList.add('hidden'); Sound.sfx('level'); }
       me.revive = v.rv || 0;
@@ -2057,7 +2181,7 @@ function onSnapshot(s) {
     let q = coop.others.get(id);
     if (!q) { q = { id, x: v.x, y: v.y }; coop.others.set(id, q); }
     track(q, v.x, v.y); q.cls = CLASSES[v.c] ? v.c : 'hunter'; q.name = String(v.n || 'Player').slice(0, 12);
-    q.hp = v.hp; q.maxHp = v.mh; q.shieldT = v.st || 0; q.aura = v.au || 0;
+    q.hp = v.hp; q.maxHp = v.mh; q.shieldT = v.st || 0; q.aura = v.au || 0; q.ultT = v.ut || 0; q.form = v.fm || 'wolf';
     q.skin = skinFrom(v.s); q.dead = !!v.d; q.left = !!v.lf; q.revive = v.rv || 0; q.blades = v.bl || 0; q.bladeAng = v.ba || 0;
     list.push(q);
   }
@@ -2115,7 +2239,8 @@ function moveLocal(dt) {
   }
   const ml = Math.hypot(mx, my);
   if (ml > 1) { mx /= ml; my /= ml; }
-  me.x += mx * me.speed * dt; me.y += my * me.speed * dt;
+  const spd = me.speed * (me.cls === 'druid' && me.ultT > 0 && me.form === 'wolf' ? 1.4 : 1);
+  me.x += mx * spd * dt; me.y += my * spd * dt;
   pushOut(me, PR, 0);
   // Co-op ring: nobody can walk too far from the team
   if (coop) {
@@ -2167,6 +2292,7 @@ function update(dt) {
     updateWeapons(dt);
     p.grenadeCd = Math.max(0, p.grenadeCd - dt);
     p.healCd = Math.max(0, p.healCd - dt); p.shieldCd = Math.max(0, p.shieldCd - dt); p.shieldT = Math.max(0, p.shieldT - dt);
+    p.ultCd = Math.max(0, p.ultCd - dt); tickUlt(p, dt);
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
     grenades = grenades.filter(g => !g.done);
     if (p.cls === 'druid') updateBears(dt);
@@ -2239,7 +2365,12 @@ function update(dt) {
       e.atkCd -= dt;
       if (e.atkCd <= 0) { e.atkCd = 0.6; hurtBear(tb, e.dmg); }
     }
-    if (e.stun > 0) e.stun -= dt;
+    if (e.fear > 0) {
+      e.fear -= dt;
+      const fx = e.x - e.fx, fy = e.y - e.fy, fd = Math.hypot(fx, fy) || 1;
+      e.x += fx / fd * e.speed * 1.3 * dt; e.y += fy / fd * e.speed * 1.3 * dt;
+    }
+    else if (e.stun > 0) e.stun -= dt;
     else if (e.type === 'charger' && !tb) updateCharger(e, dx, dy, d, dt);
     else {
       let sp = e.speed;
@@ -2324,6 +2455,7 @@ function updateWeapons(dt) {
         Sound.sfx('shoot');
       } else t.shot = 0.1;
     }
+    if (p.grenade > 0 && p.grenadeCd <= 0) { p.grenadeCd = grenadeCdOf(p); explodeGrenade(p.x, p.y); }
     if (p.volley) {
       t.volley -= dt;
       if (t.volley <= 0) {
@@ -2401,15 +2533,19 @@ function updateWeapons(dt) {
       wf.vy = (wf.vy || 0) + (dy / d * sp - (wf.vy || 0)) * kk;
       wf.x += wf.vx * dt; wf.y += wf.vy * dt;
       if (Math.hypot(wf.vx, wf.vy) > 20) { const ta = Math.atan2(wf.vy, wf.vx); const da = Math.atan2(Math.sin(ta - wf.ang), Math.cos(ta - wf.ang)); wf.ang += da * Math.min(1, dt * 10); }
-      if (wf.tgt && d < wf.tgt.r + 12 && wf.bite <= 0) { wf.bite = 0.45; damageEnemy(wf.tgt, w.dmg, dx / d * 90, dy / d * 90, 0); }
+      if (wf.tgt && d < wf.tgt.r + 12 && wf.bite <= 0) { wf.bite = 0.45; damageEnemy(wf.tgt, w.dmg * formMul(p, 'wolf'), dx / d * 90, dy / d * 90, 0); }
     });
     if (p.storm) {
       t.storm -= dt;
       if (t.storm <= 0) {
         t.storm = Math.max(0.8, 2.4 - 0.25 * p.storm);
-        for (const e of pickRandom(enemiesNear(p.x, p.y, 450), p.storm)) {
+        // strikes hit hard and blast everything around the target
+        const dmgS = 60 + 25 * p.storm, splash = 80 + 10 * p.storm;
+        for (const e of pickRandom(enemiesNear(p.x, p.y, 650), p.storm + 1)) {
           effects.push({ kind: 'bolt', x: e.x, y: e.y, life: 0.3, max: 0.3, seed: Math.random() * 1000 });
-          damageEnemy(e, 26 + 8 * p.storm, 0, 0, 0.3);
+          effects.push({ kind: 'zap', x: e.x, y: e.y, r: splash, life: 0.35, max: 0.35 });
+          const cx = e.x, cy = e.y;
+          for (const o of enemiesNear(cx, cy, splash)) damageEnemy(o, o === e ? dmgS : dmgS * 0.5, 0, 0, 0.3);
         }
         Sound.sfx('zap');
       }
@@ -2420,7 +2556,7 @@ function updateWeapons(dt) {
         t.tornado = Math.max(2.5, 6 - 0.6 * p.tornado);
         for (let i = 0; i < 1 + Math.floor(p.tornado / 3); i++) {
           const a = rand(0, TAU);
-          tornados.push({ x: p.x, y: p.y, vx: Math.cos(a) * 140, vy: Math.sin(a) * 140, life: 3 + 0.3 * p.tornado, r: 46 + 6 * p.tornado, tick: 0, spin: 0 });
+          tornados.push({ x: p.x, y: p.y, vx: Math.cos(a) * 140, vy: Math.sin(a) * 140, life: 3 + 0.3 * p.tornado, r: 85 + 12 * p.tornado, tick: 0, spin: 0 });
         }
       }
     }
@@ -2447,7 +2583,7 @@ function updateWeapons(dt) {
       tn.tick = 0.25;
       for (const e of enemiesNear(tn.x, tn.y, tn.r)) {
         const dx = tn.x - e.x, dy = tn.y - e.y, d = Math.hypot(dx, dy) || 1;
-        damageEnemy(e, 6 + 2 * p.tornado, dx / d * 120, dy / d * 120, 0);
+        damageEnemy(e, 10 + 3 * p.tornado, dx / d * 120, dy / d * 120, 0);
       }
     }
   }
@@ -2471,7 +2607,15 @@ function updateHUD(force) {
     btn.classList.toggle('ready', cd <= 0);
   };
   if (me.cls === 'paladin') setBtn($('skillBtn'), 'skillCdText', live, me.healCd, healCdOf(me));
-  else setBtn($('skillBtn'), 'skillCdText', live && me.cls === 'hunter' && me.grenade > 0, me.grenadeCd, grenadeCdOf(me));
+  else $('skillBtn').classList.add('hidden');
+  // ultimate (unlocks at level 6, gets stronger at 12 and 18)
+  const ur = ultRank(me), ub = $('ultBtn');
+  setBtn(ub, 'ultCdText', live && ur > 0, me.ultCd, ULT_CD);
+  ub.classList.toggle('active', me.ultT > 0);
+  if (me.ultCd <= 0 && ur > 0) $('ultCdText').textContent = ['', 'I', 'II', 'III'][ur];
+  const fb = $('formBtn');
+  if (live && me.cls === 'druid' && ur > 0) { fb.classList.remove('hidden'); $('formIcon').innerHTML = FORM_ICONS[me.form || 'wolf']; }
+  else fb.classList.add('hidden');
   setBtn($('skill2Btn'), 'skill2CdText', live && me.cls === 'paladin' && me.shield > 0, me.shieldCd, 25);
   if (!live) $('healPicker').classList.add('hidden');
 }
@@ -2582,6 +2726,20 @@ function render() {
     } else if (f.kind === 'revive') {
       ctx.strokeStyle = 'rgba(57, 255, 106, ' + k + ')'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.arc(x, y, f.r * (1.4 - k), 0, TAU); ctx.stroke();
+    } else if (f.kind === 'zap') {
+      ctx.strokeStyle = 'rgba(160, 255, 200, ' + k + ')'; ctx.lineWidth = 3; ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(x, y, f.r * (1.1 - k * 0.5), 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
+    } else if (f.kind === 'wave') {
+      ctx.strokeStyle = 'rgba(255, 59, 92, ' + k + ')'; ctx.shadowColor = '#ff3b5c'; ctx.shadowBlur = 14;
+      for (let i = 0; i < 3; i++) { ctx.lineWidth = 4 - i; ctx.beginPath(); ctx.arc(x, y, f.r * (1 - k * 0.8) * (1 - i * 0.18), 0, TAU); ctx.stroke(); }
+      ctx.shadowBlur = 0;
+    } else if (f.kind === 'roar') {
+      ctx.strokeStyle = 'rgba(168, 255, 191, ' + k + ')'; ctx.lineWidth = 3;
+      for (let i = 0; i < 4; i++) { const rr = f.r * (1 - k) * (0.4 + i * 0.2); ctx.beginPath(); ctx.arc(x, y, rr, -0.6 + i * 1.57, 0.6 + i * 1.57); ctx.stroke(); }
+    } else if (f.kind === 'sanct') {
+      ctx.fillStyle = 'rgba(255, 233, 168, ' + (0.18 * k) + ')'; ctx.strokeStyle = 'rgba(255, 233, 168, ' + k + ')'; ctx.lineWidth = 4;
+      ctx.shadowColor = '#ffe9a8'; ctx.shadowBlur = 20;
+      ctx.beginPath(); ctx.arc(x, y, f.r, 0, TAU); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
     } else if (f.kind === 'summon') {
       ctx.strokeStyle = 'rgba(157, 123, 255, ' + k + ')'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(x, y, f.r * (1 - k * 0.6), 0, TAU); ctx.stroke();
@@ -2626,16 +2784,29 @@ function render() {
       continue;
     }
     const [x, y] = S2(b.x, b.y);
-    ctx.save(); ctx.translate(x, y);
-    ctx.shadowColor = '#7dffb2'; ctx.shadowBlur = 14;
-    ctx.fillStyle = b.flash > 0 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(125, 255, 178, 0.35)';
-    ctx.strokeStyle = '#7dffb2'; ctx.lineWidth = 2.2;
-    ctx.beginPath(); ctx.arc(-10, -13, 6, 0, TAU); ctx.arc(10, -13, 6, 0, TAU); ctx.fill(); ctx.stroke();
-    ctx.beginPath(); ctx.ellipse(0, 0, 17, 15, 0, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.save(); ctx.translate(x, y); ctx.rotate((b.ang || 0) + Math.PI / 2);
+    const fur = b.flash > 0 ? '#ffffff' : '#7a4f2a', glow = '#ffb24a';
+    ctx.shadowColor = glow; ctx.shadowBlur = 14;
+    ctx.strokeStyle = glow; ctx.lineWidth = 2;
+    // paws
+    ctx.fillStyle = '#5a3a1e';
+    for (const [px, py] of [[-15, -6], [15, -6], [-14, 14], [14, 14]]) { ctx.beginPath(); ctx.arc(px, py, 5, 0, TAU); ctx.fill(); ctx.stroke(); }
+    // big body with a shoulder hump
+    ctx.fillStyle = fur;
+    ctx.beginPath(); ctx.ellipse(0, 6, 16, 20, 0, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#9a6a3a';
+    ctx.beginPath(); ctx.ellipse(0, -2, 11, 8, 0, 0, TAU); ctx.fill();
+    // head facing forward
+    ctx.fillStyle = fur;
+    ctx.beginPath(); ctx.arc(-8, -22, 4.5, 0, TAU); ctx.arc(8, -22, 4.5, 0, TAU); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(0, -16, 10, 0, TAU); ctx.fill(); ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#eafff3';
-    ctx.beginPath(); ctx.arc(-6, -3, 2.2, 0, TAU); ctx.arc(6, -3, 2.2, 0, TAU); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(0, 5, 5, 3.5, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#d9a46a';
+    ctx.beginPath(); ctx.ellipse(0, -10, 5, 4, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#1a0f08'; ctx.beginPath(); ctx.arc(0, -12, 1.8, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#ffe14a'; ctx.shadowColor = '#ffb24a'; ctx.shadowBlur = 6;
+    ctx.beginPath(); ctx.arc(-4, -18, 1.8, 0, TAU); ctx.arc(4, -18, 1.8, 0, TAU); ctx.fill();
+    ctx.shadowBlur = 0;
     ctx.restore();
     ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'; ctx.fillRect(x - 18, y - 28, 36, 4);
     ctx.fillStyle = '#39ff6a'; ctx.fillRect(x - 18, y - 28, 36 * Math.max(0, b.hp / b.maxHp), 4);
@@ -2672,7 +2843,7 @@ function render() {
       ctx.strokeStyle = CLASSES[q.cls].color; ctx.lineWidth = 2; ctx.shadowColor = CLASSES[q.cls].color; ctx.shadowBlur = 10;
       ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
       ctx.shadowBlur = 0;
-      drawHoly(x, y, q);
+      drawHoly(x, y, q); drawUltFx(x, y, q);
       drawOrb(ctx, x, y, PR, col);
       if (q.blades) for (let i = 0; i < q.blades; i++) {
         const a = q.bladeAng + i * TAU / q.blades;
@@ -2697,7 +2868,7 @@ function render() {
     ctx.strokeStyle = cc; ctx.lineWidth = 2; ctx.shadowColor = cc; ctx.shadowBlur = 12;
     ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
     ctx.shadowBlur = 0;
-    drawHoly(x, y, me);
+    drawHoly(x, y, me); drawUltFx(x, y, me);
     drawOrb(ctx, x, y, PR, skinCol());
     ctx.globalAlpha = 1;
     if (p.cls === 'warrior') {
@@ -2876,6 +3047,8 @@ window.addEventListener('keydown', e => {
   }
   if (state === S.PLAYING && (e.code === 'Space' || e.code === 'KeyE')) { e.preventDefault(); skill1(); return; }
   if (state === S.PLAYING && e.code === 'KeyR') { e.preventDefault(); skill2(); return; }
+  if (state === S.PLAYING && e.code === 'KeyQ') { e.preventDefault(); ultPress(); return; }
+  if (state === S.PLAYING && e.code === 'KeyF') { e.preventDefault(); formPress(); return; }
   if (e.code === 'Space' || e.code === 'Enter') {
     if ((state === S.START || state === S.OVER) && $('coopScreen').classList.contains('hidden') && !coop) { e.preventDefault(); startGame(); }
     else if (state === S.PAUSED) { e.preventDefault(); resumeGame(); }
@@ -2907,6 +3080,8 @@ $('shopCloseBtn').addEventListener('click', closeShop);
 $('shopModal').addEventListener('click', e => { if (e.target === $('shopModal')) closeShop(); });
 $('skillBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); skill1(); });
 $('skill2Btn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); skill2(); });
+$('ultBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); ultPress(); });
+$('formBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); formPress(); });
 $('leaderboard').addEventListener('click', openModal);
 document.querySelectorAll('.lb-open').forEach(b => b.addEventListener('click', openModal));
 $('lbCloseBtn').addEventListener('click', closeModal);
