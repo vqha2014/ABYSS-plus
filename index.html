@@ -334,7 +334,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 2.3</span>
+    <span class="version">Version 2.4</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -372,6 +372,7 @@ const UPGRADES = [
   { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
   { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 3, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
   { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 5, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
+  { id: 'h_knock', cls: 'hunter', name: 'Impact Bolts', max: 4, desc: 'Your bolts knock demons back. Each level pushes them farther.', apply: p => { p.w.knock = (p.w.knock || 0) + 170; } },
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
   { id: 'h_volley', cls: 'hunter', name: 'Arrow Rain', max: 5, desc: 'Every 3 seconds, arrows rain down on nearby demons.', apply: p => { p.volley++; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
@@ -1605,7 +1606,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.3';
+const GAME_VERSION = '2.4';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -1996,7 +1997,7 @@ function youFell() {
   shake = 24; Sound.sfx('die');
   hideSkills();
   $('levelScreen').classList.add('hidden');
-  $('coopBanner').textContent = 'You fell. A teammate can revive you by standing on you for 5 seconds.';
+  $('coopBanner').textContent = 'You fell. A teammate can revive you by standing on you for 3.5 seconds.';
   $('coopBanner').classList.remove('hidden');
 }
 function checkAllDead() {
@@ -2304,7 +2305,7 @@ function update(dt) {
     if (!q.dead || q.left) continue;
     const near = players.some(o => !o.dead && (o.x - q.x) ** 2 + (o.y - q.y) ** 2 < 45 * 45);
     q.revive = near ? (q.revive || 0) + dt : Math.max(0, (q.revive || 0) - dt * 0.5);
-    if (q.revive >= 5) revivePlayer(q);
+    if (q.revive >= 3.5) revivePlayer(q);
   }
   allBears = [];
   for (const pl of players) for (const b of pl._bears) allBears.push(b);
@@ -2570,7 +2571,8 @@ function updateWeapons(dt) {
         b.hit.push(e);
         const crit = Math.random() < w.crit;
         const sp = Math.hypot(b.vx, b.vy) || 1;
-        damageEnemy(e, w.dmg * (crit ? 2 : 1), b.vx / sp * 70, b.vy / sp * 70, 0);
+        const kb = 70 + (w.knock || 0);
+        damageEnemy(e, w.dmg * (crit ? 2 : 1), b.vx / sp * kb, b.vy / sp * kb, 0);
         if (b.pierce-- <= 0) { b.life = 0; break; }
       }
     }
@@ -2831,11 +2833,11 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, 45, 0, TAU); ctx.stroke();
       if (q.revive > 0) {
         ctx.strokeStyle = '#39ff6a'; ctx.lineWidth = 5; ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 12;
-        ctx.beginPath(); ctx.arc(x, y, 45, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, q.revive / 5)); ctx.stroke();
+        ctx.beginPath(); ctx.arc(x, y, 45, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, q.revive / 3.5)); ctx.stroke();
         ctx.shadowBlur = 0;
       }
       ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#b8ffd0';
-      ctx.fillText(q.revive > 0 ? 'Reviving ' + Math.ceil(5 - q.revive) + 's' : (q === me ? 'Wait for a teammate' : 'Stand here 5s to revive'), x, y + 62);
+      ctx.fillText(q.revive > 0 ? 'Reviving ' + Math.max(0, 3.5 - q.revive).toFixed(1) + 's' : (q === me ? 'Wait for a teammate' : 'Stand here 3.5s to revive'), x, y + 62);
     }
     for (const q of players) {
       if (q === me || q.dead) continue;
