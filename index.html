@@ -360,7 +360,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 2.8</span>
+    <span class="version">Version 2.9</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -1679,7 +1679,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.8';
+const GAME_VERSION = '2.9';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2762,7 +2762,7 @@ function updateWeapons(dt) {
     if (p.storm) {
       t.storm -= dt;
       if (t.storm <= 0) {
-        t.storm = Math.max(0.8, 2.4 - 0.25 * p.storm);
+        t.storm = Math.max(0.5, 1.6 - 0.2 * p.storm);
         // strikes hit hard and blast everything around the target
         const dmgS = 60 + 25 * p.storm, splash = 80 + 10 * p.storm;
         for (const e of pickRandom(enemiesNear(p.x, p.y, 650), p.storm + 1)) {
@@ -2778,7 +2778,8 @@ function updateWeapons(dt) {
       t.tornado -= dt;
       if (t.tornado <= 0) {
         t.tornado = Math.max(2.5, 6 - 0.6 * p.tornado);
-        for (let i = 0; i < 1 + Math.floor(p.tornado / 3); i++) {
+        // level 1-2: one tornado, level 3-4: two, level 5: three at once
+        for (let i = 0; i < (p.tornado >= 5 ? 3 : p.tornado >= 3 ? 2 : 1); i++) {
           const a = rand(0, TAU);
           tornados.push({ x: p.x, y: p.y, vx: Math.cos(a) * 140, vy: Math.sin(a) * 140, life: 3 + 0.3 * p.tornado, r: 85 + 12 * p.tornado, tick: 0, spin: 0 });
         }
@@ -2808,7 +2809,7 @@ function updateWeapons(dt) {
       tn.tick = 0.25;
       for (const e of enemiesNear(tn.x, tn.y, tn.r)) {
         const dx = tn.x - e.x, dy = tn.y - e.y, d = Math.hypot(dx, dy) || 1;
-        damageEnemy(e, 10 + 3 * p.tornado, dx / d * 120, dy / d * 120, 0);
+        damageEnemy(e, 18 + 6 * p.tornado, dx / d * 120, dy / d * 120, 0);
       }
     }
   }
