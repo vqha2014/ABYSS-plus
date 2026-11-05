@@ -191,6 +191,19 @@
   .coop-msg { min-height: 1.4em; color: var(--gold); }
   #coopBanner { position: absolute; top: 5.4rem; left: 50%; transform: translateX(-50%); z-index: 8; pointer-events: none; padding: 0.4rem 1rem; border-radius: 999px; background: rgba(5, 8, 22, 0.75); border: 1px solid rgba(255, 59, 92, 0.5); color: #ffb3c0; font-size: 0.8rem; letter-spacing: 0.08em; white-space: nowrap; }
   #leaveBtn { width: auto !important; padding: 0 0.9rem; border-radius: 999px !important; font-size: 0.75rem !important; letter-spacing: 0.1em; }
+  #introCard {
+    position: absolute; top: 5.4rem; left: 50%; transform: translateX(-50%); z-index: 15; pointer-events: none;
+    width: min(340px, 86vw); padding: 0.9rem 1rem; text-align: center; border-radius: 12px;
+    background: rgba(5, 8, 22, 0.88); border: 1px solid rgba(255, 213, 74, 0.5); box-shadow: 0 0 26px rgba(255, 213, 74, 0.25);
+  }
+  #introCard .ic-k { color: var(--gold); font-weight: 700; letter-spacing: 0.25em; font-size: 0.75rem; }
+  #introCard canvas { width: 96px; height: 96px; display: block; margin: 0.4rem auto; }
+  #introCard b { color: #fff; font-size: 1.15rem; letter-spacing: 0.08em; }
+  #introCard p { color: #b8c0d3; font-size: 0.82rem; line-height: 1.5; margin-top: 0.3rem; }
+  .mode-row { display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; margin-top: 1rem; }
+  .mode-btn { padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.22); background: transparent; color: #c9d1e3; font-family: inherit; font-size: 0.85rem; cursor: pointer; touch-action: manipulation; }
+  .mode-btn.on { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
+  .mode-btn.tb.on { border-color: var(--red); color: var(--red); box-shadow: 0 0 10px rgba(255, 59, 92, 0.3); }
   #footer {
     position: absolute; left: 0; right: 0; bottom: 0; z-index: 11; pointer-events: none;
     display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
@@ -233,7 +246,7 @@
       <input class="name-input" id="nameInput" type="text" maxlength="12" placeholder="Your name" autocomplete="off" spellcheck="false" aria-label="Your name">
       <div class="classes" id="classList"></div>
       <button class="btn" id="startBtn">Start</button>
-      <button class="btn btn-alt" id="coopBtn" style="margin-left:0.6rem">Co-op</button><br>
+      <button class="btn btn-alt" id="coopBtn" style="margin-left:0.6rem">Multiplayer</button><br>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
@@ -259,7 +272,7 @@
 
   <div id="overScreen" class="screen hidden">
     <div class="screen-content">
-      <div class="title small">You fell</div>
+      <div class="title small" id="overTitle">You fell</div>
       <div class="stats">
         <div><b id="oTime">0:00</b><span>TIME</span></div>
         <div><b id="oLvl">1</b><span>LEVEL</span></div>
@@ -315,15 +328,21 @@
 
   <div id="coopScreen" class="screen hidden">
     <div class="screen-content">
-      <div class="title small">Co-op</div>
-      <p class="info">Play with up to 3 friends. Everyone has to stay inside the ring, and XP is shared equally between all players. Your class is the one you picked on the main screen.</p>
-      <div id="coopMenu">
+      <div class="title small" id="mpTitle">Multiplayer</div>
+      <p class="info" id="mpInfo">Play with up to 3 friends. Your class is the one you picked on the main screen.</p>
+      <div id="mpChoice">
+        <button class="btn" id="pickCoop">Co-op</button>
+        <button class="btn btn-alt" id="pickVs" style="margin-left:0.6rem">Versus</button>
+      </div>
+      <div id="coopMenu" class="hidden">
         <button class="btn" id="createBtn">Create room</button>
         <input class="name-input code-input" id="codeInput" type="text" maxlength="4" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Room code">
         <button class="btn btn-alt" id="joinBtn">Join room</button>
       </div>
       <div id="lobby" class="hidden">
         <div class="code-box">ROOM CODE<b id="roomCode">----</b></div>
+        <div class="mode-row" id="modeRow"></div>
+        <div class="mode-row hidden" id="teamRow"><button class="mode-btn" data-team="A">Team A</button><button class="mode-btn tb" data-team="B">Team B</button></div>
         <ul class="roster" id="roster"></ul>
         <button class="btn" id="coopStartBtn">Start</button>
         <p class="info" id="lobbyNote"></p>
@@ -333,9 +352,15 @@
     </div>
   </div>
   <div id="coopBanner" class="hidden"></div>
+  <div id="introCard" class="hidden">
+    <div class="ic-k">NEW DEMON</div>
+    <canvas id="introCv" width="160" height="160"></canvas>
+    <b id="introName"></b>
+    <p id="introDesc"></p>
+  </div>
 
   <div id="footer">
-    <span class="version">Version 2.6</span>
+    <span class="version">Version 2.8</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -389,9 +414,9 @@ const UPGRADES = [
   { id: 'd_run', cls: 'druid', name: 'Wild Run', max: 5, desc: 'Wolves run 12% faster.', apply: p => { p.w.wspeed *= 1.12; } },
   { id: 'd_storm', cls: 'druid', name: 'Storm Call', max: 5, desc: 'Lightning strikes demons around you.', apply: p => { p.storm++; } },
   { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 5, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
-  { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 5, desc: 'Heal 1 more HP every second.', apply: p => { p.regen += 1; } },
+  { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 5, desc: 'Heal 2 more HP every second.', apply: p => { p.regen += 2; } },
   { id: 'd_bear', cls: 'druid', name: 'Spirit Bear', max: 3, desc: 'A bear follows you, draws demons onto itself and fights. It comes back 10 seconds after it falls.', apply: p => { p.bears++; } },
-  { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 5, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 104; } },
+  { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 5, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 160; } },
   { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 6, desc: 'Smite damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 5, desc: 'Smite 15% faster and its blast is 15% wider.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
   { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 5, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
@@ -412,7 +437,7 @@ const ETYPES = {
   splitter: { r: 16, hp: 40, speed: 68, dmg: 10, xp: 2, color: '#39ff6a', spikes: 8 },
   mini: { r: 8, hp: 10, speed: 120, dmg: 5, xp: 1, color: '#a8ffbf', spikes: 5 },
   necro: { r: 15, hp: 60, speed: 60, dmg: 8, xp: 6, color: '#9d7bff', spikes: 6 },
-  runner: { r: 9, hp: 9, speed: 150, dmg: 6, xp: 1, color: '#ff8a2a', spikes: 5 },
+  runner: { r: 9, hp: 9, speed: 115, dmg: 6, xp: 1, color: '#ff8a2a', spikes: 5 },
   brute: { r: 20, hp: 70, speed: 58, dmg: 16, xp: 4, color: '#b026ff', spikes: 9 },
   wisp: { r: 12, hp: 24, speed: 72, dmg: 8, xp: 3, color: '#4fd8ff', spikes: 6 },
   boss: { r: 44, hp: 900, speed: 52, dmg: 30, xp: 40, color: '#ff2a4d', spikes: 12 },
@@ -640,6 +665,10 @@ function flyStar(x, y) {
 }
 
 // Paladin visuals: the aura area and the golden immortality bubble
+function drawTeamRing(x, y, t) {
+  ctx.strokeStyle = t === 'B' ? 'rgba(255, 59, 92, 0.85)' : 'rgba(0, 240, 255, 0.85)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.ellipse(x, y + PR * 0.7, PR + 10, (PR + 10) * 0.45, 0, 0, TAU); ctx.stroke();
+}
 function drawUltFx(x, y, q) {
   if (!(q.ultT > 0)) return;
   const pulse = 0.6 + 0.4 * Math.sin(clock * 10);
@@ -926,9 +955,17 @@ let p = null, enemies = [], bullets = [], ebullets = [], gems = [], wolves = [],
 let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, clock = 0, shock = null, hudT = 0;
 // Co-op: every player has their own wolves, bears, bolts, tornados and grenades.
 // use(pl) points the shared names at that player's things so the weapon code works for anyone.
+let unlockIdx = 0, nextUnlock = 90, seenTypes = new Set(['imp']), intro = null;
 let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null;
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
-const RING = 380;
+const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
+const ringR = () => VS() ? 650 : 380;
+const MODES = { coop: 'Co-op', vs: 'Versus', '1v1': '1 vs 1', '2v2': '2 vs 2', '1v2': '1 vs 2' };
+let mpMode = 'coop';
+// e.g. "2 vs 1" from the actual teams
+const vsLabel = () => players.filter(q => q.team === 'A').length + ' vs ' + players.filter(q => q.team === 'B').length;
+const PVP_SCALE = 0.35;
+let enemiesReal = null;
 function use(pl) { p = pl; wolves = pl._wolves; bears = pl._bears; bullets = pl._bullets; tornados = pl._tornados; grenades = pl._grenades; }
 function unuse(pl) { pl._bullets = bullets; pl._tornados = tornados; pl._grenades = grenades; }
 const PR = 14;
@@ -947,7 +984,7 @@ function newPlayer(cls) {
   if (cls === 'hunter') pl.w = { cd: 0.5, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
   else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 16, range: 330, splash: 45 };
-  else { pl.w = { dmg: 9, wspeed: 240 }; pl.wolves = 2; }
+  else { pl.w = { dmg: 14, wspeed: 240 }; pl.wolves = 2; }
   return pl;
 }
 
@@ -955,6 +992,7 @@ function resetWorld() {
   enemies = []; ebullets = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
   nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null;
+  unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); if (intro) endIntro();
 }
 function startGame() {
   coop = null;
@@ -1065,6 +1103,7 @@ function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.dead) return;
   dmg *= (p && p.auraMul) || 1;
   if (p && p.cls === 'hunter' && p.ultT > 0) dmg *= p.ultMul;
+  if (e.pvp) { pvpHit(p, e.q, dmg); return; }
   e.hp -= dmg;
   e.flash = 0.1;
   if (kx || ky) { const k = e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
@@ -1142,13 +1181,27 @@ function gainXp(v, mul) {
   }
 }
 // XP is split equally between all players in the game
-function shareXp(v) {
-  const part = v / players.length;
+function shareXp(v, who) {
+  // co-op: everyone shares; versus: only the team of the player who picked it up
+  const pool = VS() && who ? players.filter(q => q.team === who.team) : players;
+  const part = v / pool.length;
   // Wisdom is shared: every player's XP bonus helps the whole team
   let teamMul = 1;
-  for (const pl of players) teamMul += Math.max(0, pl.xpMul - 1);
-  for (const pl of players) { if (pl.dead) continue; use(pl); gainXp(part, teamMul); unuse(pl); }
+  for (const pl of pool) teamMul += Math.max(0, pl.xpMul - 1);
+  for (const pl of pool) { if (pl.dead) continue; use(pl); gainXp(part, teamMul); unuse(pl); }
   use(me);
+}
+// versus: one player hits another (less damage than on demons)
+function pvpHit(att, q, dmg) {
+  if (!att || !q || att.team === q.team || q.dead || q.choosing || q.shieldT > 0 || state !== S.PLAYING) return;
+  q.pvpCd = q.pvpCd || {};
+  if ((q.pvpCd[att.id] || -1) > time) return;
+  q.pvpCd[att.id] = time + 0.2;
+  const d = Math.max(1, dmg * PVP_SCALE - q.armor);
+  q.hp -= d;
+  addText(q.x, q.y - 26, '-' + Math.round(d), '#ff9de9');
+  if (q === me) { shake = Math.max(shake, 6); Sound.sfx('hurt'); }
+  if (q.hp <= 0) { q.hp = 0; coopDeath(q); }
 }
 function hurtTarget(pl, d, src) { use(pl); hurtPlayer(d, src); unuse(pl); use(me); }
 function cardOf(id) { return id === 'heal' ? HEAL_CARD : UPGRADES.find(u => u.id === id); }
@@ -1224,7 +1277,7 @@ function groupCenter() {
   return n ? { x: x / n, y: y / n } : { x: me.x, y: me.y };
 }
 function spawnEnemy(type) {
-  const c = groupCenter(), a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60 + (coop ? RING * 0.5 : 0);
+  const c = groupCenter(), a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60 + (coop ? ringR() * 0.5 : 0);
   return spawnAt(type, c.x + Math.cos(a) * d, c.y + Math.sin(a) * d);
 }
 function spawnAt(type, x, y) {
@@ -1238,7 +1291,7 @@ function spawnAt(type, x, y) {
     atkCd: 0, dash: 0, wind: 0, dashT: rand(1, 3), dvx: 0, dvy: 0, sumT: rand(2, 4)
   };
   e.id = nextEid++;
-  enemies.push(e);
+  (enemiesReal || enemies).push(e);
   return e;
 }
 // Necromancer: raises 3 imps around itself
@@ -1256,7 +1309,15 @@ function updateCharger(e, dx, dy, d, dt) {
   if (e.dashT <= 0 && d < 380) { e.wind = 0.55; e.dashT = 3.2; return; }
   e.x += dx / d * e.speed * dt; e.y += dy / d * e.speed * dt;
 }
+const UNLOCK = ['runner', 'charger', 'brute', 'splitter', 'wisp', 'necro'];
+const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2 };
 function pickType() {
+  const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx)];
+  let r = Math.random() * allowed.reduce((a, k) => a + TYPE_WEIGHT[k], 0);
+  for (const k of allowed) { if ((r -= TYPE_WEIGHT[k]) < 0) return k; }
+  return 'imp';
+}
+function oldPickType2() {
   const pool = [['imp', 10]];
   if (time > 40) pool.push(['runner', 7]);
   if (time > 75) pool.push(['charger', 3]);
@@ -1399,8 +1460,8 @@ function decoSprite(d) {
     g.beginPath(); g.moveTo(0, -9 + d.v); g.lineTo(5, 5); g.lineTo(-5, 6); g.closePath(); g.fill(); g.stroke();
   });
 }
-function drawScenery(S2) {
-  const chs = chunksAround(p.x, p.y, Math.max(W, H) * 0.75);
+function drawScenery(S2, cam) {
+  const chs = chunksAround(cam.x, cam.y, Math.max(W, H) * 0.75);
   for (const ch of chs) for (const d of ch.deco) {
     const sp = decoSprite(d), [x, y] = S2(d.x, d.y);
     if (x < -sp.size || y < -sp.size || x > W + sp.size || y > H + sp.size) continue;
@@ -1450,7 +1511,7 @@ function castUlt(c) {
     const R = 220, dur = [0, 1.5, 2, 2.5][r];
     effects.push({ kind: 'sanct', x: c.x, y: c.y, r: R, life: 0.8, max: 0.8, owner: c });
     for (const q of players) {
-      if ((q.x - c.x) ** 2 + (q.y - c.y) ** 2 > R * R) continue;
+      if (q.team !== c.team || (q.x - c.x) ** 2 + (q.y - c.y) ** 2 > R * R) continue;
       if (q.dead && !q.left) revivePlayer(q);
       if (!q.dead) q.shieldT = Math.max(q.shieldT || 0, dur);
     }
@@ -1516,7 +1577,7 @@ function formPress() {
 const healCdOf = c => Math.max(6, 15 - 1.5 * ((c.ups && c.ups.p_heal) || 0));
 const SHIELD_TIMES = [1, 1.5, 2, 2.5];
 function castHeal(c, t) {
-  if (!c || c.cls !== 'paladin' || c.dead || c.healCd > 0 || !t || t.dead) return;
+  if (!c || c.cls !== 'paladin' || c.dead || c.healCd > 0 || !t || t.dead || t.team !== c.team) return;
   const amount = t.maxHp * c.healPct;
   t.hp = Math.min(t.maxHp, t.hp + amount);
   c.healCd = healCdOf(c);
@@ -1541,7 +1602,7 @@ function skill1() {
   if (!me || state !== S.PLAYING) return;
   if (me.cls === 'hunter') return;
   if (me.cls !== 'paladin' || me.dead || me.healCd > 0) return;
-  const alive = players.filter(q => !q.dead);
+  const alive = players.filter(q => !q.dead && q.team === me.team);
   if (!coop || alive.length < 2) { healRequest(me.id); return; }
   // co-op: choose who to heal
   const box = $('healPicker');
@@ -1585,10 +1646,10 @@ function explodeGrenade(x, y) {
 
 // ===== Druid bears: follow you, tank for you, revive after 10 seconds =====
 function updateBears(dt) {
-  while (bears.length < p.bears) bears.push({ x: p.x + rand(-30, 30), y: p.y + rand(-30, 30), hp: 260 * p.bearHp, maxHp: 260 * p.bearHp, dead: false, respawn: 0, atk: 0, ang: 0, flash: 0 });
+  while (bears.length < p.bears) bears.push({ x: p.x + rand(-30, 30), y: p.y + rand(-30, 30), hp: 400 * p.bearHp, maxHp: 400 * p.bearHp, dead: false, respawn: 0, atk: 0, ang: 0, flash: 0 });
   const threat = nearestEnemy(p.x, p.y, 260);
   bears.forEach((b, i) => {
-    b.maxHp = 260 * p.bearHp * (1 + time / 400);
+    b.maxHp = 400 * p.bearHp * (1 + time / 400);
     if (b.dead) {
       b.respawn -= dt;
       if (b.respawn <= 0) { b.dead = false; b.hp = b.maxHp; b.x = p.x + rand(-30, 30); b.y = p.y + rand(-30, 30); }
@@ -1618,7 +1679,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.6';
+const GAME_VERSION = '2.8';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -1754,12 +1815,28 @@ function reconnectAll() {
 }
 function skinInfo() { const c = skinCol(); return { m: c.main, l: c.light, d: c.dark }; }
 function skinFrom(s) { return s && HEX.test(s.m) && HEX.test(s.l) && HEX.test(s.d) ? { main: s.m, light: s.l, dark: s.d } : ORB_COLORS[0]; }
-function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0 }; }
+function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0, tm: (lobby && lobby.myTeam) || 'A' }; }
 function coopMsg(t) { $('coopMsg').textContent = t || ''; }
+const MP_INFO = {
+  menu: 'Play with up to 3 friends. Your class is the one you picked on the main screen.',
+  coop: 'Team up against the demons. Everyone stays inside the ring and XP is shared.',
+  vs: 'Fight each other while fighting the demons. With 2 players it is 1 vs 1; with 3 or 4, everyone picks Team A or Team B.'
+};
 function openCoop() {
   $('startScreen').classList.add('hidden'); showBoard(false);
   $('coopScreen').classList.remove('hidden');
-  $('coopMenu').classList.remove('hidden'); $('lobby').classList.add('hidden');
+  showMpChoice();
+}
+function showMpChoice() {
+  $('mpChoice').classList.remove('hidden'); $('coopMenu').classList.add('hidden'); $('lobby').classList.add('hidden');
+  $('mpTitle').textContent = 'Multiplayer'; $('mpInfo').textContent = MP_INFO.menu;
+  coopMsg('');
+}
+function chooseMp(mode) {
+  mpMode = mode;
+  $('mpChoice').classList.add('hidden'); $('coopMenu').classList.remove('hidden'); $('lobby').classList.add('hidden');
+  $('mpTitle').textContent = mode === 'vs' ? 'Versus' : 'Co-op';
+  $('mpInfo').textContent = MP_INFO[mode];
   coopMsg('');
 }
 function closeStreams(list) { (list || []).forEach(es => { try { es.close(); } catch (e) {} }); }
@@ -1770,9 +1847,9 @@ async function createRoom() {
     for (let j = 0; j < 4; j++) code += ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)];
     const exists = await api('/rooms/' + code + '/meta', 'GET');
     if (exists) continue;
-    const ok = await api('/rooms/' + code, 'PUT', { meta: { host: myId, started: false, at: { '.sv': 'timestamp' } }, players: { [myId]: myInfo() } });
+    const ok = await api('/rooms/' + code, 'PUT', { meta: { host: myId, started: false, mode: mpMode, at: { '.sv': 'timestamp' } }, players: { [myId]: myInfo() } });
     if (!ok) { coopMsg('Can’t reach the game server. Co-op works on the GitHub link (not inside Claude) and needs internet.'); return; }
-    enterLobby(code, 'host');
+    enterLobby(code, 'host', mpMode);
     return;
   }
   coopMsg('Please try again.');
@@ -1787,12 +1864,15 @@ async function joinRoom() {
   const roster = await api('/rooms/' + code + '/players', 'GET') || {};
   if (Object.keys(roster).length >= 4) { coopMsg('That room is full (4 players).'); return; }
   await api('/rooms/' + code + '/players/' + myId, 'PUT', myInfo());
-  enterLobby(code, 'guest');
+  enterLobby(code, 'guest', meta.mode || 'coop');
 }
-function enterLobby(code, role) {
-  lobby = { code, role, roster: {}, streams: [] };
+function enterLobby(code, role, mode) {
+  lobby = { code, role, roster: {}, streams: [], mode: mode || 'coop', myTeam: 'A' };
   coopMsg('');
+  $('mpChoice').classList.add('hidden');
   $('coopMenu').classList.add('hidden'); $('lobby').classList.remove('hidden');
+  $('mpTitle').textContent = lobby.mode === 'coop' ? 'Co-op' : 'Versus';
+  $('mpInfo').textContent = MP_INFO[lobby.mode === 'coop' ? 'coop' : 'vs'];
   $('roomCode').textContent = code;
   $('coopStartBtn').classList.toggle('hidden', role !== 'host');
   $('lobbyNote').textContent = role === 'host' ? 'Share this code with your friends. Press Start when everyone is in.' : 'Waiting for the host to start…';
@@ -1800,7 +1880,7 @@ function enterLobby(code, role) {
     if (coop && coop.role === 'host') { onPlayersInput(data || {}); return; }
     if (!lobby) return;
     lobby.roster = data || {};
-    renderRoster();
+    renderLobbyExtras();
   });
   lobby.streams.push(lobby.playersStream);
   lobby.streams.push(stream('/rooms/' + code + '/retry', d => { if (coop) { coop.retry = d || {}; updateRetryUI(); checkRetry(); } }));
@@ -1818,8 +1898,31 @@ function enterLobby(code, role) {
     }
     if (!lobby) return;
     if (!m) { leaveLobby('The host closed the room.'); return; }
+    if ((m.mode || 'coop') !== lobby.mode) { lobby.mode = m.mode || 'coop'; renderLobbyExtras(); }
     if (m.started && lobby.role === 'guest') startCoop('guest');
   }));
+}
+function renderLobbyExtras() {
+  if (!lobby) return;
+  const row = $('modeRow'), mode = lobby.mode || 'coop';
+  const count = Object.values(lobby.roster).filter(Boolean).length;
+  const vs = mode !== 'coop';
+  row.textContent = '';
+  const sp = document.createElement('span'); sp.className = 'info';
+  sp.textContent = !vs ? 'Mode: Co-op' : count <= 2 ? 'Mode: Versus · 2 players = 1 vs 1 (the host is Team A)' : 'Mode: Versus · pick your team';
+  row.appendChild(sp);
+  // teams only need picking when there are more than 2 players
+  $('teamRow').classList.toggle('hidden', !vs || count <= 2);
+  const mine = (lobby.roster[myId] && lobby.roster[myId].tm) || lobby.myTeam || 'A';
+  document.querySelectorAll('#teamRow .mode-btn').forEach(b => b.classList.toggle('on', b.dataset.team === mine));
+  renderRoster();
+}
+function pickTeam(t) {
+  if (!lobby) return;
+  lobby.myTeam = t;
+  if (lobby.roster[myId]) lobby.roster[myId].tm = t;
+  api('/rooms/' + lobby.code + '/players/' + myId, 'PATCH', { tm: t });
+  renderLobbyExtras();
 }
 function renderRoster() {
   const ul = $('roster');
@@ -1831,7 +1934,7 @@ function renderRoster() {
     const cl = CLASSES[v.c] ? v.c : 'hunter';
     dot.style.background = CLASSES[cl].color; dot.style.boxShadow = '0 0 8px ' + CLASSES[cl].color;
     const nm = document.createElement('span'); nm.textContent = String(v.n || 'Player').slice(0, 12) + (id === myId ? ' (you)' : '');
-    const tag = document.createElement('small'); tag.textContent = CLASSES[cl].name;
+    const tag = document.createElement('small'); tag.textContent = CLASSES[cl].name + ((lobby.mode || 'coop') !== 'coop' ? ' · Team ' + (v.tm || 'A') : '');
     li.append(dot, nm, tag);
     ul.appendChild(li);
   }
@@ -1848,7 +1951,23 @@ async function leaveLobby(text) {
 }
 async function hostStart() {
   if (!lobby) return;
-  await api('/rooms/' + lobby.code + '/meta', 'PATCH', { started: true });
+  const mode = lobby.mode || 'coop';
+  if (mode !== 'coop') {
+    const ids = Object.keys(lobby.roster).filter(id => lobby.roster[id]);
+    if (ids.length < 2) { $('lobbyNote').textContent = 'Versus needs at least 2 players.'; return; }
+    if (ids.length === 2) {
+      // 2 players: automatic 1 vs 1, host on Team A
+      for (const id of ids) {
+        const t = id === myId ? 'A' : 'B';
+        lobby.roster[id].tm = t;
+        await api('/rooms/' + lobby.code + '/players/' + id, 'PATCH', { tm: t });
+      }
+    } else {
+      const a = ids.filter(id => (lobby.roster[id].tm || 'A') === 'A').length, b = ids.length - a;
+      if (!a || !b) { $('lobbyNote').textContent = 'Both teams need at least one player. Now: Team A ' + a + ', Team B ' + b + '.'; return; }
+    }
+  }
+  await api('/rooms/' + lobby.code + '/meta', 'PATCH', { started: true, mode });
   startCoop('host');
 }
 
@@ -1860,16 +1979,19 @@ function startCoop(role, round) {
     pickSeq: 0, pick: null, gr: 0, shownOffer: null, pickedKey: null, emap: new Map(), others: new Map(),
     lastK: 0, lastBk: 0, hostT: 0, over: false, round: round || 0, retry: {}, paused: false, pausedBy: '', lastRoster: 1
   };
+  coop.mode = lobby.mode || 'coop';
+  const teamOf = v => coop.mode === 'coop' ? 'A' : ((v && v.tm) || 'A');
   lobby = null;
   resetWorld();
   me = newPlayer(selClass);
+  me.team = teamOf(roster[myId]);
   me.id = myId; me.name = (playerName || 'Player').slice(0, 12); me.skin = skinCol();
   players = [me];
   if (role === 'host') {
     for (const [id, v] of Object.entries(roster)) {
       if (id === myId || !v) continue;
       const q = newPlayer(CLASSES[v.c] ? v.c : 'hunter');
-      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true;
+      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true; q.team = teamOf(v);
       q.x = q.tx = rand(-50, 50); q.y = q.ty = rand(-50, 50); q.seen = performance.now();
       players.push(q);
     }
@@ -1890,6 +2012,7 @@ function startCoop(role, round) {
   updateHUD(true);
   Sound.unlock(); Sound.resume(); Sound.sfx('level');
   Sound.startMusic(); Sound.setTempo(116);
+  if (VS()) banner = { text: vsLabel().toUpperCase(), sub: 'Beat the other team. Demons attack everyone!', life: 3 };
 }
 
 // Host: read what the guests send (their position, skill picks, grenade presses)
@@ -1941,14 +2064,14 @@ function buildSnapshot() {
   for (const q of players) {
     pl[q.id] = {
       x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
-      d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
+      tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
       b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn), +(b.ang || 0).toFixed(2)])
     };
   }
   return {
-    rd: coop.round || 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
+    rd: coop.round || 0, md: coop.mode || 'coop', win: coop.winner || 0, in: intro ? { ty: intro.type, id: intro.eid } : 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
     e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
@@ -1999,6 +2122,43 @@ function revivePlayer(q) {
   effects.push({ kind: 'revive', x: q.x, y: q.y, r: 60, life: 0.8, max: 0.8, owner: q });
   if (q === me) { $('coopBanner').classList.add('hidden'); Sound.sfx('level'); }
 }
+// ===== New demon introduction: pause, show its card and look at it for 3 seconds =====
+const INTRO = {
+  runner: ['Runner', 'Small and quick. Weak alone, dangerous in packs.'],
+  charger: ['Charger', 'Stops and glows yellow, then dashes straight at you. Step aside!'],
+  brute: ['Brute', 'Big and slow with lots of HP. Hard to push back.'],
+  splitter: ['Splitter', 'When it dies it splits into two small minis.'],
+  wisp: ['Wisp', 'Keeps its distance and shoots blue orbs at you.'],
+  necro: ['Necromancer', 'Stays back and raises imps around itself.'],
+  boss: ['Abyss Boss', 'Comes every 2 minutes. Huge HP. Worth 5 stars.'],
+  king: ['Demon King', 'Comes every 5 minutes with a horde. Shoots rings of fire and calls imps. Worth 15 stars.']
+};
+function showIntroCard(type) {
+  const info = INTRO[type];
+  if (!info) return;
+  $('introName').textContent = info[0];
+  $('introDesc').textContent = info[1];
+  const c = $('introCv'), g = c.getContext('2d'), sp = sprites[type];
+  g.clearRect(0, 0, c.width, c.height);
+  if (sp) { const k = Math.min(c.width, c.height) * 0.92 / sp.size; g.drawImage(sp.c, (c.width - sp.size * k) / 2, (c.height - sp.size * k) / 2, sp.size * k, sp.size * k); }
+  $('introCard').classList.remove('hidden');
+}
+function startIntro(type, e) {
+  seenTypes.add(type);
+  intro = { type, eid: e.id, t: 3, ex: e.x, ey: e.y };
+  stick.active = false;
+  showIntroCard(type);
+}
+function endIntro() { intro = null; $('introCard').classList.add('hidden'); }
+// camera: normally on you; during an intro it glides to the new demon and back
+function camPos() {
+  if (!me) return { x: 0, y: 0 };
+  if (!intro) return { x: me.x, y: me.y };
+  const e = enemies.find(o => o.id === intro.eid);
+  if (e) { intro.ex = e.x; intro.ey = e.y; }
+  const k = Math.max(0, Math.min(1, (3 - intro.t) / 0.6, intro.t / 0.6)), sm = k * k * (3 - 2 * k);
+  return { x: me.x + (intro.ex - me.x) * sm, y: me.y + (intro.ey - me.y) * sm };
+}
 function showWait(on) {
   if (!me || me.dead) return;
   const b = $('coopBanner');
@@ -2014,6 +2174,19 @@ function youFell() {
 }
 function checkAllDead() {
   if (!coop || coop.role !== 'host' || coop.over) return;
+  if (VS()) {
+    // versus: a team loses when all its players are down
+    for (const tmn of ['A', 'B']) {
+      const mem = players.filter(q => q.team === tmn);
+      if (mem.length && mem.every(q => q.dead)) {
+        coop.over = true; coop.winner = tmn === 'A' ? 'B' : 'A';
+        api('/rooms/' + coop.code + '/state', 'PUT', buildSnapshot());
+        showCoopOver('');
+        return;
+      }
+    }
+    return;
+  }
   if (players.every(q => q.dead)) {
     coop.over = true;
     api('/rooms/' + coop.code + '/state', 'PUT', buildSnapshot());
@@ -2029,7 +2202,9 @@ function showCoopOver(note) {
   $('oKills').textContent = kills;
   const isBest = sec > (best[me.cls] || 0);
   if (isBest) { best[me.cls] = sec; try { localStorage.setItem('abyssPlusBest', JSON.stringify(best)); } catch (e) {} }
-  $('oBest').textContent = note || ('Co-op · ' + players.length + ' players · ' + (isBest ? 'new best for ' : 'best for ') + CLASSES[me.cls].name + ': ' + fmtTime(best[me.cls] || 0));
+  const vs = VS();
+  $('overTitle').textContent = vs && coop.winner ? (coop.winner === me.team ? 'Victory!' : 'Defeat') : 'You fell';
+  $('oBest').textContent = note || (vs ? 'Versus ' + vsLabel() + ' · Team ' + (coop.winner || '?') + ' wins' : ('Co-op · ' + players.length + ' players · ' + (isBest ? 'new best for ' : 'best for ') + CLASSES[me.cls].name + ': ' + fmtTime(best[me.cls] || 0)));
   $('hud').classList.add('hidden');
   hideSkills();
   $('leaveBtn').classList.add('hidden');
@@ -2037,7 +2212,7 @@ function showCoopOver(note) {
   $('levelScreen').classList.add('hidden');
   $('againBtn').classList.add('hidden');
   $('overScreen').classList.remove('hidden');
-  if (!note) submitScore(sec, 'co');
+  if (!note && !vs) submitScore(sec, 'co');
   $('classBtn').textContent = 'Leave room';
   if (!note && coop) { coop.retry = coop.retry || {}; $('retryBtn').classList.remove('hidden'); $('retryNote').classList.remove('hidden'); updateRetryUI(); }
   else { $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden'); }
@@ -2071,15 +2246,15 @@ function checkRetry() {
 async function hostRetry() {
   const round = (coop.round || 0) + 1, code = coop.code;
   const roster = {};
-  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark } };
+  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark }, tm: q.team };
   await api('/rooms/' + code + '/state', 'PUT', { rd: round, t: 0, over: 0 });
   await api('/rooms/' + code + '/retry', 'DELETE');
   await api('/rooms/' + code + '/meta', 'PATCH', { round, paused: false });
-  lobby = { code, role: 'host', roster, streams: coop.streams, playersStream: coop.playersStream };
+  lobby = { code, role: 'host', roster, streams: coop.streams, playersStream: coop.playersStream, mode: coop.mode };
   startCoop('host', round);
 }
 function startRound(role, round) {
-  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, playersStream: coop.playersStream, stateStream: coop.stateStream };
+  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, playersStream: coop.playersStream, stateStream: coop.stateStream, mode: coop.mode };
   startCoop(role, round);
 }
 function coopLost(text) {
@@ -2186,7 +2361,7 @@ function onSnapshot(s) {
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
       if (v.d && !me.dead) { me.dead = true; me.deathTime = v.dt || time; youFell(); }
       else if (!v.d && me.dead) { me.dead = false; me.deathTime = 0; $('coopBanner').classList.add('hidden'); Sound.sfx('level'); }
-      me.revive = v.rv || 0;
+      me.revive = v.rv || 0; me.team = v.tm || 'A';
       const key = Array.isArray(v.of) ? v.of.join() : '';
       if (key && key !== coop.shownOffer && key !== coop.pickedKey) { coop.shownOffer = key; openLevelUp(v.of.map(cardOf).filter(Boolean)); }
       continue;
@@ -2194,12 +2369,24 @@ function onSnapshot(s) {
     let q = coop.others.get(id);
     if (!q) { q = { id, x: v.x, y: v.y }; coop.others.set(id, q); }
     track(q, v.x, v.y); q.cls = CLASSES[v.c] ? v.c : 'hunter'; q.name = String(v.n || 'Player').slice(0, 12);
+    q.team = v.tm || 'A';
     q.hp = v.hp; q.maxHp = v.mh; q.shieldT = v.st || 0; q.aura = v.au || 0; q.ultT = v.ut || 0; q.form = v.fm || 'wolf';
     q.skin = skinFrom(v.s); q.dead = !!v.d; q.left = !!v.lf; q.revive = v.rv || 0; q.blades = v.bl || 0; q.bladeAng = v.ba || 0;
     list.push(q);
   }
   coop.wmap = nw; coop.bmap = nb;
   players = list;
+  coop.mode = s.md || coop.mode || 'coop'; coop.winner = s.win || 0;
+  // new demon introduction from the host
+  if (s.in && s.in.ty) {
+    if (!intro || intro.eid !== s.in.id) {
+      const e = coop.emap.get(s.in.id);
+      seenTypes.add(s.in.ty);
+      intro = { type: s.in.ty, eid: s.in.id, t: 3, ex: e ? e.x : me.x, ey: e ? e.y : me.y };
+      stick.active = false;
+      showIntroCard(s.in.ty);
+    }
+  } else if (intro) endIntro();
   coop.lastRoster = Object.values(s.p || {}).filter(v => v && !v.lf).length;
   showWait(coop.waiting && !coop.shownOffer);
   if (s.over) { coop.over = true; showCoopOver(''); }
@@ -2214,7 +2401,8 @@ function guestUpdate(dt) {
   else if (b.textContent.startsWith('Reconnecting')) b.classList.add('hidden');
   if (!s) return;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
-  if (!coop.waiting && !coop.paused) {
+  if (intro) intro.t = Math.max(0, intro.t - dt);
+  if (!coop.waiting && !coop.paused && !intro) {
     time += dt;
     nearObs = obstaclesNear(me.x, me.y, Math.max(W, H) * 0.9);
     moveLocal(dt);
@@ -2258,7 +2446,7 @@ function moveLocal(dt) {
   // Co-op ring: nobody can walk too far from the team
   if (coop) {
     const c = groupCenter(), dx = me.x - c.x, dy = me.y - c.y, d = Math.hypot(dx, dy);
-    if (d > RING) { me.x = c.x + dx / d * RING; me.y = c.y + dy / d * RING; }
+    if (d > ringR()) { me.x = c.x + dx / d * ringR(); me.y = c.y + dy / d * ringR(); }
   }
   if (ml > 0.1) { me.vx = mx; me.vy = my; }
 }
@@ -2283,17 +2471,29 @@ function update(dt) {
     if (coop.waiting || coop.paused || coop.over) { hudT -= dt; if (hudT <= 0) { hudT = 0.1; updateHUD(); } return; }
   }
 
+  // a new demon is on screen: everything waits while you look at it
+  if (intro) {
+    intro.t -= dt;
+    if (intro.t <= 0) endIntro();
+    hudT -= dt; if (hudT <= 0) { hudT = 0.1; updateHUD(); }
+    return;
+  }
   time += dt;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
+  if (time >= nextUnlock && unlockIdx < UNLOCK.length) {
+    const ty = UNLOCK[unlockIdx++];
+    nextUnlock += 90;
+    startIntro(ty, spawnEnemy(ty));
+  }
   const gc = groupCenter();
-  nearObs = obstaclesNear(gc.x, gc.y, Math.max(W, H) * 0.9 + (coop ? RING : 0));
+  nearObs = obstaclesNear(gc.x, gc.y, Math.max(W, H) * 0.9 + (coop ? ringR() : 0));
   moveLocal(dt);
 
   // Aura of Valor: paladins raise the damage of everyone near them (themselves too)
   for (const pl of players) pl.auraMul = 1;
   for (const pa of players) {
     if (pa.dead || !pa.aura) continue;
-    for (const pl of players) if (!pl.dead && (pl.x - pa.x) ** 2 + (pl.y - pa.y) ** 2 < 300 * 300) pl.auraMul += 0.08 * pa.aura;
+    for (const pl of players) if (!pl.dead && pl.team === pa.team && (pl.x - pa.x) ** 2 + (pl.y - pa.y) ** 2 < 300 * 300) pl.auraMul += 0.08 * pa.aura;
   }
   // every player's skills (host runs them for everyone)
   for (const pl of players) {
@@ -2302,6 +2502,13 @@ function update(dt) {
     pl.hp = Math.min(pl.maxHp, pl.hp + pl.regen * dt);
     pl.inv -= dt;
     use(pl);
+    // versus: the other team's players count as targets for this player's skills
+    let real = null, prox = null;
+    if (VS()) {
+      real = enemies; enemiesReal = real;
+      prox = players.filter(o => o.team !== pl.team && !o.dead).map(o => ({ pvp: true, q: o, x: o.x, y: o.y, r: PR, type: 'brute', hp: 1, maxHp: 1, kx: 0, ky: 0, stun: 0, flash: 0, bladeCd: 0, dead: false }));
+      enemies = real.concat(prox);
+    }
     updateWeapons(dt);
     p.grenadeCd = Math.max(0, p.grenadeCd - dt);
     p.healCd = Math.max(0, p.healCd - dt); p.shieldCd = Math.max(0, p.shieldCd - dt); p.shieldT = Math.max(0, p.shieldT - dt);
@@ -2309,14 +2516,16 @@ function update(dt) {
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
     grenades = grenades.filter(g => !g.done);
     if (p.cls === 'druid') updateBears(dt);
+    if (real) { for (const x of prox) x.dead = true; enemies = real; enemiesReal = null; }
     unuse(pl);
   }
   use(me);
   // revive: a living teammate stands on a fallen one for 10 seconds
   if (coop) for (const q of players) {
     if (!q.dead || q.left) continue;
-    const near = players.some(o => !o.dead && (o.x - q.x) ** 2 + (o.y - q.y) ** 2 < 45 * 45);
-    q.revive = near ? (q.revive || 0) + dt : Math.max(0, (q.revive || 0) - dt * 0.5);
+    // the 3.5 seconds add up: stepping out does not reset the progress
+    const near = players.some(o => !o.dead && o.team === q.team && (o.x - q.x) ** 2 + (o.y - q.y) ** 2 < 45 * 45);
+    if (near) q.revive = (q.revive || 0) + dt;
     if (q.revive >= 3.5) revivePlayer(q);
   }
   allBears = [];
@@ -2332,7 +2541,8 @@ function update(dt) {
   if (time >= nextSurge) {
     nextSurge += 300; surgeCount++;
     surgeLeft = 80; surgeT = 0;
-    spawnEnemy('king');
+    const kg = spawnEnemy('king');
+    if (!seenTypes.has('king')) startIntro('king', kg);
     banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 };
     Sound.sfx('boss'); Sound.setTempo(140); shake = 22;
   }
@@ -2344,7 +2554,8 @@ function update(dt) {
     }
   }
   if (time >= nextBoss) {
-    spawnEnemy('boss');
+    const bo = spawnEnemy('boss');
+    if (!seenTypes.has('boss')) startIntro('boss', bo);
     bossCount++;
     nextBoss += 120;
     Sound.sfx('boss');
@@ -2434,7 +2645,7 @@ function update(dt) {
     const dx = tp.x - g.x, dy = tp.y - g.y, d = Math.sqrt(bd) || 1, mag = tp.magnet;
     if (d < mag) g.pull = true;
     if (g.pull) { const sp = 380 + (mag - Math.min(d, mag)) * 4; g.x += dx / d * sp * dt; g.y += dy / d * sp * dt; }
-    if (d < PR + 6) { g.taken = true; shareXp(g.v); if (tp === me) Sound.sfx('gem'); }
+    if (d < PR + 6) { g.taken = true; shareXp(g.v, tp); if (tp === me) Sound.sfx('gem'); }
   }
   gems = gems.filter(g => !g.taken);
 
@@ -2649,6 +2860,7 @@ function die() {
   Sound.sfx('die');
 }
 function gameOver() {
+  $('overTitle').textContent = 'You fell';
   state = S.OVER;
   const isBest = time > (best[p.cls] || 0);
   if (isBest) { best[p.cls] = time; try { localStorage.setItem('abyssPlusBest', JSON.stringify(best)); } catch (e) {} }
@@ -2668,7 +2880,8 @@ function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = '#050816';
   ctx.fillRect(0, 0, W, H);
-  const cx = p ? p.x : clock * 30, cy = p ? p.y : clock * 12;
+  const cam = camPos();
+  const cx = p ? cam.x : clock * 30, cy = p ? cam.y : clock * 12;
   // floor grid
   const gs = 60, ox = -((cx % gs) + gs) % gs + W / 2 % gs, oy = -((cy % gs) + gs) % gs + H / 2 % gs;
   ctx.lineWidth = 1;
@@ -2690,8 +2903,8 @@ function render() {
 
   ctx.save();
   if (shake > 0.4) ctx.translate(rand(-shake, shake), rand(-shake, shake));
-  const S2 = (x, y) => [x - p.x + W / 2, y - p.y + H / 2];
-  drawScenery(S2);
+  const S2 = (x, y) => [x - cam.x + W / 2, y - cam.y + H / 2];
+  drawScenery(S2, cam);
 
   // gems
   for (const g of gems) {
@@ -2832,14 +3045,14 @@ function render() {
   // co-op: the ring and your teammates
   if (coop) {
     const c = groupCenter(), [rx, ry] = S2(c.x, c.y);
-    const edge = Math.hypot(me.x - c.x, me.y - c.y) / RING;
+    const edge = Math.hypot(me.x - c.x, me.y - c.y) / ringR();
     ctx.save();
     ctx.setLineDash([14, 10]);
     ctx.lineDashOffset = -clock * 30;
     ctx.strokeStyle = edge > 0.85 ? 'rgba(255, 59, 92, 0.85)' : 'rgba(0, 240, 255, 0.45)';
     ctx.lineWidth = edge > 0.85 ? 3 : 2;
     ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur = 12;
-    ctx.beginPath(); ctx.arc(rx, ry, RING + PR, 0, TAU); ctx.stroke();
+    ctx.beginPath(); ctx.arc(rx, ry, ringR() + PR, 0, TAU); ctx.stroke();
     ctx.restore();
     for (const q of players) {
       if (!q.dead || q.left) continue;
@@ -2858,6 +3071,7 @@ function render() {
     for (const q of players) {
       if (q === me || q.dead) continue;
       const [x, y] = S2(q.x, q.y), col = q.skin || ORB_COLORS[0];
+      if (VS()) drawTeamRing(x, y, q.team);
       ctx.strokeStyle = CLASSES[q.cls].color; ctx.lineWidth = 2; ctx.shadowColor = CLASSES[q.cls].color; ctx.shadowBlur = 10;
       ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
       ctx.shadowBlur = 0;
@@ -2870,7 +3084,7 @@ function render() {
         ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(5, 0); ctx.lineTo(0, 12); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
         ctx.restore();
       }
-      ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#dbe2f1';
+      ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = VS() ? (q.team === 'B' ? '#ff9db0' : '#9df6ff') : '#dbe2f1';
       ctx.fillText(q.name || 'Player', x, y - PR - 22);
       const hpK = Math.max(0, Math.min(1, (q.hp || 0) / (q.maxHp || 1)));
       ctx.fillStyle = 'rgba(0, 0, 0, 0.55)'; ctx.fillRect(x - 21, y - PR - 15, 42, 6);
@@ -2880,7 +3094,8 @@ function render() {
   }
   // player
   if (state !== S.DYING && state !== S.OVER && !me.dead) {
-    const [x, y] = [W / 2, H / 2];
+    const [x, y] = S2(me.x, me.y);
+    if (VS()) drawTeamRing(x, y, me.team);
     const cc = CLASSES[p.cls].color;
     if (p.inv > 0 && Math.floor(clock * 20) % 2) ctx.globalAlpha = 0.5;
     ctx.strokeStyle = cc; ctx.lineWidth = 2; ctx.shadowColor = cc; ctx.shadowBlur = 12;
@@ -3082,10 +3297,17 @@ $('coopBtn').addEventListener('click', openCoop);
 $('createBtn').addEventListener('click', createRoom);
 $('joinBtn').addEventListener('click', joinRoom);
 $('coopStartBtn').addEventListener('click', hostStart);
-$('coopBackBtn').addEventListener('click', () => { if (lobby) leaveLobby(''); $('coopScreen').classList.add('hidden'); backToStart(); });
+$('coopBackBtn').addEventListener('click', () => {
+  if (lobby) { leaveLobby(''); showMpChoice(); return; }
+  if (!$('coopMenu').classList.contains('hidden')) { showMpChoice(); return; }
+  $('coopScreen').classList.add('hidden'); backToStart();
+});
+$('pickCoop').addEventListener('click', () => chooseMp('coop'));
+$('pickVs').addEventListener('click', () => chooseMp('vs'));
 $('leaveBtn').addEventListener('click', leaveCoop);
 $('menuBtn').addEventListener('click', () => { closeShop(); if (coop) leaveCoop(); else { Sound.resume(); backToStart(); } });
 $('retryBtn').addEventListener('click', pressRetry);
+document.querySelectorAll('#teamRow .mode-btn').forEach(b => b.addEventListener('click', () => pickTeam(b.dataset.team)));
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); joinRoom(); } });
 window.addEventListener('online', () => { if (coop) reconnectAll(); });
 window.addEventListener('pagehide', () => { if (lobby && lobby.role === 'guest') api('/rooms/' + lobby.code + '/players/' + myId, 'DELETE'); });
