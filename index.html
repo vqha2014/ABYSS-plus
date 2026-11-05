@@ -252,6 +252,7 @@
       <button class="btn" id="resumeBtn">Resume</button>
       <div class="stars-line"><svg class="star-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0L13.2 10.8L24 12L13.2 13.2L12 24L10.8 13.2L0 12L10.8 10.8Z" fill="#cfe8ff"/><circle cx="12" cy="12" r="3.2" fill="#fff"/></svg> <span id="pauseStars">0</span> stars</div>
       <button class="btn btn-alt" id="shopBtn">Skins</button><br>
+      <button class="home" id="menuBtn">⌂ ABYSS menu</button>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
@@ -268,7 +269,7 @@
       <button class="btn" id="againBtn">Play again</button>
       <button class="btn hidden" id="retryBtn">Retry together</button>
       <p class="info hidden" id="retryNote"></p><br>
-      <button class="btn btn-alt" id="classBtn">Change class</button><br>
+      <button class="btn btn-alt" id="classBtn">ABYSS menu</button><br>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
@@ -334,7 +335,7 @@
   <div id="coopBanner" class="hidden"></div>
 
   <div id="footer">
-    <span class="version">Version 2.5</span>
+    <span class="version">Version 2.6</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -351,16 +352,16 @@ const fmtTime = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padSt
 
 // ===== Classes =====
 const CLASSES = {
-  hunter: { name: 'Hunter', color: '#ffd54a', hp: 80, speed: 175, armor: 0, regen: 0,
+  hunter: { name: 'Hunter', color: '#ffd54a', hp: 100, speed: 175, armor: 0, regen: 1,
     desc: 'Long-range bolts with very high damage. Keep your distance and pick them off.',
     icon: '<svg viewBox="0 0 24 24"><path d="M4 20L20 4M20 4H13M20 4V11M4 20l3-1M4 20l1-3"/></svg>' },
-  warrior: { name: 'Warrior', color: '#ff3b5c', hp: 150, speed: 140, armor: 1, regen: 0,
+  warrior: { name: 'Warrior', color: '#ff3b5c', hp: 150, speed: 140, armor: 1, regen: 1,
     desc: 'Tough and close-range. Starts slow, but grows into the strongest fighter late in the run.',
     icon: '<svg viewBox="0 0 24 24"><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6Z"/><path d="M12 8V15M9 11H15"/></svg>' },
-  druid: { name: 'Druid', color: '#39ff6a', hp: 100, speed: 162, armor: 0, regen: 0.6,
+  druid: { name: 'Druid', color: '#39ff6a', hp: 125, speed: 162, armor: 0, regen: 1,
     desc: 'Summons spirit wolves and calls down storms from nature.',
     icon: '<svg viewBox="0 0 24 24"><path d="M5 19C5 10 11 5 19 5C19 13 14 19 5 19Z"/><path d="M5 19L13 11"/></svg>' },
-  paladin: { name: 'Paladin', color: '#ffe9a8', hp: 120, speed: 155, armor: 1, regen: 0,
+  paladin: { name: 'Paladin', color: '#ffe9a8', hp: 120, speed: 155, armor: 1, regen: 1,
     desc: 'Holy knight. Heals the ally you choose, raises the team\u2019s damage and can become immortal for a moment.',
     icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.2"/><path d="M12 2.5V5M12 13V21.5M6 9H3M21 9H18M7.5 4.5L9.6 6.6M16.5 4.5L14.4 6.6"/></svg>' }
 };
@@ -388,7 +389,7 @@ const UPGRADES = [
   { id: 'd_run', cls: 'druid', name: 'Wild Run', max: 5, desc: 'Wolves run 12% faster.', apply: p => { p.w.wspeed *= 1.12; } },
   { id: 'd_storm', cls: 'druid', name: 'Storm Call', max: 5, desc: 'Lightning strikes demons around you.', apply: p => { p.storm++; } },
   { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 5, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
-  { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 5, desc: 'Heal 0.6 more HP every second.', apply: p => { p.regen += 0.6; } },
+  { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 5, desc: 'Heal 1 more HP every second.', apply: p => { p.regen += 1; } },
   { id: 'd_bear', cls: 'druid', name: 'Spirit Bear', max: 3, desc: 'A bear follows you, draws demons onto itself and fights. It comes back 10 seconds after it falls.', apply: p => { p.bears++; } },
   { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 5, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 104; } },
   { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 6, desc: 'Smite damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
@@ -400,7 +401,7 @@ const UPGRADES = [
   { id: 'g_speed', cls: 'all', name: 'Swift Feet', max: 5, desc: 'Move 10% faster.', apply: p => { p.speed *= 1.1; } },
   { id: 'g_hp', cls: 'all', name: 'Vitality', max: 5, desc: '+25 max HP and heal 25.', apply: p => { p.maxHp += 25; p.hp = Math.min(p.maxHp, p.hp + 25); } },
   { id: 'g_magnet', cls: 'all', name: 'Magnet', max: 4, desc: 'Collect XP from 40% farther away.', apply: p => { p.magnet *= 1.4; } },
-  { id: 'g_wisdom', cls: 'all', name: 'Wisdom', max: 5, desc: 'Gain 15% more XP.', apply: p => { p.xpMul += 0.15; } }
+  { id: 'g_wisdom', cls: 'all', name: 'Wisdom', max: 5, desc: 'Gain 15% more XP. In co-op the whole team gets this bonus.', apply: p => { p.xpMul += 0.15; } }
 ];
 const HEAL_CARD = { id: 'heal', cls: 'all', name: 'Healing Light', max: 0, desc: 'Restore 40% of your HP.', apply: p => { p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.4); } };
 
@@ -943,7 +944,7 @@ function newPlayer(cls) {
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
     t: { shot: 0.3, volley: 3, slam: 4, storm: 2, tornado: 4 }, bladeAng: 0, vx: 0, vy: 0
   };
-  if (cls === 'hunter') pl.w = { cd: 0.5, dmg: 14, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
+  if (cls === 'hunter') pl.w = { cd: 0.5, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
   else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 16, range: 330, splash: 45 };
   else { pl.w = { dmg: 9, wspeed: 240 }; pl.wolves = 2; }
@@ -1131,8 +1132,8 @@ function hurtBear(b, d) {
     }
   }
 }
-function gainXp(v) {
-  p.xp += v * p.xpMul;
+function gainXp(v, mul) {
+  p.xp += v * (mul || p.xpMul);
   while (p.xp >= p.xpNext) {
     p.xp -= p.xpNext;
     p.lvl++;
@@ -1143,7 +1144,10 @@ function gainXp(v) {
 // XP is split equally between all players in the game
 function shareXp(v) {
   const part = v / players.length;
-  for (const pl of players) { if (pl.dead) continue; use(pl); gainXp(part); unuse(pl); }
+  // Wisdom is shared: every player's XP bonus helps the whole team
+  let teamMul = 1;
+  for (const pl of players) teamMul += Math.max(0, pl.xpMul - 1);
+  for (const pl of players) { if (pl.dead) continue; use(pl); gainXp(part, teamMul); unuse(pl); }
   use(me);
 }
 function hurtTarget(pl, d, src) { use(pl); hurtPlayer(d, src); unuse(pl); use(me); }
@@ -1471,12 +1475,20 @@ function tickUlt(c, dt) {
       if (c === me) Sound.sfx('slam');
     }
   } else if (c.cls === 'druid') {
+    // bear form heals the druid and every bear: +2 HP per second for each ultimate rank
+    if (c.form === 'bear') {
+      const heal = 2 * c.ultR * dt;
+      c.hp = Math.min(c.maxHp, c.hp + heal);
+      for (const b of c._bears) if (!b.dead) b.hp = Math.min(b.maxHp, b.hp + heal);
+    }
     c.roarT -= dt;
     if (c.roarT <= 0) {
       // the roar scares demons away
-      c.roarT = 2.5;
-      effects.push({ kind: 'roar', x: c.x, y: c.y, r: 300, life: 0.6, max: 0.6, owner: c });
-      for (const e of enemiesNear(c.x, c.y, 300)) if (e.type !== 'boss' && e.type !== 'king') { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
+      // wolf form: green roar every 2.5 s; bear form: a bigger golden roar every 2 s
+      const bear = c.form === 'bear', Rr = bear ? 420 : 300;
+      c.roarT = bear ? 2 : 2.5;
+      effects.push({ kind: bear ? 'roarB' : 'roar', x: c.x, y: c.y, r: Rr, life: 0.6, max: 0.6, owner: c });
+      for (const e of enemiesNear(c.x, c.y, Rr)) if (e.type !== 'boss' && e.type !== 'king') { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
       if (c === me) Sound.sfx('boss');
     }
   }
@@ -1606,7 +1618,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '2.5';
+const GAME_VERSION = '2.6';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2086,7 +2098,7 @@ function leaveCoop() {
 }
 function backToStart() {
   if (coop) { leaveCoop(); return; }
-  $('classBtn').textContent = 'Change class';
+  $('classBtn').textContent = 'ABYSS menu';
   $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden');
   ['overScreen', 'levelScreen', 'pauseScreen', 'coopScreen'].forEach(id => $(id).classList.add('hidden'));
   $('hud').classList.add('hidden'); hideSkills(); $('leaveBtn').classList.add('hidden'); $('coopBanner').classList.add('hidden');
@@ -2106,7 +2118,7 @@ function guestSend(force) {
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -2735,6 +2747,10 @@ function render() {
       ctx.strokeStyle = 'rgba(255, 59, 92, ' + k + ')'; ctx.shadowColor = '#ff3b5c'; ctx.shadowBlur = 14;
       for (let i = 0; i < 3; i++) { ctx.lineWidth = 4 - i; ctx.beginPath(); ctx.arc(x, y, f.r * (1 - k * 0.8) * (1 - i * 0.18), 0, TAU); ctx.stroke(); }
       ctx.shadowBlur = 0;
+    } else if (f.kind === 'roarB') {
+      ctx.strokeStyle = 'rgba(255, 213, 74, ' + k + ')'; ctx.lineWidth = 5; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16;
+      for (let i = 0; i < 5; i++) { const rr = f.r * (1 - k) * (0.3 + i * 0.18); ctx.beginPath(); ctx.arc(x, y, rr, 0, TAU); ctx.stroke(); }
+      ctx.shadowBlur = 0;
     } else if (f.kind === 'roar') {
       ctx.strokeStyle = 'rgba(168, 255, 191, ' + k + ')'; ctx.lineWidth = 3;
       for (let i = 0; i < 4; i++) { const rr = f.r * (1 - k) * (0.4 + i * 0.2); ctx.beginPath(); ctx.arc(x, y, rr, -0.6 + i * 1.57, 0.6 + i * 1.57); ctx.stroke(); }
@@ -3068,6 +3084,7 @@ $('joinBtn').addEventListener('click', joinRoom);
 $('coopStartBtn').addEventListener('click', hostStart);
 $('coopBackBtn').addEventListener('click', () => { if (lobby) leaveLobby(''); $('coopScreen').classList.add('hidden'); backToStart(); });
 $('leaveBtn').addEventListener('click', leaveCoop);
+$('menuBtn').addEventListener('click', () => { closeShop(); if (coop) leaveCoop(); else { Sound.resume(); backToStart(); } });
 $('retryBtn').addEventListener('click', pressRetry);
 $('codeInput').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); joinRoom(); } });
 window.addEventListener('online', () => { if (coop) reconnectAll(); });
