@@ -360,7 +360,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 3.3</span>
+    <span class="version">Version 3.5</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -446,9 +446,98 @@ const ETYPES = {
   golem: { r: 24, hp: 260, speed: 45, dmg: 22, xp: 10, color: '#8f9bb3', spikes: 6 },
   bat: { r: 8, hp: 16, speed: 165, dmg: 6, xp: 1, color: '#c77dff', spikes: 3 },
   bomber: { r: 13, hp: 35, speed: 95, dmg: 4, xp: 3, color: '#ff6a00', spikes: 8 },
-  shade: { r: 12, hp: 50, speed: 80, dmg: 14, xp: 4, color: '#5a3dff', spikes: 5 }
+  shade: { r: 12, hp: 50, speed: 80, dmg: 14, xp: 4, color: '#5a3dff', spikes: 5 },
+  champ: { r: 64, hp: 9000, speed: 40, dmg: 45, xp: 250, color: '#ff8a2a', spikes: 0 }
 };
 const TYPE_IDX = Object.keys(ETYPES);
+// CHAMPION OF HELL: a face of black obsidian shards burning inside a ball of fire (every 15 minutes)
+function drawChampion(g, R, t) {
+  t = t || 0;
+  g.lineJoin = 'round'; g.lineCap = 'round';
+  // fire sphere
+  const sph = g.createRadialGradient(0, -R * 0.1, R * 0.2, 0, -R * 0.1, R * 1.75);
+  sph.addColorStop(0, 'rgba(255, 170, 60, 0.55)'); sph.addColorStop(0.55, 'rgba(220, 70, 20, 0.35)'); sph.addColorStop(1, 'rgba(120, 20, 10, 0)');
+  g.fillStyle = sph; g.beginPath(); g.arc(0, -R * 0.1, R * 1.75, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(255, 140, 60, 0.45)'; g.lineWidth = 3;
+  g.beginPath(); g.arc(0, -R * 0.1, R * 1.45, 0, TAU); g.stroke();
+  // flames: teardrop tongues rising around the head
+  const flame = (x, y, w, h, lean, c1, c2) => {
+    g.beginPath();
+    g.moveTo(x - w, y);
+    g.bezierCurveTo(x - w * 1.1, y - h * 0.45, x + lean - w * 0.35, y - h * 0.8, x + lean, y - h);
+    g.bezierCurveTo(x + lean + w * 0.35, y - h * 0.8, x + w * 1.1, y - h * 0.45, x + w, y);
+    g.quadraticCurveTo(x, y + w * 0.6, x - w, y);
+    const fg = g.createLinearGradient(x, y, x + lean, y - h);
+    fg.addColorStop(0, c1); fg.addColorStop(1, c2);
+    g.fillStyle = fg; g.fill();
+  };
+  g.shadowColor = '#ff8a2a'; g.shadowBlur = R * 0.35;
+  const sw = Math.sin(t * 6) * R * 0.05;
+  flame(0, -R * 0.2, R * 0.55, R * 1.5, sw, 'rgba(255, 120, 30, 0.9)', 'rgba(255, 220, 120, 0.85)');
+  // fire pouring straight down through the open jaw, ending in a straight line
+  const fc = g.createLinearGradient(0, -R * 0.1, 0, R * 0.72);
+  fc.addColorStop(0, 'rgba(255, 140, 40, 0.95)'); fc.addColorStop(1, 'rgba(255, 225, 130, 0.95)');
+  g.fillStyle = fc;
+  // fill the whole gap between the two jaw halves, ending in a straight line at the bottom
+  g.beginPath();
+  [[-0.26, -0.12], [0.26, -0.12], [0.22, 0.3], [0.15, 0.55], [0.1, 0.72], [-0.1, 0.72], [-0.15, 0.55], [-0.22, 0.3]]
+    .forEach(([x, y], i) => i ? g.lineTo(x * R, y * R) : g.moveTo(x * R, y * R));
+  g.closePath(); g.fill();
+  g.shadowBlur = 0;
+  // obsidian shards
+  const shard = pts => {
+    g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x * R, y * R) : g.moveTo(x * R, y * R)); g.closePath();
+    const sg = g.createLinearGradient(0, -R, 0, R);
+    sg.addColorStop(0, '#3a1d14'); sg.addColorStop(0.5, '#150b0a'); sg.addColorStop(1, '#2a120c');
+    g.fillStyle = sg; g.fill();
+    g.strokeStyle = 'rgba(255, 120, 40, 0.85)'; g.lineWidth = 2; g.stroke();
+  };
+  g.shadowColor = '#ff6a1a'; g.shadowBlur = R * 0.15;
+  // horns on both sides of the forehead
+  for (const s of [-1, 1]) {
+    g.beginPath();
+    g.moveTo(s * 0.14 * R, -0.62 * R);
+    g.quadraticCurveTo(s * 0.42 * R, -0.86 * R, s * 0.56 * R, -1.0 * R);    // goes out sideways...
+    g.quadraticCurveTo(s * 0.62 * R, -1.4 * R, s * 0.46 * R, -1.74 * R);    // ...then turns up at an angle, tip bending inward
+    g.quadraticCurveTo(s * 0.9 * R, -1.45 * R, s * 0.88 * R, -1.0 * R);
+    g.quadraticCurveTo(s * 0.86 * R, -0.68 * R, s * 0.42 * R, -0.5 * R);
+    g.closePath();
+    const hg = g.createLinearGradient(0, -1.5 * R, 0, -0.55 * R);
+    hg.addColorStop(0, '#5a2612'); hg.addColorStop(1, '#140a09');
+    g.fillStyle = hg; g.fill();
+    g.strokeStyle = 'rgba(255, 140, 50, 0.9)'; g.lineWidth = 2.2; g.stroke();
+  }
+  shard([[0, -1.25], [0.14, -0.55], [0, -0.25], [-0.14, -0.55]]);                 // central crest
+  for (const s of [-1, 1]) {
+    shard([[s * 0.18, -0.95], [s * 0.42, -0.45], [s * 0.2, -0.2], [s * 0.12, -0.5]]);   // inner crown blades
+    shard([[s * 0.55, -0.85], [s * 0.72, -0.25], [s * 0.42, -0.1], [s * 0.38, -0.42]]); // outer crown blades
+    shard([[s * 0.9, -0.55], [s * 0.85, 0.05], [s * 0.6, 0.1], [s * 0.62, -0.2]]);      // temple blades
+    shard([[s * 0.16, -0.12], [s * 0.66, 0.02], [s * 0.6, 0.38], [s * 0.2, 0.22]]);      // cheek plates
+    // smaller lower jaw: pointed at the top and at the bottom, open in the middle
+    shard([[s * 0.2, 0.08], [s * 0.3, 0.32], [s * 0.52, 0.38], [s * 0.48, 0.58], [s * 0.3, 0.7], [s * 0.19, 0.98],
+           [s * 0.14, 0.72], [s * 0.1, 0.52], [s * 0.15, 0.36]]);
+  }
+  g.shadowBlur = 0;
+  // burning eye slits
+  g.shadowColor = '#ffd54a'; g.shadowBlur = R * 0.3;
+  g.fillStyle = '#fff3b0';
+  for (const s of [-1, 1]) {
+    g.beginPath(); g.moveTo(s * 0.18 * R, -0.06 * R); g.lineTo(s * 0.55 * R, -0.18 * R); g.lineTo(s * 0.48 * R, -0.02 * R); g.closePath(); g.fill();
+  }
+  g.shadowBlur = 0;
+  // lava veins between the shards
+  g.strokeStyle = 'rgba(255, 190, 80, 0.8)'; g.lineWidth = 1.5;
+  g.beginPath();
+  g.moveTo(0, -0.22 * R); g.lineTo(0, 0.3 * R);
+  for (const s of [-1, 1]) { g.moveTo(s * 0.15 * R, 0.25 * R); g.lineTo(s * 0.45 * R, 0.36 * R); g.moveTo(s * 0.4 * R, -0.4 * R); g.lineTo(s * 0.55 * R, -0.3 * R); }
+  g.stroke();
+  // embers
+  g.fillStyle = '#ffd08a';
+  for (const [x, y, r] of [[-1.2, -0.9, 0.03], [1.1, -1.1, 0.025], [1.35, 0.1, 0.03], [-1.3, 0.4, 0.025], [0.5, -1.45, 0.02], [-0.6, -1.4, 0.02], [0.8, 1.0, 0.025]]) {
+    g.beginPath(); g.arc(x * R, y * R, r * R, 0, TAU); g.fill();
+  }
+}
+
 // The Demon King: a big black horned face (2D), glowing red
 function drawKing(g, R) {
   g.lineJoin = 'round'; g.lineCap = 'round';
@@ -529,7 +618,7 @@ function drawKing(g, R) {
 const sprites = {};
 function buildSprites() {
   for (const k in ETYPES) {
-    const t = ETYPES[k], pad = t.r * (k === 'king' ? 1.95 : 0.9), size = Math.ceil((t.r + pad) * 2);
+    const t = ETYPES[k], pad = t.r * (k === 'king' ? 1.95 : k === 'champ' ? 1.05 : 0.9), size = Math.ceil((t.r + pad) * 2);
     const c = document.createElement('canvas');
     c.width = Math.ceil(size * dpr); c.height = Math.ceil(size * dpr);
     const g = c.getContext('2d');
@@ -537,6 +626,7 @@ function buildSprites() {
     g.translate(size / 2, size / 2);
     g.beginPath();
     if (k === 'king') { drawKing(g, t.r); sprites[k] = { c, size }; continue; }
+    if (k === 'champ') { drawChampion(g, t.r, 0); sprites[k] = { c, size }; continue; }
     for (let i = 0; i < t.spikes * 2; i++) {
       const a = (i * Math.PI) / t.spikes - Math.PI / 2, rr = i % 2 ? t.r * 0.62 : t.r;
       i ? g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : g.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
@@ -961,7 +1051,7 @@ let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, c
 // Co-op: every player has their own wolves, bears, bolts, tornados and grenades.
 // use(pl) points the shared names at that player's things so the weapon code works for anyone.
 let unlockIdx = 0, nextUnlock = 90, seenTypes = new Set(['imp']), intro = null, introQueue = [];
-let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null;
+let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null, nextChamp = 900, champCount = 0, champsKilled = 0;
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
 const ringR = () => VS() ? 650 : 380;
@@ -986,7 +1076,7 @@ function newPlayer(cls) {
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
     t: { shot: 0.3, volley: 3, slam: 4, storm: 2, tornado: 4 }, bladeAng: 0, vx: 0, vy: 0
   };
-  if (cls === 'hunter') pl.w = { cd: 0.5, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
+  if (cls === 'hunter') pl.w = { cd: 0.3, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
   else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 16, range: 330, splash: 45 };
   else { pl.w = { dmg: 14, wspeed: 240 }; pl.wolves = 2; }
@@ -996,7 +1086,7 @@ function newPlayer(cls) {
 function resetWorld() {
   enemies = []; ebullets = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
-  nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null;
+  nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null; nextChamp = 900; champCount = 0; champsKilled = 0;
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
 }
 function startGame() {
@@ -1111,8 +1201,8 @@ function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.pvp) { pvpHit(p, e.q, dmg); return; }
   e.hp -= dmg;
   e.flash = 0.1;
-  if (kx || ky) { const k = e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : e.type === 'golem' ? 0.3 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
-  if (stun && e.type !== 'boss' && e.type !== 'king') e.stun = Math.max(e.stun, stun);
+  if (kx || ky) { const k = e.type === 'champ' ? 0.03 : e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : e.type === 'golem' ? 0.3 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
+  if (stun && e.type !== 'boss' && e.type !== 'king' && e.type !== 'champ') e.stun = Math.max(e.stun, stun);
   addText(e.x, e.y - e.r, Math.round(dmg), dmg >= 40 ? '#ffd54a' : '#ffffff');
   Sound.sfx('hit');
   if (e.hp <= 0) killEnemy(e);
@@ -1136,7 +1226,13 @@ function killEnemy(e) {
   }
   Sound.sfx('kill');
   const [sx, sy] = toScreen(e.x, e.y);
-  if (e.type === 'king') {
+  if (e.type === 'champ') {
+    champsKilled++;
+    Sound.sfx('level');
+    Sound.setTempo(Math.min(130, 116 + bossCount * 4));
+    shake = 24;
+    for (let i = 0; i < 25; i++) setTimeout(() => flyStar(sx, sy), i * 70);
+  } else if (e.type === 'king') {
     kingsKilled++;
     Sound.sfx('level');
     Sound.setTempo(Math.min(130, 116 + bossCount * 4));
@@ -1216,6 +1312,19 @@ function hurtTarget(pl, d, src) { use(pl); hurtPlayer(d, src); unuse(pl); use(me
 function cardOf(id) { return id === 'heal' ? HEAL_CARD : UPGRADES.find(u => u.id === id); }
 
 // ===== Level up =====
+// every skill is at max level: nothing left to choose
+function maxedOut(pl) {
+  return !UPGRADES.some(u => (u.cls === 'all' || u.cls === pl.cls) && (pl.ups[u.id] || 0) < u.max && (!u.req || u.req(pl)));
+}
+// then each level up picks Healing Light by itself, no card screen
+function autoHeal(pl) {
+  while (pl.pending > 0 && maxedOut(pl)) {
+    HEAL_CARD.apply(pl);
+    pl.pending--;
+    addText(pl.x, pl.y - 34, 'Healing Light', '#39ff6a');
+    effects.push({ kind: 'heal', x: pl.x, y: pl.y, r: 36, life: 0.8, max: 0.8, owner: pl });
+  }
+}
 function rollOptions() {
   const pool = UPGRADES.filter(u => (u.cls === 'all' || u.cls === p.cls) && (p.ups[u.id] || 0) < u.max && (!u.req || u.req(p)));
   pool.forEach(u => { u._k = Math.random() * (u.cls === 'all' ? 1 : 1.7); });
@@ -1292,7 +1401,7 @@ function spawnEnemy(type) {
 function spawnAt(type, x, y) {
   const t = ETYPES[type];
   // co-op: demons get a little tougher for each extra player (+20% HP each)
-  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : 1) * (coop ? 1 + 0.2 * (players.length - 1) : 1);
+  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : type === 'champ' ? 1 + (champCount - 1) * 0.6 : 1) * (coop ? 1 + 0.2 * (players.length - 1) : 1);
   const e = {
     type, x, y, r: t.r, hp: t.hp * mult, maxHp: t.hp * mult,
     speed: t.speed * (1 + Math.min(0.35, time / 600)), dmg: t.dmg * (1 + time / 300), kx: 0, ky: 0, stun: 0, flash: 0,
@@ -1559,7 +1668,7 @@ function tickUlt(c, dt) {
       const bear = c.form === 'bear', Rr = bear ? 420 : 300;
       c.roarT = bear ? 2 : 2.5;
       effects.push({ kind: bear ? 'roarB' : 'roar', x: c.x, y: c.y, r: Rr, life: 0.6, max: 0.6, owner: c });
-      for (const e of enemiesNear(c.x, c.y, Rr)) if (e.type !== 'boss' && e.type !== 'king') { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
+      for (const e of enemiesNear(c.x, c.y, Rr)) if (e.type !== 'boss' && e.type !== 'king' && e.type !== 'champ') { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
       if (c === me) Sound.sfx('boss');
     }
   }
@@ -1690,7 +1799,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '3.3';
+const GAME_VERSION = '3.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2054,6 +2163,8 @@ function hostTick(dt) {
   // skill choices: the game keeps running, the player is protected while choosing
   for (const q of players) {
     if (q.dead || q.pending <= 0 || q.offer) continue;
+    autoHeal(q);
+    if (q.pending <= 0) continue;
     use(q); q.offer = rollOptions().map(u => u.id); q.choosing = true; unuse(q); use(me);
   }
   if (me.offer && coop.shownOffer !== me.offer.join()) { coop.shownOffer = me.offer.join(); openLevelUp(me.offer.map(cardOf)); }
@@ -2082,8 +2193,8 @@ function buildSnapshot() {
     };
   }
   return {
-    rd: coop.round || 0, md: coop.mode || 'coop', win: coop.winner || 0, in: intro ? { ty: intro.type, id: intro.eid } : 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
-    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0)]),
+    rd: coop.round || 0, md: coop.mode || 'coop', win: coop.winner || 0, in: intro ? { ty: intro.type, id: intro.eid } : 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, ck: champsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
+    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.king ? 1 : 0]),
@@ -2128,6 +2239,20 @@ function glide(o, dt) {
   const k = Math.min(1, dt * 14);
   o.x += (o.ax + o.vx * age - o.x) * k; o.y += (o.ay + o.vy * age - o.y) * k;
 }
+function champBurst(e) {
+  // two rings of fire in every direction
+  for (let ring = 0; ring < 2; ring++) {
+    const n = 20, sp = 270 - ring * 70;
+    for (let i = 0; i < n; i++) {
+      const a = i * TAU / n + ring * (Math.PI / n);
+      ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 5, dmg: 30 * (1 + time / 300), king: true });
+    }
+  }
+  effects.push({ kind: 'blast', x: e.x, y: e.y, r: 220, life: 0.5, max: 0.5 });
+  for (let i = 0; i < 40; i++) { const a = rand(0, TAU), s2 = rand(3, 10); particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * s2, vy: Math.sin(a) * s2, size: rand(3, 8), life: 1, decay: 0.02, color: i % 2 ? '#ffd54a' : '#ff6a1a' }); }
+  shake = Math.max(shake, 18);
+  Sound.sfx('boom');
+}
 function revivePlayer(q) {
   q.dead = false; q.revive = 0; q.hp = q.maxHp * 0.4; q.inv = 2; q.deathTime = 0;
   effects.push({ kind: 'revive', x: q.x, y: q.y, r: 60, life: 0.8, max: 0.8, owner: q });
@@ -2146,7 +2271,8 @@ const INTRO = {
   golem: ['Stone Golem', 'Very slow, very tough. Shrugs off most pushes.'],
   bat: ['Abyss Bat', 'Tiny and fast, flies in zig-zags. Hard to hit.'],
   bomber: ['Bomber', 'Runs at you and explodes when it gets close. Kill it from afar!'],
-  shade: ['Shade', 'Every few seconds it blinks forward toward you.']
+  shade: ['Shade', 'Every few seconds it blinks forward toward you.'],
+  champ: ['CHAMPION OF HELL', 'Every 15 minutes. Throws fireballs from afar, then gathers its power and bursts into a storm of fire in every direction. Worth 25 stars.']
 };
 function showIntroCard(type) {
   const info = INTRO[type];
@@ -2314,7 +2440,7 @@ function guestSend(force) {
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -2328,6 +2454,8 @@ function onSnapshot(s) {
   coop.lastBk = s.bk || 0;
   if ((s.kk || 0) > (coop.lastKk || 0)) { for (let i = 0; i < 15; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 90); }
   coop.lastKk = s.kk || 0;
+  if ((s.ck || 0) > (coop.lastCk || 0)) { for (let i = 0; i < 25; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 70); }
+  coop.lastCk = s.ck || 0;
   if ((s.sv || 0) > (coop.lastSv || 0)) { banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 }; Sound.sfx('boss'); Sound.setTempo(140); shake = 22; }
   coop.lastSv = s.sv || 0;
   coop.waiting = !!s.wait;
@@ -2338,7 +2466,7 @@ function onSnapshot(s) {
     if (!type) continue;
     let e = coop.emap.get(id);
     if (!e) e = { id, type, x, y, r: ETYPES[type].r, maxHp: 100, wob: rand(0, TAU) };
-    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0;
+    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0;
     nm.set(id, e);
   }
   coop.emap = nm;
@@ -2435,7 +2563,7 @@ function guestUpdate(dt) {
     const da = Math.atan2(Math.sin(w.ta - w.ang), Math.cos(w.ta - w.ang)); w.ang += da * k;
   }
   for (const b of bears) if (!b.dead) glide(b, dt);
-  for (const e of enemies) { glide(e, dt); e.flash -= dt; }
+  for (const e of enemies) { glide(e, dt); e.flash -= dt; if (e.charging > 0) e.charging = Math.max(0.01, e.charging - dt); }
   for (const q of coop.others.values()) glide(q, dt);
   for (const b of bullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
   for (const b of ebullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
@@ -2567,6 +2695,13 @@ function update(dt) {
     banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 };
     Sound.sfx('boss'); Sound.setTempo(140); shake = 22;
   }
+  if (time >= nextChamp) {
+    nextChamp += 900; champCount++;
+    const ch = spawnEnemy('champ');
+    if (!seenTypes.has('champ')) startIntro('champ', ch);
+    banner = { text: 'CHAMPION OF HELL', sub: 'The ruler of the Abyss has arrived', life: 3.5 };
+    Sound.sfx('boss'); Sound.setTempo(146); shake = 24;
+  }
   if (surgeLeft > 0) {
     surgeT -= dt;
     if (surgeT <= 0) {
@@ -2594,7 +2729,7 @@ function update(dt) {
     if (!tp) continue;
     let dx = tp.x - e.x, dy = tp.y - e.y;
     let d = Math.hypot(dx, dy) || 1;
-    if (d > far && e.type !== 'boss' && e.type !== 'king') {
+    if (d > far && e.type !== 'boss' && e.type !== 'king' && e.type !== 'champ') {
       const a = Math.atan2(tp.vy || rand(-1, 1), tp.vx || rand(-1, 1)) + rand(-0.8, 0.8), rr = Math.hypot(W, H) / 2 + 40;
       e.x = tp.x + Math.cos(a) * rr; e.y = tp.y + Math.sin(a) * rr;
       continue;
@@ -2621,6 +2756,7 @@ function update(dt) {
       let sp = e.speed;
       if (!tb && e.type === 'wisp' && d < 240) sp = -e.speed * 0.6;
       if (!tb && e.type === 'necro' && d < 300) sp = -e.speed * 0.6;
+      if (e.type === 'champ') sp = e.charging > 0 ? 0 : d < 320 ? -e.speed * 0.6 : sp;
       if (tb && md < e.r + 14) sp = 0;
       e.x += mvx / md * sp * dt; e.y += mvy / md * sp * dt;
     }
@@ -2635,6 +2771,25 @@ function update(dt) {
         e.shootT = 4;
         for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + rand(0, 0.2); ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 170, vy: Math.sin(a) * 170, life: 4, dmg: 14 * (1 + time / 300), king: true }); }
         effects.push({ kind: 'summon', x: e.x, y: e.y, r: 120, life: 0.6, max: 0.6 });
+      }
+    }
+    if (e.type === 'champ') {
+      e.chargeCd = (e.chargeCd === undefined ? 6 : e.chargeCd) - dt;
+      if (e.charging > 0) {
+        // gathering power: it stands still, shrinks and glows, then bursts
+        e.charging -= dt;
+        if (e.charging <= 0) champBurst(e);
+      } else if (e.chargeCd <= 0 && d < 700) {
+        e.charging = 2; e.chargeCd = 9;
+        effects.push({ kind: 'charge', x: e.x, y: e.y, r: 520, life: 2, max: 2 });
+        Sound.sfx('summon');
+      } else {
+        e.shootT -= dt;
+        if (e.shootT <= 0 && d < 650) {
+          e.shootT = 1.6;
+          const base = Math.atan2(dy, dx);
+          for (let i = -1; i <= 1; i++) { const a = base + i * 0.18; ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 230, vy: Math.sin(a) * 230, life: 4, dmg: 18 * (1 + time / 300), king: true }); }
+        }
       }
     }
     // new demons
@@ -2693,7 +2848,7 @@ function update(dt) {
   effects = effects.filter(f => f.life > 0);
   enemies = enemies.filter(e => !e.dead);
 
-  if (!coop && me.pending > 0 && state === S.PLAYING) openLevelUp(rollOptions());
+  if (!coop && me.pending > 0 && state === S.PLAYING) { autoHeal(me); if (me.pending > 0) openLevelUp(rollOptions()); }
   hudT -= dt;
   if (hudT <= 0) { hudT = 0.1; updateHUD(); }
 }
@@ -3015,6 +3170,12 @@ function render() {
       ctx.strokeStyle = 'rgba(255, 59, 92, ' + k + ')'; ctx.shadowColor = '#ff3b5c'; ctx.shadowBlur = 14;
       for (let i = 0; i < 3; i++) { ctx.lineWidth = 4 - i; ctx.beginPath(); ctx.arc(x, y, f.r * (1 - k * 0.8) * (1 - i * 0.18), 0, TAU); ctx.stroke(); }
       ctx.shadowBlur = 0;
+    } else if (f.kind === 'charge') {
+      // warning: the Champion is about to burst
+      ctx.save(); ctx.setLineDash([16, 12]); ctx.lineDashOffset = clock * 60;
+      ctx.strokeStyle = 'rgba(255, 70, 40, ' + (0.4 + 0.5 * Math.abs(Math.sin(clock * 8))) + ')'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, f.r * (0.3 + 0.7 * (1 - k)), 0, TAU); ctx.stroke();
+      ctx.restore();
     } else if (f.kind === 'quake') {
       // cracks spreading out of the ground and a dust ring
       ctx.strokeStyle = 'rgba(214, 150, 70, ' + k + ')'; ctx.lineWidth = 3; ctx.shadowColor = '#c8873a'; ctx.shadowBlur = 10;
@@ -3055,7 +3216,12 @@ function render() {
     const sp = sprites[e.type];
     if (x < -sp.size || y < -sp.size || x > W + sp.size || y > H + sp.size) continue;
     const bob = Math.sin(clock * 6 + e.wob) * 1.5;
-    ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
+    if (e.charging > 0) {
+      const prog = 1 - e.charging / 2, sc = 1 - 0.18 * prog;
+      ctx.fillStyle = 'rgba(255, 140, 40, ' + (0.15 + 0.35 * prog) + ')';
+      ctx.beginPath(); ctx.arc(x, y, e.r * (1.6 - 0.5 * prog) + Math.sin(clock * 30) * 4, 0, TAU); ctx.fill();
+      ctx.drawImage(sp.c, x - sp.size * sc / 2, y - sp.size * sc / 2, sp.size * sc, sp.size * sc);
+    } else ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
     if (e.flash > 0) { ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.8, 0, TAU); ctx.fill(); }
     if (e.wind > 0) { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.5 + 0.5 * Math.sin(clock * 30)) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 6, 0, TAU); ctx.stroke(); }
     if (e.stun > 0) { ctx.strokeStyle = 'rgba(255, 213, 74, 0.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y - e.r - 4, 5, clock * 8, clock * 8 + 4); ctx.stroke(); }
@@ -3266,7 +3432,7 @@ function render() {
   ctx.globalAlpha = 1;
   ctx.restore();
   // Demon King health bar and the 5-minute announcement
-  const king = enemies.find(e => e.type === 'king' && !e.dead);
+  const king = enemies.find(e => e.type === 'champ' && !e.dead) || enemies.find(e => e.type === 'king' && !e.dead);
   if (king) {
     const bw = Math.min(420, W * 0.7), bx = (W - bw) / 2, by = 76;
     ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; ctx.fillRect(bx - 2, by - 2, bw + 4, 14);
@@ -3274,7 +3440,7 @@ function render() {
     ctx.fillRect(bx, by, bw * Math.max(0, king.hp / king.maxHp), 10);
     ctx.shadowBlur = 0;
     ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd0a0';
-    ctx.fillText('DEMON KING', W / 2, by + 26);
+    ctx.fillText(king.type === 'champ' ? 'CHAMPION OF HELL' : 'DEMON KING', W / 2, by + 26);
   }
   if (banner) {
     const a = Math.min(1, banner.life, (3.5 - banner.life) * 3);
