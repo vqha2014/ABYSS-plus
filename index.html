@@ -360,7 +360,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 3.1</span>
+    <span class="version">Version 3.2</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -426,7 +426,7 @@ const UPGRADES = [
   { id: 'p_judge', cls: 'paladin', name: 'Judgement', max: 5, desc: 'Every few seconds a holy blast around you hurts, pushes and stuns demons.', apply: p => { p.judge++; } },
   { id: 'g_speed', cls: 'all', name: 'Swift Feet', max: 5, desc: 'Move 10% faster.', apply: p => { p.speed *= 1.1; } },
   { id: 'g_hp', cls: 'all', name: 'Vitality', max: 5, desc: '+25 max HP and heal 25.', apply: p => { p.maxHp += 25; p.hp = Math.min(p.maxHp, p.hp + 25); } },
-  { id: 'g_magnet', cls: 'all', name: 'Magnet', max: 4, desc: 'Collect XP from 40% farther away.', apply: p => { p.magnet *= 1.4; } },
+  { id: 'g_might', cls: 'all', name: 'Might', max: 5, desc: 'All your attacks and skills deal 10% more damage.', apply: p => { p.might += 0.1; } },
   { id: 'g_wisdom', cls: 'all', name: 'Wisdom', max: 5, desc: 'Gain 15% more XP. In co-op the whole team gets this bonus.', apply: p => { p.xpMul += 0.15; } }
 ];
 const HEAL_CARD = { id: 'heal', cls: 'all', name: 'Healing Light', max: 0, desc: 'Restore 40% of your HP.', apply: p => { p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.4); } };
@@ -442,7 +442,11 @@ const ETYPES = {
   brute: { r: 20, hp: 70, speed: 58, dmg: 16, xp: 4, color: '#b026ff', spikes: 9 },
   wisp: { r: 12, hp: 24, speed: 72, dmg: 8, xp: 3, color: '#4fd8ff', spikes: 6 },
   boss: { r: 44, hp: 900, speed: 52, dmg: 30, xp: 40, color: '#ff2a4d', spikes: 12 },
-  king: { r: 62, hp: 3600, speed: 44, dmg: 40, xp: 120, color: '#ff7a1a', spikes: 0 }
+  king: { r: 62, hp: 3600, speed: 44, dmg: 40, xp: 120, color: '#ff7a1a', spikes: 0 },
+  golem: { r: 24, hp: 260, speed: 45, dmg: 22, xp: 10, color: '#8f9bb3', spikes: 6 },
+  bat: { r: 8, hp: 16, speed: 165, dmg: 6, xp: 1, color: '#c77dff', spikes: 3 },
+  bomber: { r: 13, hp: 35, speed: 95, dmg: 4, xp: 3, color: '#ff6a00', spikes: 8 },
+  shade: { r: 12, hp: 50, speed: 80, dmg: 14, xp: 4, color: '#5a3dff', spikes: 5 }
 };
 const TYPE_IDX = Object.keys(ETYPES);
 // The Demon King: a big black horned face (2D), glowing red
@@ -956,7 +960,7 @@ let p = null, enemies = [], bullets = [], ebullets = [], gems = [], wolves = [],
 let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, clock = 0, shock = null, hudT = 0;
 // Co-op: every player has their own wolves, bears, bolts, tornados and grenades.
 // use(pl) points the shared names at that player's things so the weapon code works for anyone.
-let unlockIdx = 0, nextUnlock = 90, seenTypes = new Set(['imp']), intro = null;
+let unlockIdx = 0, nextUnlock = 90, seenTypes = new Set(['imp']), intro = null, introQueue = [];
 let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null;
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
@@ -976,7 +980,7 @@ function newPlayer(cls) {
   const pl = {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 5, inv: 0, ups: {}, volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
-    thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0,
+    thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1,
     healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
     ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
@@ -993,7 +997,7 @@ function resetWorld() {
   enemies = []; ebullets = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
   nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null;
-  unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); if (intro) endIntro();
+  unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
 }
 function startGame() {
   coop = null;
@@ -1102,12 +1106,12 @@ function addText(x, y, s, col) {
 
 function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.dead) return;
-  dmg *= (p && p.auraMul) || 1;
+  dmg *= ((p && p.auraMul) || 1) * ((p && p.might) || 1);
   if (p && p.cls === 'hunter' && p.ultT > 0) dmg *= p.ultMul;
   if (e.pvp) { pvpHit(p, e.q, dmg); return; }
   e.hp -= dmg;
   e.flash = 0.1;
-  if (kx || ky) { const k = e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
+  if (kx || ky) { const k = e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : e.type === 'golem' ? 0.3 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
   if (stun && e.type !== 'boss' && e.type !== 'king') e.stun = Math.max(e.stun, stun);
   addText(e.x, e.y - e.r, Math.round(dmg), dmg >= 40 ? '#ffd54a' : '#ffffff');
   Sound.sfx('hit');
@@ -1125,8 +1129,8 @@ function killEnemy(e) {
     const a = rand(0, TAU), s = rand(1, e.type === 'boss' ? 8 : 4);
     particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, size: rand(2, 4.5), life: 1, decay: rand(0.025, 0.045), color: t.color });
   }
-  if (gems.length < 350) gems.push({ x: e.x, y: e.y, v: t.xp, pull: false });
-  else gems[Math.floor(Math.random() * gems.length)].v += t.xp;
+  // XP goes straight to the player (or team) who made the kill, no pickup needed
+  shareXp(t.xp, p);
   if (e.type === 'splitter') {
     for (let i = 0; i < 2; i++) { const m = spawnAt('mini', e.x + rand(-10, 10), e.y + rand(-10, 10)); m.kx = rand(-220, 220); m.ky = rand(-220, 220); }
   }
@@ -1190,8 +1194,10 @@ function shareXp(v, who) {
   // Wisdom is shared: every player's XP bonus helps the whole team
   let teamMul = 1;
   for (const pl of pool) teamMul += Math.max(0, pl.xpMul - 1);
-  for (const pl of pool) { if (pl.dead) continue; use(pl); gainXp(part, teamMul); unuse(pl); }
-  use(me);
+  // only switch who "p" is, so a skill that is running keeps its own wolves, bolts and so on
+  const prev = p;
+  for (const pl of pool) { if (pl.dead) continue; p = pl; gainXp(part, teamMul); }
+  p = prev;
 }
 // versus: one player hits another (less damage than on demons)
 function pvpHit(att, q, dmg) {
@@ -1312,10 +1318,11 @@ function updateCharger(e, dx, dy, d, dt) {
   if (e.dashT <= 0 && d < 380) { e.wind = 0.55; e.dashT = 3.2; return; }
   e.x += dx / d * e.speed * dt; e.y += dy / d * e.speed * dt;
 }
-const UNLOCK = ['runner', 'charger', 'brute', 'splitter', 'wisp', 'necro'];
-const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2 };
+// when each demon type first appears (seconds); after 11:30 a new one every 3 minutes
+const UNLOCK = [['runner', 90], ['charger', 180], ['brute', 300], ['wisp', 420], ['splitter', 540], ['necro', 690], ['golem', 870], ['bat', 1050], ['bomber', 1230], ['shade', 1410]];
+const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2 };
 function pickType() {
-  const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx)];
+  const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx).map(u => u[0])];
   let r = Math.random() * allowed.reduce((a, k) => a + TYPE_WEIGHT[k], 0);
   for (const k of allowed) { if ((r -= TYPE_WEIGHT[k]) < 0) return k; }
   return 'imp';
@@ -1683,7 +1690,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '3.1';
+const GAME_VERSION = '3.2';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2135,7 +2142,11 @@ const INTRO = {
   wisp: ['Wisp', 'Keeps its distance and shoots blue orbs at you.'],
   necro: ['Necromancer', 'Stays back and raises imps around itself.'],
   boss: ['Abyss Boss', 'Comes every 2 minutes. Huge HP. Worth 5 stars.'],
-  king: ['Demon King', 'Comes every 5 minutes with a horde. Shoots rings of fire and calls imps. Worth 15 stars.']
+  king: ['Demon King', 'Comes every 5 minutes with a horde. Shoots rings of fire and calls imps. Worth 15 stars.'],
+  golem: ['Stone Golem', 'Very slow, very tough. Shrugs off most pushes.'],
+  bat: ['Abyss Bat', 'Tiny and fast, flies in zig-zags. Hard to hit.'],
+  bomber: ['Bomber', 'Runs at you and explodes when it gets close. Kill it from afar!'],
+  shade: ['Shade', 'Every few seconds it blinks forward toward you.']
 };
 function showIntroCard(type) {
   const info = INTRO[type];
@@ -2149,11 +2160,17 @@ function showIntroCard(type) {
 }
 function startIntro(type, e) {
   seenTypes.add(type);
+  // two new demons at the same moment (e.g. Brute and the Demon King at 5:00): show them one after the other
+  if (intro) { introQueue.push([type, e]); return; }
   intro = { type, eid: e.id, t: 3, ex: e.x, ey: e.y };
   stick.active = false;
   showIntroCard(type);
 }
-function endIntro() { intro = null; $('introCard').classList.add('hidden'); }
+function endIntro() {
+  intro = null; $('introCard').classList.add('hidden');
+  const nx = introQueue.shift();
+  if (nx) startIntro(nx[0], nx[1]);
+}
 // camera: normally on you; during an intro it glides to the new demon and back
 function camPos() {
   if (!me) return { x: 0, y: 0 };
@@ -2484,9 +2501,8 @@ function update(dt) {
   }
   time += dt;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
-  if (time >= nextUnlock && unlockIdx < UNLOCK.length) {
-    const ty = UNLOCK[unlockIdx++];
-    nextUnlock += 90;
+  if (unlockIdx < UNLOCK.length && time >= UNLOCK[unlockIdx][1]) {
+    const ty = UNLOCK[unlockIdx++][0];
     startIntro(ty, spawnEnemy(ty));
   }
   const gc = groupCenter();
@@ -2620,6 +2636,25 @@ function update(dt) {
         for (let i = 0; i < 16; i++) { const a = i * TAU / 16 + rand(0, 0.2); ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 170, vy: Math.sin(a) * 170, life: 4, dmg: 14 * (1 + time / 300), king: true }); }
         effects.push({ kind: 'summon', x: e.x, y: e.y, r: 120, life: 0.6, max: 0.6 });
       }
+    }
+    // new demons
+    if (e.type === 'bat' && !(e.stun > 0)) { const zz = Math.sin(clock * 9 + e.wob) * e.speed * 0.8; e.x += -dy / d * zz * dt; e.y += dx / d * zz * dt; }
+    if (e.type === 'shade') {
+      e.sumT -= dt;
+      if (e.sumT <= 0 && d > 90 && d < 600) {
+        e.sumT = 4;
+        effects.push({ kind: 'summon', x: e.x, y: e.y, r: 30, life: 0.4, max: 0.4 });
+        const jump = Math.min(130, d - 60);
+        e.x += dx / d * jump; e.y += dy / d * jump;
+        effects.push({ kind: 'summon', x: e.x, y: e.y, r: 30, life: 0.4, max: 0.4 });
+      }
+    }
+    if (e.type === 'bomber' && d < 55) {
+      e.dead = true;
+      effects.push({ kind: 'blast', x: e.x, y: e.y, r: 95, life: 0.5, max: 0.5 });
+      for (const pl of players) if (!pl.dead && (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2 < 95 * 95) hurtTarget(pl, 26 * (1 + time / 300), null);
+      Sound.sfx('boom');
+      continue;
     }
     e.x += e.kx * dt; e.y += e.ky * dt;
     pushOut(e, e.r * 0.8, e.speed * dt * 0.7);
