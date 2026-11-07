@@ -360,7 +360,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 3.5</span>
+    <span class="version">Version 3.6</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -393,14 +393,17 @@ const CLASSES = {
 
 // ===== Skills =====
 const UPGRADES = [
-  { id: 'h_dmg', cls: 'hunter', name: 'Sharp Bolts', max: 5, desc: 'Bolt damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
-  { id: 'h_rate', cls: 'hunter', name: 'Quick Draw', max: 5, desc: 'Shoot 15% faster.', apply: p => { p.w.cd *= 0.85; } },
-  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
-  { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 3, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
-  { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 5, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
-  { id: 'h_knock', cls: 'hunter', name: 'Impact Bolts', max: 4, desc: 'Your bolts knock demons back. Each level pushes them farther.', apply: p => { p.w.knock = (p.w.knock || 0) + 170; } },
-  { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 3, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
-  { id: 'h_volley', cls: 'hunter', name: 'Arrow Rain', max: 5, desc: 'Every 3 seconds, arrows rain down on nearby demons.', apply: p => { p.volley++; } },
+  { id: 'h_dmg', cls: 'hunter', name: 'Sharp Bolts', max: 8, desc: 'Bolt damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
+  { id: 'h_rate', cls: 'hunter', name: 'Quick Draw', max: 8, desc: 'Shoot 15% faster.', apply: p => { p.w.cd = Math.max(0.09, p.w.cd * 0.85); } },
+  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 8, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
+  { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 8, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
+  { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 8, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
+  { id: 'h_knock', cls: 'hunter', name: 'Impact Bolts', max: 8, desc: 'Your bolts knock demons back. Each level pushes them farther.', apply: p => { p.w.knock = (p.w.knock || 0) + 170; } },
+  { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 8, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
+  { id: 'h_explode', cls: 'hunter', name: 'Explosive Arrows', max: 8, desc: 'Bolts explode when they hit, hurting every demon around the target.', apply: p => { p.explode++; } },
+  { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
+  { id: 'h_poison', cls: 'hunter', name: 'Poison Arrows', max: 8, desc: 'Bolts poison demons: they keep losing HP for 3 seconds.', apply: p => { p.poison++; } },
+  { id: 'h_volley', cls: 'hunter', name: 'Arrow Rain', max: 8, desc: 'Every 3 seconds, arrows rain down on nearby demons.', apply: p => { p.volley++; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
   { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
@@ -409,21 +412,21 @@ const UPGRADES = [
   { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 8, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
   { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 5, desc: 'Every demon you kill heals 0.2% of your max HP per level.', apply: p => { p.blood++; } },
   { id: 'w_thorns', cls: 'warrior', name: 'Thorn Armor', max: 8, desc: 'Demons that hit you take the damage back, and more.', apply: p => { p.thorns++; } },
-  { id: 'd_wolf', cls: 'druid', name: 'Pack Call', max: 4, desc: 'Summon one more spirit wolf.', apply: p => { p.wolves++; } },
-  { id: 'd_fang', cls: 'druid', name: 'Sharp Fangs', max: 5, desc: 'Wolf damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
-  { id: 'd_run', cls: 'druid', name: 'Wild Run', max: 5, desc: 'Wolves run 12% faster.', apply: p => { p.w.wspeed *= 1.12; } },
-  { id: 'd_storm', cls: 'druid', name: 'Storm Call', max: 5, desc: 'Lightning strikes demons around you.', apply: p => { p.storm++; } },
-  { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 5, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
-  { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 5, desc: 'Heal 2 more HP every second.', apply: p => { p.regen += 2; } },
-  { id: 'd_quake', cls: 'druid', name: 'Earthquake', max: 5, desc: 'Every few seconds the ground cracks around you: damages and stuns every demon nearby.', apply: p => { p.quake++; } },
-  { id: 'd_bear', cls: 'druid', name: 'Spirit Bear', max: 3, desc: 'A bear follows you, draws demons onto itself and fights. It comes back 10 seconds after it falls.', apply: p => { p.bears++; } },
-  { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 5, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 160; } },
-  { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 6, desc: 'Smite damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
-  { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 5, desc: 'Smite 15% faster and its blast is 15% wider.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
-  { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 5, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
-  { id: 'p_heal', cls: 'paladin', name: 'Greater Heal', max: 4, desc: 'Heal restores 8% more HP and comes back 1.5 s sooner.', apply: p => { p.healPct += 0.08; } },
-  { id: 'p_shield', cls: 'paladin', name: 'Divine Shield', max: 4, desc: 'Active skill (button or R): become immortal for 1 / 1.5 / 2 / 2.5 seconds.', apply: p => { p.shield++; } },
-  { id: 'p_judge', cls: 'paladin', name: 'Judgement', max: 5, desc: 'Every few seconds a holy blast around you hurts, pushes and stuns demons.', apply: p => { p.judge++; } },
+  { id: 'd_wolf', cls: 'druid', name: 'Pack Call', max: 8, desc: 'Summon one more spirit wolf.', apply: p => { p.wolves++; } },
+  { id: 'd_fang', cls: 'druid', name: 'Sharp Fangs', max: 8, desc: 'Wolf damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
+  { id: 'd_run', cls: 'druid', name: 'Wild Run', max: 8, desc: 'Wolves run 12% faster.', apply: p => { p.w.wspeed *= 1.12; } },
+  { id: 'd_storm', cls: 'druid', name: 'Storm Call', max: 8, desc: 'Lightning strikes demons around you.', apply: p => { p.storm++; } },
+  { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 8, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
+  { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 8, desc: 'Heal 2 more HP every second.', apply: p => { p.regen += 2; } },
+  { id: 'd_quake', cls: 'druid', name: 'Earthquake', max: 8, desc: 'Every few seconds the ground cracks around you: damages and stuns every demon nearby.', apply: p => { p.quake++; } },
+  { id: 'd_bear', cls: 'druid', name: 'Spirit Bear', max: 8, desc: 'A bear follows you, draws demons onto itself and fights. It comes back 10 seconds after it falls.', apply: p => { p.bears++; } },
+  { id: 'd_bearhp', cls: 'druid', name: 'Thick Fur', max: 8, desc: 'Your bears get 40% more HP.', req: p => p.bears > 0, apply: p => { p.bearHp += 0.4; for (const b of bears) if (!b.dead) b.hp += 160; } },
+  { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 8, desc: 'Smite damage +30%.', apply: p => { p.w.dmg *= 1.3; } },
+  { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 8, desc: 'Smite 15% faster and 15% wider. Levels 3 and 6 add one more smite target.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
+  { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 8, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
+  { id: 'p_heal', cls: 'paladin', name: 'Greater Heal', max: 8, desc: 'Heal restores 8% more HP and comes back 1.5 s sooner.', apply: p => { p.healPct += 0.08; } },
+  { id: 'p_shield', cls: 'paladin', name: 'Divine Shield', max: 8, desc: 'Active skill (button or R): become immortal for 1 / 1.5 / 2 / 2.5 seconds.', apply: p => { p.shield++; } },
+  { id: 'p_judge', cls: 'paladin', name: 'Judgement', max: 8, desc: 'Every few seconds a holy blast around you hurts, pushes and stuns demons.', apply: p => { p.judge++; } },
   { id: 'g_speed', cls: 'all', name: 'Swift Feet', max: 5, desc: 'Move 10% faster.', apply: p => { p.speed *= 1.1; } },
   { id: 'g_hp', cls: 'all', name: 'Vitality', max: 5, desc: '+25 max HP and heal 25.', apply: p => { p.maxHp += 25; p.hp = Math.min(p.maxHp, p.hp + 25); } },
   { id: 'g_might', cls: 'all', name: 'Might', max: 5, desc: 'All your attacks and skills deal 10% more damage.', apply: p => { p.might += 0.1; } },
@@ -1070,7 +1073,7 @@ function newPlayer(cls) {
   const pl = {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 5, inv: 0, ups: {}, volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
-    thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1,
+    thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1, explode: 0, chain: 0, poison: 0,
     healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
     ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
@@ -1078,7 +1081,7 @@ function newPlayer(cls) {
   };
   if (cls === 'hunter') pl.w = { cd: 0.3, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
-  else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 16, range: 330, splash: 45 };
+  else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 22, range: 340, splash: 60 };
   else { pl.w = { dmg: 14, wspeed: 240 }; pl.wolves = 2; }
   return pl;
 }
@@ -1307,6 +1310,29 @@ function pvpHit(att, q, dmg) {
   addText(q.x, q.y - 26, '-' + Math.round(d), '#ff9de9');
   if (q === me) { shake = Math.max(shake, 6); Sound.sfx('hurt'); }
   if (q.hp <= 0) { q.hp = 0; coopDeath(q); }
+}
+// Hunter bolt extras: explosion, poison, chain lightning
+function hunterOnHit(e, dmg) {
+  if (!p || e.pvp) return;
+  const ex = e.x, ey = e.y;
+  if (p.explode) {
+    const R = 45 + 8 * p.explode;
+    effects.push({ kind: 'blast', x: ex, y: ey, r: R, life: 0.25, max: 0.25 });
+    for (const o of enemiesNear(ex, ey, R)) if (o !== e) damageEnemy(o, dmg * (0.3 + 0.06 * p.explode), 0, 0, 0);
+  }
+  if (p.poison && !e.dead) { e.psn = Math.max(e.psn || 0, dmg * 0.15 * p.poison); e.psnT = 3; e.psnOwner = p; }
+  if (p.chain && Math.random() < 0.25 + 0.05 * p.chain) {
+    let cur = { x: ex, y: ey };
+    const hit = [e];
+    for (let j = 0; j < 2 + Math.floor(p.chain / 2); j++) {
+      let nx = null, bd = 170 * 170;
+      for (const o of enemies) { if (o.dead || o.pvp || hit.includes(o)) continue; const dd = (o.x - cur.x) ** 2 + (o.y - cur.y) ** 2; if (dd < bd) { bd = dd; nx = o; } }
+      if (!nx) break;
+      effects.push({ kind: 'chainseg', x: cur.x, y: cur.y, r: nx.x, seed: nx.y, life: 0.25, max: 0.25 });
+      hit.push(nx); cur = { x: nx.x, y: nx.y };
+      damageEnemy(nx, dmg * 0.6, 0, 0, 0);
+    }
+  }
 }
 function hurtTarget(pl, d, src) { use(pl); hurtPlayer(d, src); unuse(pl); use(me); }
 function cardOf(id) { return id === 'heal' ? HEAL_CARD : UPGRADES.find(u => u.id === id); }
@@ -1594,7 +1620,7 @@ function drawScenery(S2, cam) {
 }
 
 // ===== Hunter active skill: grenade (every 10 seconds) =====
-const grenadeCdOf = pl => [12, 11, 10][Math.max(0, Math.min(2, pl.grenade - 1))];
+const grenadeCdOf = pl => Math.max(5, 13 - Math.max(1, pl.grenade));
 function throwGrenade() {
   if (coop && coop.role === 'guest') { if (me.grenade > 0 && me.grenadeCd <= 0) { coop.gr++; guestSend(true); } return; }
   if (state !== S.PLAYING || !p || p.cls !== 'hunter' || p.grenade <= 0 || p.grenadeCd > 0 || p.dead) return;
@@ -1694,7 +1720,7 @@ function formPress() {
 
 // ===== Paladin actives =====
 const healCdOf = c => Math.max(6, 15 - 1.5 * ((c.ups && c.ups.p_heal) || 0));
-const SHIELD_TIMES = [1, 1.5, 2, 2.5];
+const SHIELD_TIMES = [1, 1.5, 2, 2.5, 2.75, 3, 3.25, 3.5];
 function castHeal(c, t) {
   if (!c || c.cls !== 'paladin' || c.dead || c.healCd > 0 || !t || t.dead || t.team !== c.team) return;
   const amount = t.maxHp * c.healPct;
@@ -1706,7 +1732,7 @@ function castHeal(c, t) {
 }
 function castShield(c) {
   if (!c || c.cls !== 'paladin' || c.dead || c.shield <= 0 || c.shieldCd > 0) return;
-  c.shieldT = SHIELD_TIMES[Math.min(3, c.shield - 1)];
+  c.shieldT = SHIELD_TIMES[Math.min(7, c.shield - 1)];
   c.shieldCd = 25;
   effects.push({ kind: 'shield', x: c.x, y: c.y, r: PR + 20, life: 0.4, max: 0.4, owner: c });
   if (c === me) Sound.sfx('shield');
@@ -1799,7 +1825,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '3.5';
+const GAME_VERSION = '3.6';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2194,13 +2220,13 @@ function buildSnapshot() {
   }
   return {
     rd: coop.round || 0, md: coop.mode || 'coop', win: coop.winner || 0, in: intro ? { ty: intro.type, id: intro.eid } : 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, ck: champsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
-    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0)]),
+    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0) | (e.psnT > 0 ? 16 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
-    fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
+    fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), f.kind === 'chainseg' ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
   };
 }
@@ -2440,7 +2466,7 @@ function guestSend(force) {
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -2466,7 +2492,7 @@ function onSnapshot(s) {
     if (!type) continue;
     let e = coop.emap.get(id);
     if (!e) e = { id, type, x, y, r: ETYPES[type].r, maxHp: 100, wob: rand(0, TAU) };
-    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0;
+    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0; e.psnT = fl & 16 ? 1 : 0;
     nm.set(id, e);
   }
   coop.emap = nm;
@@ -2723,6 +2749,10 @@ function update(dt) {
   const far = Math.max(W, H) * 1.3;
   for (const e of enemies) {
     if (e.dead) continue;
+    if (e.psnT > 0) {
+      e.psnT -= dt; e.psnTick = (e.psnTick || 0) - dt;
+      if (e.psnTick <= 0) { e.psnTick = 0.5; const prevP = p; p = e.psnOwner || me; damageEnemy(e, e.psn * 0.5, 0, 0, 0); p = prevP; if (e.dead) continue; }
+    }
     e.flash -= dt; e.bladeCd -= dt;
     let tp = null, bestD = Infinity;
     for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2; if (dd < bestD) { bestD = dd; tp = pl; } }
@@ -2917,11 +2947,16 @@ function updateWeapons(dt) {
   } else if (p.cls === 'paladin') {
     t.shot -= dt;
     if (t.shot <= 0) {
-      const tgt = nearestEnemy(p.x, p.y, w.range);
-      if (tgt) {
+      // Zeal 3 and 6: strike the 2 or 3 closest demons at once
+      const nT = 1 + Math.floor(((p.ups && p.ups.p_zeal) || 0) / 3);
+      const tgts = enemiesNear(p.x, p.y, w.range).sort((a, b) => ((a.x - p.x) ** 2 + (a.y - p.y) ** 2) - ((b.x - p.x) ** 2 + (b.y - p.y) ** 2)).slice(0, nT);
+      if (tgts.length) {
         t.shot = w.cd;
-        effects.push({ kind: 'smite', x: tgt.x, y: tgt.y, r: w.splash, life: 0.35, max: 0.35 });
-        for (const e of enemiesNear(tgt.x, tgt.y, w.splash)) damageEnemy(e, w.dmg, 0, 0, 0.15);
+        for (const tgt of tgts) {
+          effects.push({ kind: 'smite', x: tgt.x, y: tgt.y, r: w.splash, life: 0.35, max: 0.35 });
+          const cx = tgt.x, cy = tgt.y;
+          for (const e of enemiesNear(cx, cy, w.splash)) damageEnemy(e, w.dmg, 0, 0, 0.15);
+        }
         Sound.sfx('zap');
       } else t.shot = 0.15;
     }
@@ -2931,7 +2966,7 @@ function updateWeapons(dt) {
         t.judge = Math.max(3, 6 - 0.4 * p.judge);
         const Rj = 140 + 20 * p.judge;
         effects.push({ kind: 'judge', x: p.x, y: p.y, r: Rj, life: 0.5, max: 0.5, owner: p });
-        for (const e of enemiesNear(p.x, p.y, Rj)) { const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy) || 1; damageEnemy(e, 25 + 8 * p.judge, dx / d * 200, dy / d * 200, 0.4); }
+        for (const e of enemiesNear(p.x, p.y, Rj)) { const dx = e.x - p.x, dy = e.y - p.y, d = Math.hypot(dx, dy) || 1; damageEnemy(e, 40 + 20 * p.judge, dx / d * 200, dy / d * 200, 0.4); }
         Sound.sfx('slam');
       }
     }
@@ -2976,7 +3011,7 @@ function updateWeapons(dt) {
       if (t.tornado <= 0) {
         t.tornado = Math.max(2.5, 6 - 0.6 * p.tornado);
         // level 1-2: one tornado, level 3-4: two, level 5: three at once
-        for (let i = 0; i < (p.tornado >= 5 ? 3 : p.tornado >= 3 ? 2 : 1); i++) {
+        for (let i = 0; i < (p.tornado >= 8 ? 4 : p.tornado >= 5 ? 3 : p.tornado >= 3 ? 2 : 1); i++) {
           const a = rand(0, TAU);
           tornados.push({ x: p.x, y: p.y, vx: Math.cos(a) * 140, vy: Math.sin(a) * 140, life: 3 + 0.3 * p.tornado, r: 85 + 12 * p.tornado, tick: 0, spin: 0 });
         }
@@ -2985,11 +3020,11 @@ function updateWeapons(dt) {
     if (p.quake) {
       t.quake = (t.quake === undefined ? 4 : t.quake) - dt;
       if (t.quake <= 0) {
-        const ql = Math.min(5, p.quake);
-        t.quake = [0, 6, 5, 4, 3.5, 3][ql];
+        const ql = Math.min(8, p.quake);
+        t.quake = [0, 6, 5, 4, 3.5, 3, 2.75, 2.5, 2.25][ql];
         const Rq = 200 + 25 * p.quake;
         effects.push({ kind: 'quake', x: p.x, y: p.y, r: Rq, life: 0.7, max: 0.7, owner: p, seed: Math.random() * 6 });
-        for (const e of enemiesNear(p.x, p.y, Rq)) damageEnemy(e, [0, 50, 75, 100, 120, 150][ql], 0, 0, 1);
+        for (const e of enemiesNear(p.x, p.y, Rq)) damageEnemy(e, [0, 50, 75, 100, 120, 150, 170, 190, 210][ql], 0, 0, 1);
         if (p === me) shake = Math.max(shake, 10);
         Sound.sfx('slam');
       }
@@ -3006,6 +3041,7 @@ function updateWeapons(dt) {
         const sp = Math.hypot(b.vx, b.vy) || 1;
         const kb = 70 + (w.knock || 0);
         damageEnemy(e, w.dmg * (crit ? 2 : 1), b.vx / sp * kb, b.vy / sp * kb, 0);
+        hunterOnHit(e, w.dmg * (crit ? 2 : 1));
         if (b.pierce-- <= 0) { b.life = 0; break; }
       }
     }
@@ -3018,7 +3054,7 @@ function updateWeapons(dt) {
       tn.tick = 0.25;
       for (const e of enemiesNear(tn.x, tn.y, tn.r)) {
         const dx = tn.x - e.x, dy = tn.y - e.y, d = Math.hypot(dx, dy) || 1;
-        damageEnemy(e, [0, 20, 25, 30, 35, 45][Math.min(5, p.tornado)], dx / d * 120, dy / d * 120, 0);
+        damageEnemy(e, [0, 20, 25, 30, 35, 45, 55, 65, 75][Math.min(8, p.tornado)], dx / d * 120, dy / d * 120, 0);
       }
     }
   }
@@ -3170,6 +3206,12 @@ function render() {
       ctx.strokeStyle = 'rgba(255, 59, 92, ' + k + ')'; ctx.shadowColor = '#ff3b5c'; ctx.shadowBlur = 14;
       for (let i = 0; i < 3; i++) { ctx.lineWidth = 4 - i; ctx.beginPath(); ctx.arc(x, y, f.r * (1 - k * 0.8) * (1 - i * 0.18), 0, TAU); ctx.stroke(); }
       ctx.shadowBlur = 0;
+    } else if (f.kind === 'chainseg') {
+      const [x2, y2] = S2(f.r, f.seed);
+      ctx.strokeStyle = 'rgba(160, 230, 255, ' + k + ')'; ctx.lineWidth = 2.5; ctx.shadowColor = '#7df9ff'; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.moveTo(x, y);
+      for (let i = 1; i < 5; i++) { const t2 = i / 5; ctx.lineTo(x + (x2 - x) * t2 + Math.sin(i * 7.3 + clock * 40) * 7, y + (y2 - y) * t2 + Math.cos(i * 5.1 + clock * 40) * 7); }
+      ctx.lineTo(x2, y2); ctx.stroke(); ctx.shadowBlur = 0;
     } else if (f.kind === 'charge') {
       // warning: the Champion is about to burst
       ctx.save(); ctx.setLineDash([16, 12]); ctx.lineDashOffset = clock * 60;
@@ -3222,6 +3264,7 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, e.r * (1.6 - 0.5 * prog) + Math.sin(clock * 30) * 4, 0, TAU); ctx.fill();
       ctx.drawImage(sp.c, x - sp.size * sc / 2, y - sp.size * sc / 2, sp.size * sc, sp.size * sc);
     } else ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
+    if (e.psnT > 0) { ctx.fillStyle = 'rgba(80, 255, 90, 0.28)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.9, 0, TAU); ctx.fill(); }
     if (e.flash > 0) { ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.8, 0, TAU); ctx.fill(); }
     if (e.wind > 0) { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.5 + 0.5 * Math.sin(clock * 30)) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 6, 0, TAU); ctx.stroke(); }
     if (e.stun > 0) { ctx.strokeStyle = 'rgba(255, 213, 74, 0.8)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y - e.r - 4, 5, clock * 8, clock * 8 + 4); ctx.stroke(); }
