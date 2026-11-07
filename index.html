@@ -360,7 +360,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 3.2</span>
+    <span class="version">Version 3.3</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -1690,7 +1690,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '3.2';
+const GAME_VERSION = '3.3';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2863,7 +2863,7 @@ function updateWeapons(dt) {
       tn.tick = 0.25;
       for (const e of enemiesNear(tn.x, tn.y, tn.r)) {
         const dx = tn.x - e.x, dy = tn.y - e.y, d = Math.hypot(dx, dy) || 1;
-        damageEnemy(e, 18 + 6 * p.tornado, dx / d * 120, dy / d * 120, 0);
+        damageEnemy(e, [0, 20, 25, 30, 35, 45][Math.min(5, p.tornado)], dx / d * 120, dy / d * 120, 0);
       }
     }
   }
