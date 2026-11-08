@@ -391,7 +391,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 4.0</span>
+    <span class="version">Version 4.1</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -461,7 +461,7 @@ const UPGRADES = [
   { id: 'f_hide', cls: 'fallen', name: 'Dark Hide', max: 8, desc: 'Take 5% less damage per level (up to 40%).', apply: p => { p.hide++; } },
   { id: 'f_twins', cls: 'fallen', name: 'Shadow Twins', max: 8, desc: 'Every 20 s, darker copies of you fight for 15 s: 2 copies, 3 at level 4, 4 at level 8. They deal 36% to 50% of your damage and have 45% to 80% of your HP.', apply: p => { p.twins++; } },
   { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+30% to +100%) and heal from the damage you deal (5% to 25%, half on bosses).', apply: p => { p.feast++; } },
-  { id: 'f_rend', cls: 'fallen', name: 'Soul Rend', max: 8, desc: 'Every 3rd slash sends a dark crescent flying forward through every demon in its path (60% to 130% of your slash damage).', apply: p => { p.rend++; } },
+  { id: 'f_curse', cls: 'fallen', name: 'Cursed Blades', max: 8, desc: 'Demons you or your twins hit are cursed for 3 s and take 5% to 33% more damage from you and your twins.', apply: p => { p.curse++; } },
   { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 8, desc: 'Smite damage +30%.', apply: p => { p.w.dmg *= 1.3; } },
   { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 8, desc: 'Smite 15% faster and 15% wider. Levels 3 and 6 add one more smite target.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
   { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 8, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
@@ -820,24 +820,33 @@ function fmtDur(ms) {
   const s = Math.max(0, Math.ceil(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
   return d ? d + 'd ' + h + 'h' : h ? h + 'h ' + m + 'm' : m + 'm ' + (s % 60) + 's';
 }
-function resTick() {
+// two research slots run at the same time
+const RES_SLOTS = 2;
+function resList() {
   const a = prog.res.active;
-  if (a && Date.now() >= a.end) {
+  if (!a) prog.res.active = [];
+  else if (!Array.isArray(a)) prog.res.active = [a];
+  return prog.res.active;
+}
+function resTick() {
+  const list = resList(), now = Date.now();
+  const done = list.filter(a => now >= a.end);
+  if (!done.length) return;
+  prog.res.active = list.filter(a => now < a.end);
+  for (const a of done) {
     prog.res.lv[a.id] = Math.max(resLv(a.id), a.lv);
-    prog.res.active = null;
-    saveProg();
     const r = RESEARCH.find(x => x.id === a.id);
     toast('Research done: ' + (r ? r.name : a.id) + ' Lv ' + a.lv);
-    checkAch();
   }
+  saveProg(); checkAch();
 }
 function startResearch(id) {
-  const r = RESEARCH.find(x => x.id === id), L = resLv(id) + 1;
-  if (!r || prog.res.active || L > r.max) return;
+  const list = resList(), r = RESEARCH.find(x => x.id === id), L = resLv(id) + 1;
+  if (!r || list.length >= RES_SLOTS || list.some(a => a.id === id) || L > r.max) return;
   const cost = RES_COST(L);
   if (stars < cost) return;
   stars -= cost; saveShop(); updateStarsUI();
-  prog.res.active = { id, lv: L, start: Date.now(), end: Date.now() + RES_HOURS[L] * 3600000 };
+  list.push({ id, lv: L, start: Date.now(), end: Date.now() + RES_HOURS[L] * 3600000 });
   saveProg(); renderMeta();
 }
 function applyResearch(pl, lv) {
@@ -924,8 +933,8 @@ function refreshMetaUI() {
   const dc = dailyOf(), box = $('dailyBox');
   box.textContent = (prog.daily.done ? '\u2713 Daily challenge done: ' : 'Daily challenge: ') + dc.text + (prog.daily.done ? '' : ' \u00b7 +' + dc.reward + ' stars');
   box.classList.toggle('done', !!prog.daily.done);
-  const a = prog.res.active;
-  $('researchBtn').textContent = a ? 'Research \u00b7 ' + fmtDur(a.end - Date.now()) : 'Research';
+  const act = resList();
+  $('researchBtn').textContent = act.length ? 'Research \u00b7 ' + fmtDur(Math.min(...act.map(a => a.end)) - Date.now()) : 'Research';
 }
 let metaKind = '', metaTimer = 0;
 function openMeta(kind) {
@@ -948,16 +957,19 @@ function renderMeta() {
   if (metaKind === 'research') {
     $('metaTitle').textContent = 'RESEARCH';
     const top = document.createElement('div'); top.className = 'shop-balance'; top.innerHTML = STAR_SVG; top.append(' ' + stars + ' stars \u00b7 upgrades for every class, forever'); body.appendChild(top);
-    const a = prog.res.active;
-    if (a) {
-      const r = RESEARCH.find(x => x.id === a.id), box = document.createElement('div'); box.className = 'res-active';
-      box.textContent = 'Researching ' + (r ? r.name : a.id) + ' Lv ' + a.lv + ' \u00b7 ' + fmtDur(a.end - Date.now()) + ' left';
+    const list = resList();
+    for (let i = 0; i < RES_SLOTS; i++) {
+      const a = list[i], box = document.createElement('div'); box.className = 'res-active';
+      if (!a) { box.textContent = 'Slot ' + (i + 1) + ': free \u00b7 pick something to research'; body.appendChild(box); continue; }
+      const r = RESEARCH.find(x => x.id === a.id);
+      box.textContent = 'Slot ' + (i + 1) + ': ' + (r ? r.name : a.id) + ' Lv ' + a.lv + ' \u00b7 ' + fmtDur(a.end - Date.now()) + ' left';
       const bar = document.createElement('div'), fill = document.createElement('i'); bar.className = 'res-bar';
       fill.style.width = Math.min(100, (Date.now() - a.start) / (a.end - a.start) * 100) + '%'; bar.appendChild(fill); box.appendChild(bar); body.appendChild(box);
     }
+    const full = list.length >= RES_SLOTS;
     for (const r of RESEARCH) {
-      const lv = resLv(r.id), L = lv + 1;
-      const act = lv >= r.max ? mbtn('MAX', false) : mbtn(RES_COST(L) + ' \u2605 \u00b7 ' + RES_HOURS[L] + 'h', !a && stars >= RES_COST(L), () => startResearch(r.id));
+      const lv = resLv(r.id), L = lv + 1, busy = list.some(a => a.id === r.id);
+      const act = lv >= r.max ? mbtn('MAX', false) : busy ? mbtn('IN PROGRESS', false) : mbtn(RES_COST(L) + ' \u2605 \u00b7 ' + RES_HOURS[L] + 'h', !full && stars >= RES_COST(L), () => startResearch(r.id));
       mrow(r.name + '  Lv ' + lv + '/' + r.max, r.desc, act, lv >= r.max ? 'done' : '');
     }
   } else if (metaKind === 'ach') {
@@ -1388,13 +1400,13 @@ function newPlayer(cls) {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 5, inv: 0, ups: {}, volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
     thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1, explode: 0, chain: 0, poison: 0,
-    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, conse: 0, nova: 0, novaCd: 0, resDmg: 1, _twins: [],
+    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, curse: 0, conse: 0, nova: 0, novaCd: 0, resDmg: 1, _twins: [],
     healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
     ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
     t: { shot: 0.3, volley: 3, slam: 4, storm: 2, tornado: 4 }, bladeAng: 0, vx: 0, vy: 0
   };
-  if (cls === 'hunter') pl.w = { cd: 0.3, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
+  if (cls === 'hunter') pl.w = { cd: 0.38, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
   else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 22, range: 340, splash: 60 };
   else if (cls === 'fallen') pl.w = { cd: 0.6, dmg: 16, radius: 80, crit: 0.05 };
@@ -1616,7 +1628,7 @@ function shareXp(v, who) {
   for (const pl of pool) teamMul += Math.max(0, pl.xpMul - 1);
   // only switch who "p" is, so a skill that is running keeps its own wolves, bolts and so on
   const prev = p;
-  for (const pl of pool) { if (pl.dead) continue; p = pl; gainXp(part, teamMul); }
+  for (const pl of pool) { if (pl.left) continue; p = pl; gainXp(part, teamMul); }
   p = prev;
 }
 // versus: one player hits another (less damage than on demons)
@@ -2152,23 +2164,27 @@ function fallenStrike(src, mul) {
   if (Math.random() < w.crit) dmg *= 2;
   if (demon) {
     // demon form: a dark bolt from afar that bursts on the target
-    const R = DEMON_SPLASH[p.ultR], tx = tgt.x, ty = tgt.y;
+    // the burst gets bigger with Long Reach (the slash radius starts at 80)
+    const R = DEMON_SPLASH[p.ultR] * (w.radius / 80), tx = tgt.x, ty = tgt.y;
     effects.push({ kind: 'dbolt', x: src.x, y: src.y, r: tx, seed: ty, life: 0.18, max: 0.18 });
     effects.push({ kind: 'dsplash', x: tx, y: ty, r: R, life: 0.3, max: 0.3 });
-    for (const e of enemiesNear(tx, ty, R)) damageEnemy(e, dmg, 0, 0, 0);
+    for (const e of enemiesNear(tx, ty, R)) { damageEnemy(e, dmg * curseMul(e), 0, 0, 0); cursed(e); }
   } else {
     // a half circle in front, turned toward the closest demon
     effects.push({ kind: 'halfslash', x: src.x, y: src.y, r: w.radius, life: 0.22, max: 0.22, owner: src, seed: a });
-    if (src === p && p.rend) { p.rendN = (p.rendN || 0) + 1; if (p.rendN % 3 === 0) soulRend(p, a, dmg * (0.6 + 0.1 * (Math.min(8, p.rend) - 1))); }
     const ca = Math.cos(a), sa = Math.sin(a), sx = src.x, sy = src.y;
     for (const e of enemiesNear(sx, sy, w.radius)) {
       const dx = e.x - sx, dy = e.y - sy, d = Math.hypot(dx, dy) || 1;
       if ((dx * ca + dy * sa) / d < -0.05 && d > e.r + 8) continue;
-      damageEnemy(e, dmg, dx / d * 110, dy / d * 110, 0);
+      damageEnemy(e, dmg * curseMul(e), dx / d * 110, dy / d * 110, 0);
+      cursed(e);
     }
   }
   return true;
 }
+// Cursed Blades: hit demons take more damage from this Fallen for 3 seconds
+const curseMul = e => (p && p.curse && e.curseT > 0 && e.curseBy === p) ? 1 + 0.05 + 0.04 * (Math.min(8, p.curse) - 1) : 1;
+function cursed(e) { if (p && p.curse && !e.pvp) { e.curseT = 3; e.curseBy = p; } }
 // Soul Rend: a dark crescent flies forward and cuts every demon in a line
 function soulRend(c, a, dmg) {
   const L = 340, ca = Math.cos(a), sa = Math.sin(a), sx = c.x, sy = c.y;
@@ -2359,7 +2375,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '4.0';
+const GAME_VERSION = '4.1';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2726,7 +2742,7 @@ function hostTick(dt) {
   if (coop.over) return;
   // skill choices: the game keeps running, the player is protected while choosing
   for (const q of players) {
-    if (q.dead || q.pending <= 0 || q.offer) continue;
+    if (q.left || q.pending <= 0 || q.offer) continue;
     autoHeal(q);
     if (q.pending <= 0) continue;
     use(q); q.offer = rollOptions().map(u => u.id); q.choosing = true; unuse(q); use(me);
@@ -3317,6 +3333,7 @@ function update(dt) {
       if (e.psnTick <= 0) { e.psnTick = 0.5; const prevP = p; p = e.psnOwner || me; damageEnemy(e, e.psn * 0.5, 0, 0, 0); p = prevP; if (e.dead) continue; }
     }
     e.flash -= dt; e.bladeCd -= dt;
+    if (e.curseT > 0) e.curseT -= dt;
     let tp = null, bestD = Infinity;
     for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2; if (dd < bestD) { bestD = dd; tp = pl; } }
     if (!tp) continue;
@@ -3929,6 +3946,7 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, e.r * (1.6 - 0.5 * prog) + Math.sin(clock * 30) * 4, 0, TAU); ctx.fill();
       ctx.drawImage(sp.c, x - sp.size * sc / 2, y - sp.size * sc / 2, sp.size * sc, sp.size * sc);
     } else ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
+    if (e.curseT > 0) { ctx.strokeStyle = 'rgba(157, 123, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 4, 0, TAU); ctx.stroke(); }
     if (e.psnT > 0) { ctx.fillStyle = 'rgba(80, 255, 90, 0.28)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.9, 0, TAU); ctx.fill(); }
     if (e.flash > 0) { ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.8, 0, TAU); ctx.fill(); }
     if (e.wind > 0) { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.5 + 0.5 * Math.sin(clock * 30)) + ')'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 6, 0, TAU); ctx.stroke(); }
