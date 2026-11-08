@@ -204,6 +204,22 @@
   .mode-btn { padding: 0.45rem 0.9rem; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.22); background: transparent; color: #c9d1e3; font-family: inherit; font-size: 0.85rem; cursor: pointer; touch-action: manipulation; }
   .mode-btn.on { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 10px rgba(0, 240, 255, 0.3); }
   .mode-btn.tb.on { border-color: var(--red); color: var(--red); box-shadow: 0 0 10px rgba(255, 59, 92, 0.3); }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 0.45rem; justify-content: center; margin-top: 1rem; }
+  .daily { margin: 0.8rem auto 0; max-width: 460px; font-size: 0.8rem; color: #ffd54a; border: 1px dashed rgba(255, 213, 74, 0.45); border-radius: 8px; padding: 0.5rem 0.7rem; }
+  .daily.done { color: #39ff6a; border-color: rgba(57, 255, 106, 0.5); }
+  .meta-panel { width: min(580px, 94vw); max-height: 86vh; overflow-y: auto; }
+  .mrow { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; padding: 0.6rem 0.2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.07); text-align: left; }
+  .mrow b { color: #e8ecf8; font-size: 0.9rem; }
+  .mrow small { display: block; color: #8b93a7; font-size: 0.72rem; line-height: 1.45; margin-top: 0.15rem; }
+  .mrow .act { flex-shrink: 0; }
+  .mrow.done b { color: #39ff6a; }
+  .mrow.locked { opacity: 0.55; }
+  .mbtn { padding: 0.45rem 0.75rem; border-radius: 8px; border: 1px solid var(--cyan); background: transparent; color: var(--cyan); font-family: inherit; font-size: 0.75rem; cursor: pointer; white-space: nowrap; touch-action: manipulation; }
+  .mbtn:disabled { opacity: 0.4; cursor: default; }
+  .res-active { margin: 0.4rem 0 0.8rem; padding: 0.6rem; border-radius: 8px; background: rgba(0, 240, 255, 0.07); border: 1px solid rgba(0, 240, 255, 0.35); font-size: 0.8rem; color: #cfe8ff; }
+  .res-bar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); margin-top: 0.4rem; overflow: hidden; }
+  .res-bar i { display: block; height: 100%; background: linear-gradient(90deg, #00f0ff, #b026ff); }
+  #toast { position: absolute; top: 4.2rem; left: 50%; transform: translateX(-50%); z-index: 30; pointer-events: none; padding: 0.6rem 1rem; border-radius: 10px; background: rgba(5, 8, 22, 0.92); border: 1px solid rgba(255, 213, 74, 0.6); color: #ffe9a8; font-size: 0.85rem; box-shadow: 0 0 20px rgba(255, 213, 74, 0.25); max-width: 90vw; text-align: center; }
   #footer {
     position: absolute; left: 0; right: 0; bottom: 0; z-index: 11; pointer-events: none;
     display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem;
@@ -247,6 +263,13 @@
       <div class="classes" id="classList"></div>
       <button class="btn" id="startBtn">Start</button>
       <button class="btn btn-alt" id="coopBtn" style="margin-left:0.6rem">Multiplayer</button><br>
+      <div class="meta-row">
+        <button class="mode-btn" id="worldBtn">World</button>
+        <button class="mode-btn" id="researchBtn">Research</button>
+        <button class="mode-btn" id="achBtn">Achievements</button>
+        <button class="mode-btn" id="skinsBtn">Skins</button>
+      </div>
+      <div class="daily" id="dailyBox"></div>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
@@ -287,6 +310,14 @@
     </div>
   </div>
 
+  <div id="metaModal" class="screen modal hidden">
+    <div class="panel meta-panel">
+      <div class="panel-title" id="metaTitle"></div>
+      <div id="metaBody"></div>
+      <div style="text-align:center"><button class="btn" id="metaCloseBtn" style="padding:0.6rem 1.6rem;font-size:0.95rem">Close</button></div>
+    </div>
+  </div>
+  <div id="toast" class="hidden"></div>
   <div id="shopModal" class="screen modal hidden">
     <div class="panel">
       <div class="panel-title">SKINS</div>
@@ -315,8 +346,8 @@
     <span class="cd"></span><span class="cdt" id="skillCdText"></span>
   </button>
 
-  <button id="skill2Btn" class="hidden" aria-label="Divine Shield (R)">
-    <svg viewBox="0 0 24 24"><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6Z"/><path d="M12 7V17"/></svg>
+  <button id="skill2Btn" class="hidden" aria-label="Nova Bomb (N)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2V6M12 18V22M2 12H6M18 12H22M5 5L7.8 7.8M16.2 16.2L19 19M19 5L16.2 7.8M7.8 16.2L5 19"/></svg>
     <span class="cd"></span><span class="cdt" id="skill2CdText"></span>
   </button>
   <div id="healPicker" class="hidden"></div>
@@ -360,7 +391,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 3.9</span>
+    <span class="version">Version 4.0</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -387,7 +418,7 @@ const CLASSES = {
     desc: 'Summons spirit wolves and calls down storms from nature.',
     icon: '<svg viewBox="0 0 24 24"><path d="M5 19C5 10 11 5 19 5C19 13 14 19 5 19Z"/><path d="M5 19L13 11"/></svg>' },
   paladin: { name: 'Paladin', color: '#ffe9a8', hp: 120, speed: 155, armor: 1, regen: 1,
-    desc: 'Holy knight. Heals the ally you choose, raises the team\u2019s damage and can become immortal for a moment.',
+    desc: 'Holy knight. Heals whoever drops below 80% HP on its own (the weakest first), raises the team\u2019s damage and can make everyone immortal.',
     icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.2"/><path d="M12 2.5V5M12 13V21.5M6 9H3M21 9H18M7.5 4.5L9.6 6.6M16.5 4.5L14.4 6.6"/></svg>' },
   fallen: { name: 'Fallen', color: '#7b5cff', hp: 85, speed: 165, armor: 0, regen: 1,
     desc: 'A warrior with a demon\u2019s power. Fast half-moon slashes, shadow twins, and a demon form that blasts from afar. Very low HP.',
@@ -398,7 +429,7 @@ const CLASSES = {
 const UPGRADES = [
   { id: 'h_dmg', cls: 'hunter', name: 'Sharp Bolts', max: 8, desc: 'Bolt damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'h_rate', cls: 'hunter', name: 'Quick Draw', max: 8, desc: 'Shoot 15% faster.', apply: p => { p.w.cd = Math.max(0.09, p.w.cd * 0.85); } },
-  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 8, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
+  { id: 'h_multi', cls: 'hunter', name: 'Multishot', max: 4, desc: 'Level 1: two bolts fly one behind the other. From level 2: bolts fly side by side in parallel lines (3, then 4, then 5).', apply: p => { const lv = p.ups.h_multi || 0; if (lv === 0) p.w.tandem = 2; else { p.w.tandem = 1; p.w.count = 2 + lv; } } },
   { id: 'h_pierce', cls: 'hunter', name: 'Piercing', max: 8, desc: 'Bolts pass through one more demon.', apply: p => { p.w.pierce++; } },
   { id: 'h_crit', cls: 'hunter', name: 'Deadeye', max: 8, desc: '+10% chance to deal double damage.', apply: p => { p.w.crit += 0.1; } },
   { id: 'h_knock', cls: 'hunter', name: 'Impact Bolts', max: 8, desc: 'Your bolts knock demons back. Each level pushes them farther.', apply: p => { p.w.knock = (p.w.knock || 0) + 170; } },
@@ -430,12 +461,12 @@ const UPGRADES = [
   { id: 'f_hide', cls: 'fallen', name: 'Dark Hide', max: 8, desc: 'Take 5% less damage per level (up to 40%).', apply: p => { p.hide++; } },
   { id: 'f_twins', cls: 'fallen', name: 'Shadow Twins', max: 8, desc: 'Every 20 s, darker copies of you fight for 15 s: 2 copies, 3 at level 4, 4 at level 8. They deal 36% to 50% of your damage and have 45% to 80% of your HP.', apply: p => { p.twins++; } },
   { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+30% to +100%) and heal from the damage you deal (5% to 25%, half on bosses).', apply: p => { p.feast++; } },
-  { id: 'f_step', cls: 'fallen', name: 'Shadow Step', max: 8, desc: 'Active skill (button or Space/E): swap places with your farthest twin, or dash forward. Short immortality. Cooldown 10 s down to 4 s.', apply: p => { p.step++; } },
+  { id: 'f_rend', cls: 'fallen', name: 'Soul Rend', max: 8, desc: 'Every 3rd slash sends a dark crescent flying forward through every demon in its path (60% to 130% of your slash damage).', apply: p => { p.rend++; } },
   { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 8, desc: 'Smite damage +30%.', apply: p => { p.w.dmg *= 1.3; } },
   { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 8, desc: 'Smite 15% faster and 15% wider. Levels 3 and 6 add one more smite target.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
   { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 8, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
-  { id: 'p_heal', cls: 'paladin', name: 'Greater Heal', max: 8, desc: 'Heal restores 8% more HP and comes back 1.5 s sooner.', apply: p => { p.healPct += 0.08; } },
-  { id: 'p_shield', cls: 'paladin', name: 'Divine Shield', max: 8, desc: 'Active skill (button or R): become immortal for 1 / 1.5 / 2 / 2.5 seconds.', apply: p => { p.shield++; } },
+  { id: 'p_heal', cls: 'paladin', name: 'Greater Heal', max: 8, desc: 'Your automatic heal restores 8% more HP and comes back 1.5 s sooner.', apply: p => { p.healPct += 0.08; } },
+  { id: 'p_conse', cls: 'paladin', name: 'Consecration', max: 8, desc: 'Holy ground flares up around you every few seconds, burning nearby demons. More levels: wider, stronger and more often.', apply: p => { p.conse++; } },
   { id: 'p_judge', cls: 'paladin', name: 'Judgement', max: 8, desc: 'Every few seconds a holy blast around you hurts, pushes and stuns demons.', apply: p => { p.judge++; } },
   { id: 'g_speed', cls: 'all', name: 'Swift Feet', max: 5, desc: 'Move 10% faster.', apply: p => { p.speed *= 1.1; } },
   { id: 'g_hp', cls: 'all', name: 'Vitality', max: 5, desc: '+25 max HP and heal 25.', apply: p => { p.maxHp += 25; p.hp = Math.min(p.maxHp, p.hp + 25); } },
@@ -460,7 +491,10 @@ const ETYPES = {
   bat: { r: 8, hp: 16, speed: 165, dmg: 6, xp: 1, color: '#c77dff', spikes: 3 },
   bomber: { r: 13, hp: 35, speed: 95, dmg: 4, xp: 3, color: '#ff6a00', spikes: 8 },
   shade: { r: 12, hp: 50, speed: 80, dmg: 14, xp: 4, color: '#5a3dff', spikes: 5 },
-  champ: { r: 64, hp: 9000, speed: 40, dmg: 45, xp: 250, color: '#ff8a2a', spikes: 0 }
+  champ: { r: 64, hp: 9000, speed: 40, dmg: 45, xp: 250, color: '#ff8a2a', spikes: 0 },
+  hound: { r: 10, hp: 40, speed: 178, dmg: 12, xp: 3, color: '#ff5a1f', spikes: 6 },
+  warlock: { r: 14, hp: 130, speed: 70, dmg: 14, xp: 7, color: '#c21aff', spikes: 7 },
+  titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 }
 };
 const TYPE_IDX = Object.keys(ETYPES);
 // HELL CHAMPION: a face of black obsidian shards burning inside a ball of fire (every 15 minutes)
@@ -718,7 +752,11 @@ const ABYSS_COLORS = [
   { id: 'a_shadow', name: 'Shadow', main: '#5a3dff', light: '#b9a8ff', dark: '#1a0f5e', price: 100 },
   { id: 'a_aurora', name: 'Aurora', main: '#39ff6a', light: '#7df9ff', dark: '#b026ff', price: 200, special: true },
   { id: 'a_inferno', name: 'Inferno', main: '#ff3b1a', light: '#ffd54a', dark: '#5e0aa3', price: 200, special: true },
-  { id: 'a_galaxy', name: 'Galaxy', main: '#7c3aed', light: '#ff9de9', dark: '#0a0e3f', price: 200, special: true }
+  { id: 'a_galaxy', name: 'Galaxy', main: '#7c3aed', light: '#ff9de9', dark: '#0a0e3f', price: 200, special: true },
+  { id: 'L_hellborn', name: 'Hellborn', main: '#ff2a00', light: '#ffd54a', dark: '#3a0000', price: 3000, legend: true, req: 'king', fx: 'flame' },
+  { id: 'L_void', name: 'Void Crown', main: '#6a00ff', light: '#e0c8ff', dark: '#05001a', price: 4000, legend: true, req: 'king', fx: 'void' },
+  { id: 'L_obsidian', name: 'Obsidian Fiend', main: '#ff1a1a', light: '#ff9a9a', dark: '#000000', price: 8000, legend: true, req: 'champ', fx: 'shards' },
+  { id: 'L_celestial', name: 'Celestial', main: '#ffffff', light: '#fff7c8', dark: '#ffb000', price: 10000, legend: true, req: 'champ', fx: 'halo' }
 ];
 let abyssOwned = [], abyssCurrent = '';
 try {
@@ -729,6 +767,214 @@ try {
   }
 } catch (e) {}
 const skinCol = () => ABYSS_COLORS.find(c => c.id === abyssCurrent) || orbCol();
+// ===== Progress: worlds, research, achievements, daily challenge =====
+const PROG_KEY = 'abyssPlusProgress';
+let prog = { kills: 0, bossKills: 0, kingKills: 0, champKills: 0, runs: 0, maxLvl: 0, worldBest: [0, 0, 0, 0], worldsOpen: 1, clsSurv5: {}, coopRuns: 0, vsWins: 0, ach: {}, daily: { day: '', done: false }, res: { lv: {}, active: null } };
+try {
+  const sv = JSON.parse(localStorage.getItem(PROG_KEY) || 'null');
+  if (sv && typeof sv === 'object') {
+    prog = Object.assign(prog, sv);
+    prog.res = Object.assign({ lv: {}, active: null }, sv.res || {});
+    prog.ach = sv.ach || {}; prog.clsSurv5 = sv.clsSurv5 || {}; prog.daily = sv.daily || { day: '', done: false };
+    if (!Array.isArray(prog.worldBest)) prog.worldBest = [0, 0, 0, 0];
+  }
+} catch (e) {}
+function saveProg() { try { localStorage.setItem(PROG_KEY, JSON.stringify(prog)); } catch (e) {} }
+
+// worlds: survive 15:30 in one to open the next
+const WORLDS = [
+  { name: 'The Abyss', mul: 1, star: 1, bg: '#050816', grid: 'rgba(176, 38, 255, 0.08)', vig: 'rgba(60, 0, 30, 0.45)',
+    crys: ['#b026ff', 'rgba(70, 25, 150, 0.75)', '#c56bff', 'rgba(224, 179, 255, 0.55)', 'rgba(0, 240, 255, 0.7)'], pil: ['#ff4fd8', 'rgba(38, 16, 52, 0.92)', 'rgba(255, 79, 216, 0.45)', 'rgba(255, 180, 240, 0.4)'],
+    pool: ['rgba(255, 40, 90, 0.16)', 'rgba(176, 38, 255, 0.07)', 'rgba(176, 38, 255, 0)'], rune: 'rgba(0, 240, 255, 0.22)', grass: 'rgba(57, 255, 106, 0.32)', shard: ['rgba(0, 240, 255, 0.28)', 'rgba(125, 249, 255, 0.5)'] },
+  { name: 'Frozen Depths', mul: 1.7, star: 1.5, bg: '#03101e', grid: 'rgba(120, 200, 255, 0.09)', vig: 'rgba(0, 30, 70, 0.5)',
+    crys: ['#7fd8ff', 'rgba(40, 110, 170, 0.75)', '#bfe9ff', 'rgba(230, 248, 255, 0.6)', 'rgba(255, 255, 255, 0.8)'], pil: ['#9fb6ff', 'rgba(14, 26, 52, 0.92)', 'rgba(159, 182, 255, 0.45)', 'rgba(220, 230, 255, 0.4)'],
+    pool: ['rgba(120, 220, 255, 0.14)', 'rgba(80, 140, 255, 0.07)', 'rgba(80, 140, 255, 0)'], rune: 'rgba(190, 240, 255, 0.25)', grass: 'rgba(200, 240, 255, 0.3)', shard: ['rgba(220, 245, 255, 0.35)', 'rgba(255, 255, 255, 0.6)'] },
+  { name: 'Toxic Marsh', mul: 2.6, star: 2, bg: '#06120a', grid: 'rgba(120, 255, 80, 0.07)', vig: 'rgba(20, 50, 0, 0.5)',
+    crys: ['#7dff3a', 'rgba(40, 110, 30, 0.75)', '#b8ff7a', 'rgba(220, 255, 180, 0.5)', 'rgba(255, 240, 80, 0.7)'], pil: ['#c8ff2a', 'rgba(22, 36, 12, 0.92)', 'rgba(200, 255, 42, 0.45)', 'rgba(230, 255, 150, 0.4)'],
+    pool: ['rgba(140, 255, 40, 0.16)', 'rgba(60, 160, 20, 0.08)', 'rgba(60, 160, 20, 0)'], rune: 'rgba(200, 255, 80, 0.22)', grass: 'rgba(140, 255, 60, 0.38)', shard: ['rgba(180, 255, 60, 0.3)', 'rgba(220, 255, 140, 0.5)'] },
+  { name: 'Molten Core', mul: 3.8, star: 3, bg: '#140503', grid: 'rgba(255, 110, 40, 0.08)', vig: 'rgba(80, 10, 0, 0.55)',
+    crys: ['#ff6a1a', 'rgba(140, 40, 10, 0.78)', '#ffb070', 'rgba(255, 220, 160, 0.55)', 'rgba(255, 240, 120, 0.8)'], pil: ['#ff3b2a', 'rgba(40, 10, 6, 0.94)', 'rgba(255, 59, 42, 0.45)', 'rgba(255, 170, 120, 0.4)'],
+    pool: ['rgba(255, 90, 20, 0.22)', 'rgba(255, 40, 0, 0.1)', 'rgba(255, 40, 0, 0)'], rune: 'rgba(255, 180, 60, 0.25)', grass: 'rgba(255, 120, 40, 0.3)', shard: ['rgba(255, 150, 60, 0.3)', 'rgba(255, 210, 140, 0.5)'] }
+];
+let worldId = 0;
+try { worldId = Math.max(0, Math.min(prog.worldsOpen - 1, parseInt(localStorage.getItem('abyssPlusWorld') || '0', 10) || 0)); } catch (e) {}
+const WP = () => WORLDS[worldId] || WORLDS[0];
+function setWorld(id) { worldId = Math.max(0, Math.min(WORLDS.length - 1, id | 0)); }
+
+// research: permanent upgrades for every class, paid with stars, they take real time
+const RESEARCH = [
+  { id: 'r_hp', name: 'Vitality', desc: '+5% max HP', max: 10 },
+  { id: 'r_dmg', name: 'Power', desc: '+5% damage', max: 10 },
+  { id: 'r_armor', name: 'Plating', desc: '+0.5 armor', max: 6 },
+  { id: 'r_regen', name: 'Regeneration', desc: '+0.3 HP per second', max: 8 },
+  { id: 'r_speed', name: 'Swiftness', desc: '+3% move speed', max: 5 },
+  { id: 'r_xp', name: 'Insight', desc: '+5% XP', max: 6 },
+  { id: 'r_star', name: 'Fortune', desc: '+10% stars earned', max: 5 },
+  { id: 'r_nova', name: 'Nova Bomb', desc: 'Active skill (button or N): a huge blast around you that throws demons back. More levels: more damage, shorter cooldown (90 s down to 50 s).', max: 5 }
+];
+const RES_COST = L => Math.round(60 * Math.pow(1.7, L - 1));
+const RES_HOURS = [0, 1, 2, 4, 6, 10, 14, 20, 28, 40, 60];
+const resLv = id => prog.res.lv[id] || 0;
+const resTotal = () => Object.values(prog.res.lv).reduce((a, b) => a + (b | 0), 0);
+function fmtDur(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d ? d + 'd ' + h + 'h' : h ? h + 'h ' + m + 'm' : m + 'm ' + (s % 60) + 's';
+}
+function resTick() {
+  const a = prog.res.active;
+  if (a && Date.now() >= a.end) {
+    prog.res.lv[a.id] = Math.max(resLv(a.id), a.lv);
+    prog.res.active = null;
+    saveProg();
+    const r = RESEARCH.find(x => x.id === a.id);
+    toast('Research done: ' + (r ? r.name : a.id) + ' Lv ' + a.lv);
+    checkAch();
+  }
+}
+function startResearch(id) {
+  const r = RESEARCH.find(x => x.id === id), L = resLv(id) + 1;
+  if (!r || prog.res.active || L > r.max) return;
+  const cost = RES_COST(L);
+  if (stars < cost) return;
+  stars -= cost; saveShop(); updateStarsUI();
+  prog.res.active = { id, lv: L, start: Date.now(), end: Date.now() + RES_HOURS[L] * 3600000 };
+  saveProg(); renderMeta();
+}
+function applyResearch(pl, lv) {
+  if (!lv || typeof lv !== 'object') return;
+  const g = id => { const r = RESEARCH.find(x => x.id === id); return Math.max(0, Math.min(r ? r.max : 0, lv[id] | 0)); };
+  pl.maxHp *= 1 + 0.05 * g('r_hp'); pl.hp = pl.maxHp;
+  pl.armor += 0.5 * g('r_armor'); pl.regen += 0.3 * g('r_regen'); pl.speed *= 1 + 0.03 * g('r_speed'); pl.xpMul += 0.05 * g('r_xp');
+  pl.resDmg = 1 + 0.05 * g('r_dmg'); pl.nova = g('r_nova'); pl.novaCd = 0;
+}
+let starAcc = 0;
+function starGain() { starAcc += WP().star * (1 + 0.1 * resLv('r_star')); const n = Math.floor(starAcc); starAcc -= n; return Math.max(1, n); }
+
+// achievements
+const bestAny = () => Math.max(0, ...prog.worldBest);
+const ACH = [
+  { id: 'k100', name: 'First Blood', desc: 'Kill 100 demons in total', reward: 20, test: () => prog.kills >= 100 },
+  { id: 'k10k', name: 'Demon Slayer', desc: 'Kill 10,000 demons in total', reward: 200, test: () => prog.kills >= 10000 },
+  { id: 'k100k', name: 'Legion Breaker', desc: 'Kill 100,000 demons in total', reward: 1000, test: () => prog.kills >= 100000 },
+  { id: 'boss', name: 'Boss Hunter', desc: 'Defeat an Abyss Boss', reward: 30, test: () => prog.bossKills >= 1 },
+  { id: 'king', name: 'Kingslayer', desc: 'Defeat the Demon King', reward: 100, test: () => prog.kingKills >= 1 },
+  { id: 'champ', name: 'Hell Breaker', desc: 'Defeat the Hell Champion', reward: 300, test: () => prog.champKills >= 1 },
+  { id: 's5', name: 'Survivor', desc: 'Survive 5:00', reward: 20, test: () => bestAny() >= 300 },
+  { id: 's10', name: 'Veteran', desc: 'Survive 10:00', reward: 60, test: () => bestAny() >= 600 },
+  { id: 's15', name: 'Abyss Walker', desc: 'Survive 15:30', reward: 150, test: () => bestAny() >= 930 },
+  { id: 'l30', name: 'Rising Power', desc: 'Reach level 30 in one run', reward: 40, test: () => prog.maxLvl >= 30 },
+  { id: 'l60', name: 'Unstoppable', desc: 'Reach level 60 in one run', reward: 120, test: () => prog.maxLvl >= 60 },
+  { id: 'all5', name: 'Master of All', desc: 'Survive 5:00 with every class', reward: 150, test: () => Object.keys(CLASSES).every(c => prog.clsSurv5[c]) },
+  { id: 'coop', name: 'Better Together', desc: 'Finish a co-op game', reward: 30, test: () => prog.coopRuns >= 1 },
+  { id: 'vs', name: 'Arena Victor', desc: 'Win a versus game', reward: 50, test: () => prog.vsWins >= 1 },
+  { id: 'w2', name: 'Frozen Heart', desc: 'Open the Frozen Depths', reward: 100, test: () => prog.worldsOpen >= 2 },
+  { id: 'w3', name: 'Poison Proof', desc: 'Open the Toxic Marsh', reward: 200, test: () => prog.worldsOpen >= 3 },
+  { id: 'w4', name: 'Into the Fire', desc: 'Open the Molten Core', reward: 300, test: () => prog.worldsOpen >= 4 },
+  { id: 'r5', name: 'Scholar', desc: 'Finish 5 research levels', reward: 100, test: () => resTotal() >= 5 },
+  { id: 'r25', name: 'Mad Scientist', desc: 'Finish 25 research levels', reward: 500, test: () => resTotal() >= 25 }
+];
+function checkAch() {
+  for (const a of ACH) if (!prog.ach[a.id] && a.test()) { prog.ach[a.id] = 1; addStars(a.reward); toast('Achievement: ' + a.name + ' (+' + a.reward + ' stars)'); }
+  saveProg();
+}
+
+// daily challenge: a new one every day
+function dayKey() { const d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); }
+function dailyOf() {
+  const d = new Date(), seed = d.getFullYear() * 372 + d.getMonth() * 31 + d.getDate();
+  const cl = Object.keys(CLASSES), c = cl[seed % cl.length];
+  const list = [
+    { text: 'Survive 6:00 as ' + CLASSES[c].name, reward: 150, test: r => r.cls === c && r.sec >= 360 },
+    { text: 'Kill 1,500 demons in one run', reward: 150, test: r => r.kills >= 1500 },
+    { text: 'Reach level 35 in one run', reward: 150, test: r => r.lvl >= 35 },
+    { text: 'Defeat an Abyss Boss', reward: 120, test: r => r.boss >= 1 },
+    { text: 'Survive 8:00 with any class', reward: 180, test: r => r.sec >= 480 },
+    { text: 'Defeat the Demon King', reward: 250, test: r => r.king >= 1 }
+  ];
+  return list[Math.floor(seed / 3) % list.length];
+}
+function recordRun(r) {
+  if (r.mode !== 'vs') {
+    prog.kills += r.kills | 0; prog.bossKills += r.boss | 0; prog.kingKills += r.king | 0; prog.champKills += r.champ | 0;
+    prog.maxLvl = Math.max(prog.maxLvl, r.lvl | 0);
+    prog.worldBest[worldId] = Math.max(prog.worldBest[worldId] || 0, Math.floor(r.sec));
+    if (r.sec >= 300) prog.clsSurv5[r.cls] = 1;
+    if (r.sec >= 930 && worldId === prog.worldsOpen - 1 && prog.worldsOpen < WORLDS.length) { prog.worldsOpen++; toast('New world opened: ' + WORLDS[prog.worldsOpen - 1].name + '!'); }
+    if (r.mode === 'coop') prog.coopRuns++;
+    if (prog.daily.day !== dayKey()) prog.daily = { day: dayKey(), done: false };
+    const dc = dailyOf();
+    if (!prog.daily.done && dc.test(r)) { prog.daily.done = true; addStars(dc.reward); toast('Daily challenge done! +' + dc.reward + ' stars'); }
+  } else if (r.win) prog.vsWins++;
+  prog.runs++;
+  saveProg(); checkAch(); refreshMetaUI();
+}
+// small messages at the top of the screen
+const toastQ = [];
+let toastOn = false;
+function toast(msg) { toastQ.push(msg); if (!toastOn) nextToast(); }
+function nextToast() {
+  const m = toastQ.shift(), el = $('toast');
+  if (!m) { toastOn = false; el.classList.add('hidden'); return; }
+  toastOn = true; el.textContent = m; el.classList.remove('hidden');
+  setTimeout(nextToast, 2800);
+}
+function refreshMetaUI() {
+  if (prog.daily.day !== dayKey()) prog.daily = { day: dayKey(), done: false };
+  $('worldBtn').textContent = 'World: ' + WP().name;
+  const dc = dailyOf(), box = $('dailyBox');
+  box.textContent = (prog.daily.done ? '\u2713 Daily challenge done: ' : 'Daily challenge: ') + dc.text + (prog.daily.done ? '' : ' \u00b7 +' + dc.reward + ' stars');
+  box.classList.toggle('done', !!prog.daily.done);
+  const a = prog.res.active;
+  $('researchBtn').textContent = a ? 'Research \u00b7 ' + fmtDur(a.end - Date.now()) : 'Research';
+}
+let metaKind = '', metaTimer = 0;
+function openMeta(kind) {
+  metaKind = kind; resTick(); renderMeta();
+  $('metaModal').classList.remove('hidden');
+  clearInterval(metaTimer);
+  metaTimer = setInterval(() => { resTick(); if (metaKind === 'research') renderMeta(); }, 1000);
+}
+function closeMeta() { $('metaModal').classList.add('hidden'); clearInterval(metaTimer); refreshMetaUI(); }
+function mrow(title, sub, act, cls) {
+  const row = document.createElement('div'); row.className = 'mrow' + (cls ? ' ' + cls : '');
+  const l = document.createElement('div'), b = document.createElement('b'), sm = document.createElement('small');
+  b.textContent = title; sm.textContent = sub; l.append(b, sm); row.appendChild(l);
+  if (act) { act.classList.add('act'); row.appendChild(act); }
+  $('metaBody').appendChild(row);
+}
+function mbtn(text, on, fn) { const b = document.createElement('button'); b.className = 'mbtn'; b.textContent = text; b.disabled = !on; if (on) b.addEventListener('click', fn); return b; }
+function renderMeta() {
+  const body = $('metaBody'); body.textContent = '';
+  if (metaKind === 'research') {
+    $('metaTitle').textContent = 'RESEARCH';
+    const top = document.createElement('div'); top.className = 'shop-balance'; top.innerHTML = STAR_SVG; top.append(' ' + stars + ' stars \u00b7 upgrades for every class, forever'); body.appendChild(top);
+    const a = prog.res.active;
+    if (a) {
+      const r = RESEARCH.find(x => x.id === a.id), box = document.createElement('div'); box.className = 'res-active';
+      box.textContent = 'Researching ' + (r ? r.name : a.id) + ' Lv ' + a.lv + ' \u00b7 ' + fmtDur(a.end - Date.now()) + ' left';
+      const bar = document.createElement('div'), fill = document.createElement('i'); bar.className = 'res-bar';
+      fill.style.width = Math.min(100, (Date.now() - a.start) / (a.end - a.start) * 100) + '%'; bar.appendChild(fill); box.appendChild(bar); body.appendChild(box);
+    }
+    for (const r of RESEARCH) {
+      const lv = resLv(r.id), L = lv + 1;
+      const act = lv >= r.max ? mbtn('MAX', false) : mbtn(RES_COST(L) + ' \u2605 \u00b7 ' + RES_HOURS[L] + 'h', !a && stars >= RES_COST(L), () => startResearch(r.id));
+      mrow(r.name + '  Lv ' + lv + '/' + r.max, r.desc, act, lv >= r.max ? 'done' : '');
+    }
+  } else if (metaKind === 'ach') {
+    const n = ACH.filter(x => prog.ach[x.id]).length;
+    $('metaTitle').textContent = 'ACHIEVEMENTS ' + n + '/' + ACH.length;
+    for (const x of ACH) mrow((prog.ach[x.id] ? '\u2713 ' : '') + x.name, x.desc + ' \u00b7 +' + x.reward + ' stars', null, prog.ach[x.id] ? 'done' : 'locked');
+  } else if (metaKind === 'world') {
+    $('metaTitle').textContent = 'WORLDS';
+    WORLDS.forEach((w, i) => {
+      const open = i < prog.worldsOpen;
+      const sub = open ? 'Demons x' + w.mul + ' HP \u00b7 stars x' + w.star + ' \u00b7 best ' + fmtTime(prog.worldBest[i] || 0) : 'Locked: survive 15:30 in ' + WORLDS[i - 1].name;
+      const act = i === worldId ? mbtn('PLAYING', false) : mbtn('Select', open, () => { setWorld(i); try { localStorage.setItem('abyssPlusWorld', String(i)); } catch (e) {} renderMeta(); refreshMetaUI(); });
+      mrow(w.name, sub, act, open ? '' : 'locked');
+    });
+  }
+}
+
 function saveShop() {
   try {
     localStorage.setItem('levelPlusStars', String(stars));
@@ -746,7 +992,7 @@ function flyStar(x, y) {
   const target = $('hudStars');
   const icon = target.previousElementSibling || target;
   const cRect = game.getBoundingClientRect(), tRect = icon.getBoundingClientRect();
-  if (!tRect.width || typeof Element.prototype.animate !== 'function') { addStars(1); return; }
+  if (!tRect.width || typeof Element.prototype.animate !== 'function') { addStars(starGain()); return; }
   const tx = tRect.left - cRect.left + tRect.width / 2, ty = tRect.top - cRect.top + tRect.height / 2;
   const el = document.createElement('div');
   el.className = 'fly-star';
@@ -764,7 +1010,7 @@ function flyStar(x, y) {
     if (done) return;
     done = true;
     el.remove();
-    addStars(1);
+    addStars(starGain());
     const box = target.parentElement;
     box.classList.remove('pulse'); void box.offsetWidth; box.classList.add('pulse');
   };
@@ -825,6 +1071,52 @@ function drawOrb(c, cx, cy, r, col) {
   c.shadowBlur = 0;
   c.fillStyle = 'rgba(255, 255, 255, 0.8)';
   c.beginPath(); c.arc(cx - r * 0.3, cy - r * 0.3, r * 0.28, 0, TAU); c.fill();
+  if (col.fx) drawSkinFx(c, cx, cy, r, col.fx);
+}
+// legendary skins move: flames, a void crown, obsidian shards, a golden halo
+function drawSkinFx(c, cx, cy, r, fx) {
+  const t = clock;
+  c.save();
+  if (fx === 'flame') {
+    for (let i = 0; i < 7; i++) {
+      const a = t * 2 + i * TAU / 7, fl = 0.7 + 0.3 * Math.sin(t * 12 + i * 1.7), x = cx + Math.cos(a) * r * 1.15, y = cy + Math.sin(a) * r * 1.15;
+      const g = c.createRadialGradient(x, y, 0, x, y, r * 0.55 * fl);
+      g.addColorStop(0, 'rgba(255, 230, 120, 0.95)'); g.addColorStop(0.5, 'rgba(255, 90, 0, 0.6)'); g.addColorStop(1, 'rgba(255, 40, 0, 0)');
+      c.fillStyle = g; c.beginPath(); c.arc(x, y, r * 0.55 * fl, 0, TAU); c.fill();
+    }
+  } else if (fx === 'void') {
+    c.strokeStyle = 'rgba(170, 120, 255, 0.75)'; c.lineWidth = r * 0.12; c.shadowColor = '#6a00ff'; c.shadowBlur = r;
+    c.beginPath(); c.ellipse(cx, cy, r * 1.55, r * 0.55, t * 0.8, 0, TAU); c.stroke();
+    c.beginPath(); c.ellipse(cx, cy, r * 1.55, r * 0.55, -t * 0.8 + 1, 0, TAU); c.stroke();
+    c.shadowBlur = 0;
+    for (let i = 0; i < 3; i++) {
+      const a = -t * 2.4 + i * TAU / 3;
+      c.fillStyle = '#05001a'; c.strokeStyle = '#b48cff'; c.lineWidth = 1.5;
+      c.beginPath(); c.arc(cx + Math.cos(a) * r * 1.7, cy + Math.sin(a) * r * 1.7, r * 0.22, 0, TAU); c.fill(); c.stroke();
+    }
+  } else if (fx === 'shards') {
+    c.shadowColor = '#ff1a1a'; c.shadowBlur = r * 0.8;
+    for (let i = 0; i < 5; i++) {
+      const a = t * 1.6 + i * TAU / 5;
+      c.save(); c.translate(cx + Math.cos(a) * r * 1.6, cy + Math.sin(a) * r * 1.6); c.rotate(a + Math.PI / 2);
+      c.fillStyle = '#120404'; c.strokeStyle = '#ff3b2a'; c.lineWidth = 1.5;
+      c.beginPath(); c.moveTo(0, -r * 0.5); c.lineTo(r * 0.16, 0); c.lineTo(0, r * 0.3); c.lineTo(-r * 0.16, 0); c.closePath(); c.fill(); c.stroke();
+      c.restore();
+    }
+  } else if (fx === 'halo') {
+    c.strokeStyle = 'rgba(255, 220, 120, 0.95)'; c.lineWidth = r * 0.14; c.shadowColor = '#ffd54a'; c.shadowBlur = r * 1.2;
+    c.beginPath(); c.ellipse(cx, cy - r * 1.35, r * 0.75, r * 0.22, 0, 0, TAU); c.stroke();
+    c.shadowBlur = 0;
+    for (let i = 0; i < 6; i++) {
+      const a = i * TAU / 6 + t * 0.7, tw = Math.max(0, Math.sin(t * 5 + i * 2));
+      if (tw < 0.2) continue;
+      const x = cx + Math.cos(a) * r * 1.7, y = cy + Math.sin(a) * r * 1.7, sz = r * 0.2 * tw;
+      c.fillStyle = 'rgba(255, 250, 210, ' + tw + ')';
+      c.beginPath(); c.moveTo(x, y - sz * 2); c.lineTo(x + sz * 0.5, y); c.lineTo(x, y + sz * 2); c.lineTo(x - sz * 0.5, y); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(x - sz * 2, y); c.lineTo(x, y + sz * 0.5); c.lineTo(x + sz * 2, y); c.lineTo(x, y - sz * 0.5); c.closePath(); c.fill();
+    }
+  }
+  c.restore();
 }
 function drawPlanet(c, cx, cy, r, id, t) {
   const P = PLANETS.find(p => p.id === id);
@@ -931,15 +1223,26 @@ function renderShop() {
     return dot;
   };
   section('ABYSS COLORS');
-  ABYSS_COLORS.filter(c => !c.special).forEach(c => swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dotOf(c), bought => {
+  ABYSS_COLORS.filter(c => !c.special && !c.legend).forEach(c => swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dotOf(c), bought => {
     if (bought) abyssOwned.push(c.id);
     abyssCurrent = c.id;
   }));
   section('SPECIAL');
-  ABYSS_COLORS.filter(c => c.special).forEach(c => swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dotOf(c), bought => {
+  ABYSS_COLORS.filter(c => c.special && !c.legend).forEach(c => swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dotOf(c), bought => {
     if (bought) abyssOwned.push(c.id);
     abyssCurrent = c.id;
   }));
+  // legendary: defeat the boss first, then buy with stars
+  section('LEGENDARY');
+  ABYSS_COLORS.filter(c => c.legend).forEach(c => {
+    const open = c.req === 'king' ? prog.kingKills > 0 : prog.champKills > 0, dot = dotOf(c);
+    dot.style.boxShadow = '0 0 18px ' + c.main + ', 0 0 6px ' + c.light;
+    if (open || abyssOwned.includes(c.id)) { swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dot, bought => { if (bought) abyssOwned.push(c.id); abyssCurrent = c.id; }); return; }
+    const b = document.createElement('button'); b.className = 'swatch'; b.disabled = true;
+    const nm = document.createElement('span'); nm.textContent = c.name;
+    const st = document.createElement('span'); st.className = 'state'; st.textContent = (c.req === 'king' ? 'Defeat the Demon King' : 'Defeat the Hell Champion') + ' · ' + c.price + ' ★';
+    b.append(dot, nm, st); g.appendChild(b);
+  });
 }
 function openShop() { pendingBuy = null; renderShop(); $('shopModal').classList.remove('hidden'); }
 function closeShop() { pendingBuy = null; $('shopModal').classList.add('hidden'); }
@@ -1065,7 +1368,7 @@ let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, c
 // use(pl) points the shared names at that player's things so the weapon code works for anyone.
 let unlockIdx = 0, nextUnlock = 90, seenTypes = new Set(['imp']), intro = null, introQueue = [];
 let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null, nextChamp = 900, champCount = 0, champsKilled = 0;
-let allPets = [], twinsDraw = [];
+let allPets = [], twinsDraw = [], hazards = [];
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
 const ringR = () => VS() ? 650 : 380;
@@ -1085,7 +1388,7 @@ function newPlayer(cls) {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 5, inv: 0, ups: {}, volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
     thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1, explode: 0, chain: 0, poison: 0,
-    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, _twins: [],
+    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, conse: 0, nova: 0, novaCd: 0, resDmg: 1, _twins: [],
     healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
     ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
@@ -1094,13 +1397,13 @@ function newPlayer(cls) {
   if (cls === 'hunter') pl.w = { cd: 0.3, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 72 };
   else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 22, range: 340, splash: 60 };
-  else if (cls === 'fallen') pl.w = { cd: 0.45, dmg: 16, radius: 80, crit: 0.05 };
+  else if (cls === 'fallen') pl.w = { cd: 0.6, dmg: 16, radius: 80, crit: 0.05 };
   else { pl.w = { dmg: 14, wspeed: 240 }; pl.wolves = 2; }
   return pl;
 }
 
 function resetWorld() {
-  enemies = []; ebullets = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
+  enemies = []; ebullets = []; hazards = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
   nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null; nextChamp = 900; champCount = 0; champsKilled = 0;
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
@@ -1109,6 +1412,7 @@ function startGame() {
   coop = null;
   resetWorld();
   me = newPlayer(selClass);
+  applyResearch(me, prog.res.lv);
   me.name = playerName || 'Player';
   players = [me];
   use(me);
@@ -1212,13 +1516,13 @@ function addText(x, y, s, col) {
 
 function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.dead) return;
-  dmg *= ((p && p.auraMul) || 1) * ((p && p.might) || 1);
+  dmg *= ((p && p.auraMul) || 1) * ((p && p.might) || 1) * ((p && p.resDmg) || 1);
   if (p && p.cls === 'hunter' && p.ultT > 0) dmg *= p.ultMul;
   if (e.pvp) { pvpHit(p, e.q, dmg); return; }
   if (p && p.feastT > 0 && p.feast && !p.dead) p.hp = Math.min(p.maxHp, p.hp + Math.min(dmg, Math.max(0, e.hp)) * FEAST_LS[Math.min(8, p.feast)] * (BIG_DEMONS[e.type] ? 0.5 : 1));
   e.hp -= dmg;
   e.flash = 0.1;
-  if (kx || ky) { const k = e.type === 'champ' ? 0.03 : e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : e.type === 'golem' ? 0.3 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
+  if (kx || ky) { const k = e.type === 'champ' ? 0.03 : e.type === 'king' ? 0.05 : e.type === 'boss' ? 0.15 : e.type === 'golem' ? 0.3 : e.type === 'titan' ? 0.15 : (e.type === 'brute' ? 0.5 : 1); e.kx += kx * k; e.ky += ky * k; }
   if (stun && e.type !== 'boss' && e.type !== 'king' && e.type !== 'champ') e.stun = Math.max(e.stun, stun);
   addText(e.x, e.y - e.r, Math.round(dmg), dmg >= 40 ? '#ffd54a' : '#ffffff');
   Sound.sfx('hit');
@@ -1441,13 +1745,21 @@ function spawnEnemy(type) {
   const c = groupCenter(), a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60 + (coop ? ringR() * 0.5 : 0);
   return spawnAt(type, c.x + Math.cos(a) * d, c.y + Math.sin(a) * d);
 }
+// Hellhounds come in packs of three
+function spawnPick() {
+  const ty = pickType(), e = spawnEnemy(ty);
+  if (ty === 'hound') for (let i = 0; i < 2; i++) spawnAt('hound', e.x + rand(-34, 34), e.y + rand(-34, 34));
+  return e;
+}
+// demons get much tougher later on (and in harder worlds)
+function hpScale() { return (1 + time / 60 * 0.45) * (time > 600 ? Math.pow(1 + (time - 600) / 240, 1.6) : 1) * WP().mul; }
 function spawnAt(type, x, y) {
   const t = ETYPES[type];
   // co-op: demons get a little tougher for each extra player (+20% HP each)
-  const mult = (1 + time / 60 * 0.45) * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : type === 'champ' ? 1 + (champCount - 1) * 0.6 : 1) * (coop ? 1 + 0.2 * (players.length - 1) : 1);
+  const mult = hpScale() * (type === 'boss' ? 1 + bossCount * 0.6 : type === 'king' ? 1 + surgeCount * 0.5 : type === 'champ' ? 1 + (champCount - 1) * 0.6 : 1) * (coop ? 1 + 0.2 * (players.length - 1) : 1);
   const e = {
     type, x, y, r: t.r, hp: t.hp * mult, maxHp: t.hp * mult,
-    speed: t.speed * (1 + Math.min(0.35, time / 600)), dmg: t.dmg * (1 + time / 300), kx: 0, ky: 0, stun: 0, flash: 0,
+    speed: t.speed * (1 + Math.min(0.6, time / 700)), dmg: t.dmg * (1 + time / 300) * (time > 600 ? 1 + (time - 600) / 300 : 1) * (1 + (WP().mul - 1) * 0.6), kx: 0, ky: 0, stun: 0, flash: 0,
     bladeCd: 0, shootT: rand(1, 2.5), dead: false, wob: rand(0, TAU),
     atkCd: 0, dash: 0, wind: 0, dashT: rand(1, 3), dvx: 0, dvy: 0, sumT: rand(2, 4)
   };
@@ -1471,8 +1783,8 @@ function updateCharger(e, dx, dy, d, dt) {
   e.x += dx / d * e.speed * dt; e.y += dy / d * e.speed * dt;
 }
 // when each demon type first appears (seconds); after 11:30 a new one every 3 minutes
-const UNLOCK = [['runner', 90], ['charger', 180], ['brute', 300], ['wisp', 420], ['splitter', 540], ['necro', 690], ['golem', 870], ['bat', 1050], ['bomber', 1230], ['shade', 1410]];
-const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2 };
+const UNLOCK = [['runner', 75], ['charger', 150], ['brute', 255], ['wisp', 360], ['splitter', 465], ['necro', 600], ['golem', 735], ['bat', 870], ['bomber', 1005], ['shade', 1140], ['hound', 1275], ['warlock', 1410], ['titan', 1545]];
+const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7 };
 function pickType() {
   const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx).map(u => u[0])];
   let r = Math.random() * allowed.reduce((a, k) => a + TYPE_WEIGHT[k], 0);
@@ -1567,58 +1879,60 @@ function spriteOf(key, size, draw) {
 }
 function obstacleSprite(o) {
   const size = o.r * 3;
-  return spriteOf(o.kind + o.r + '_' + o.v, size, (g) => {
+  const P = WP();
+  return spriteOf(o.kind + o.r + '_' + o.v + 'w' + worldId, size, (g) => {
     const R = o.r;
     g.fillStyle = 'rgba(0, 0, 0, 0.45)';
     g.beginPath(); g.ellipse(R * 0.15, R * 0.3, R * 1.05, R * 0.8, 0, 0, TAU); g.fill();
     if (o.kind === 'crystal') {
       const shape = [[0, -1.05], [0.8, -0.5], [0.95, 0.35], [0.25, 1], [-0.7, 0.75], [-0.95, -0.2]].map(([x, y], i) => [x * R * (1 + ((i + o.v) % 3) * 0.06), y * R]);
       g.beginPath(); shape.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
-      g.shadowColor = '#b026ff'; g.shadowBlur = R * 0.6;
-      g.fillStyle = 'rgba(70, 25, 150, 0.75)'; g.fill();
-      g.strokeStyle = '#c56bff'; g.lineWidth = 2.2; g.stroke();
+      g.shadowColor = P.crys[0]; g.shadowBlur = R * 0.6;
+      g.fillStyle = P.crys[1]; g.fill();
+      g.strokeStyle = P.crys[2]; g.lineWidth = 2.2; g.stroke();
       g.shadowBlur = 0;
-      g.strokeStyle = 'rgba(224, 179, 255, 0.55)'; g.lineWidth = 1.2;
+      g.strokeStyle = P.crys[3]; g.lineWidth = 1.2;
       g.beginPath(); shape.forEach(([x, y]) => { g.moveTo(-R * 0.1, -R * 0.15); g.lineTo(x, y); }); g.stroke();
-      g.strokeStyle = 'rgba(0, 240, 255, 0.7)'; g.lineWidth = 1.5;
+      g.strokeStyle = P.crys[4]; g.lineWidth = 1.5;
       g.beginPath(); g.moveTo(shape[0][0], shape[0][1]); g.lineTo(shape[1][0], shape[1][1]); g.stroke();
     } else {
-      g.shadowColor = '#ff4fd8'; g.shadowBlur = R * 0.5;
-      g.fillStyle = 'rgba(38, 16, 52, 0.92)';
+      g.shadowColor = P.pil[0]; g.shadowBlur = R * 0.5;
+      g.fillStyle = P.pil[1];
       g.beginPath(); g.arc(0, 0, R, 0, TAU); g.fill();
-      g.strokeStyle = '#ff4fd8'; g.lineWidth = 2.2; g.stroke();
+      g.strokeStyle = P.pil[0]; g.lineWidth = 2.2; g.stroke();
       g.shadowBlur = 0;
-      g.strokeStyle = 'rgba(255, 79, 216, 0.45)'; g.lineWidth = 1.2;
+      g.strokeStyle = P.pil[2]; g.lineWidth = 1.2;
       g.beginPath(); g.arc(0, 0, R * 0.68, 0, TAU); g.stroke();
       g.beginPath(); g.arc(0, 0, R * 0.35, 0, TAU); g.stroke();
-      g.strokeStyle = 'rgba(255, 180, 240, 0.4)';
+      g.strokeStyle = P.pil[3];
       g.beginPath(); g.moveTo(R * 0.2, -R * 0.95); g.lineTo(R * 0.05, -R * 0.5); g.lineTo(R * 0.3, -R * 0.2);
       g.moveTo(-R * 0.9, R * 0.3); g.lineTo(-R * 0.5, R * 0.2); g.stroke();
     }
   });
 }
 function decoSprite(d) {
-  if (d.kind === 'pool') return spriteOf('pool' + d.v, 180 + d.v * 50, (g, s) => {
+  const P = WP();
+  if (d.kind === 'pool') return spriteOf('pool' + d.v + 'w' + worldId, 180 + d.v * 50, (g, s) => {
     const gr = g.createRadialGradient(0, 0, 0, 0, 0, s / 2);
-    gr.addColorStop(0, 'rgba(255, 40, 90, 0.16)'); gr.addColorStop(0.6, 'rgba(176, 38, 255, 0.07)'); gr.addColorStop(1, 'rgba(176, 38, 255, 0)');
+    gr.addColorStop(0, P.pool[0]); gr.addColorStop(0.6, P.pool[1]); gr.addColorStop(1, P.pool[2]);
     g.fillStyle = gr; g.fillRect(-s / 2, -s / 2, s, s);
   });
-  if (d.kind === 'rune') return spriteOf('rune' + d.v, 48, (g) => {
-    g.strokeStyle = 'rgba(0, 240, 255, 0.22)'; g.lineWidth = 1.4;
+  if (d.kind === 'rune') return spriteOf('rune' + d.v + 'w' + worldId, 48, (g) => {
+    g.strokeStyle = P.rune; g.lineWidth = 1.4;
     g.beginPath(); g.arc(0, 0, 18, 0, TAU); g.stroke();
     g.beginPath();
     const n = 3 + d.v;
     for (let i = 0; i <= n; i++) { const a = i * TAU / n - Math.PI / 2; i ? g.lineTo(Math.cos(a) * 12, Math.sin(a) * 12) : g.moveTo(Math.cos(a) * 12, Math.sin(a) * 12); }
     g.stroke();
   });
-  if (d.kind === 'grass') return spriteOf('grass' + d.v, 30, (g) => {
-    g.strokeStyle = 'rgba(57, 255, 106, 0.32)'; g.lineWidth = 1.6; g.lineCap = 'round';
+  if (d.kind === 'grass') return spriteOf('grass' + d.v + 'w' + worldId, 30, (g) => {
+    g.strokeStyle = P.grass; g.lineWidth = 1.6; g.lineCap = 'round';
     g.beginPath();
     for (let i = 0; i < 3 + d.v; i++) { const x = (i - 1.5) * 4; g.moveTo(x, 8); g.quadraticCurveTo(x + 2, 0, x + (i % 2 ? 4 : -3), -8 - (i % 3) * 2); }
     g.stroke();
   });
-  return spriteOf('shard' + d.v, 24, (g) => {
-    g.fillStyle = 'rgba(0, 240, 255, 0.28)'; g.strokeStyle = 'rgba(125, 249, 255, 0.5)'; g.lineWidth = 1;
+  return spriteOf('shard' + d.v + 'w' + worldId, 24, (g) => {
+    g.fillStyle = P.shard[0]; g.strokeStyle = P.shard[1]; g.lineWidth = 1;
     g.beginPath(); g.moveTo(0, -9 + d.v); g.lineTo(5, 5); g.lineTo(-5, 6); g.closePath(); g.fill(); g.stroke();
   });
 }
@@ -1663,14 +1977,14 @@ function setBearHp(c, on) {
 function castUlt(c) {
   const r = ultRank(c);
   if (!c || c.dead || !r || c.ultCd > 0) return;
-  c.ultR = r; c.ultCd = c.cls === 'fallen' ? 30 : ULT_CD; c.ultT = c.cls === 'fallen' ? DEMON_T[r] : ULT_TIME;
+  c.ultR = r; c.ultCd = c.cls === 'fallen' ? 60 : ULT_CD; c.ultT = c.cls === 'fallen' ? DEMON_T[r] : ULT_TIME;
   if (c.cls === 'hunter') c.ultMul = [1, 2, 2.5, 3][r];
   else if (c.cls === 'warrior') { c.ultHp = [0, 50, 75, 100][r]; c.maxHp += c.ultHp; c.hp += c.ultHp; c.waveT = 0; }
   else if (c.cls === 'druid') { c.roarT = 0; if (c.form === 'bear') setBearHp(c, true); }
   else if (c.cls === 'paladin') {
     // Sanctuary: everyone in the circle is immortal; fallen teammates inside get up at once
     c.ultT = 0.8;
-    const R = 220, dur = [0, 1.5, 2, 2.5][r];
+    const R = 220, dur = [0, 3, 4, 5][r];
     effects.push({ kind: 'sanct', x: c.x, y: c.y, r: R, life: 0.8, max: 0.8, owner: c });
     for (const q of players) {
       if (q.team !== c.team || (q.x - c.x) ** 2 + (q.y - c.y) ** 2 > R * R) continue;
@@ -1762,9 +2076,8 @@ function healRequest(targetId) {
 }
 function skill1() {
   if (!me || state !== S.PLAYING) return;
-  if (me.cls === 'hunter') return;
-  if (me.cls === 'fallen') { stepPress(); return; }
   if (me.cls !== 'paladin' || me.dead || me.healCd > 0) return;
+  return; // Paladin heals by itself now
   const alive = players.filter(q => !q.dead && q.team === me.team);
   if (!coop || alive.length < 2) { healRequest(me.id); return; }
   // co-op: choose who to heal
@@ -1780,10 +2093,21 @@ function skill1() {
   }
   box.classList.remove('hidden');
 }
+// Nova Bomb (from research): a huge blast around you
+const novaCdOf = c => [90, 90, 80, 70, 60, 50][Math.min(5, c.nova || 0)];
+function castNova(c) {
+  if (!c || c.dead || !c.nova || c.novaCd > 0 || state !== S.PLAYING) return;
+  c.novaCd = novaCdOf(c);
+  const R = 280, dmg = (60 + 40 * c.nova) * hpScale(), cx = c.x, cy = c.y;
+  effects.push({ kind: 'nova', x: cx, y: cy, r: R, life: 0.6, max: 0.6 });
+  for (const e of enemiesNear(cx, cy, R)) { const dx = e.x - cx, dy = e.y - cy, d = Math.hypot(dx, dy) || 1; damageEnemy(e, dmg, dx / d * 500, dy / d * 500, 0.5); }
+  if (c === me) shake = Math.max(shake, 14);
+  Sound.sfx('boom');
+}
 function skill2() {
-  if (!me || state !== S.PLAYING || me.cls !== 'paladin' || me.dead || me.shield <= 0 || me.shieldCd > 0) return;
-  if (coop && coop.role === 'guest') { coop.sh = (coop.sh || 0) + 1; guestSend(true); return; }
-  castShield(me); updateHUD();
+  if (!me || state !== S.PLAYING || me.dead || !me.nova || me.novaCd > 0) return;
+  if (coop && coop.role === 'guest') { coop.nv = (coop.nv || 0) + 1; guestSend(true); return; }
+  castNova(me); updateHUD();
 }
 const SKILL_ICONS = {
   hunter: '<circle cx="11" cy="14" r="6"/><path d="M13.5 8.6L15 6.5h3M15 6.5l1.5-2"/>',
@@ -1835,6 +2159,7 @@ function fallenStrike(src, mul) {
   } else {
     // a half circle in front, turned toward the closest demon
     effects.push({ kind: 'halfslash', x: src.x, y: src.y, r: w.radius, life: 0.22, max: 0.22, owner: src, seed: a });
+    if (src === p && p.rend) { p.rendN = (p.rendN || 0) + 1; if (p.rendN % 3 === 0) soulRend(p, a, dmg * (0.6 + 0.1 * (Math.min(8, p.rend) - 1))); }
     const ca = Math.cos(a), sa = Math.sin(a), sx = src.x, sy = src.y;
     for (const e of enemiesNear(sx, sy, w.radius)) {
       const dx = e.x - sx, dy = e.y - sy, d = Math.hypot(dx, dy) || 1;
@@ -1843,6 +2168,15 @@ function fallenStrike(src, mul) {
     }
   }
   return true;
+}
+// Soul Rend: a dark crescent flies forward and cuts every demon in a line
+function soulRend(c, a, dmg) {
+  const L = 340, ca = Math.cos(a), sa = Math.sin(a), sx = c.x, sy = c.y;
+  effects.push({ kind: 'rend', x: sx, y: sy, r: L, life: 0.35, max: 0.35, seed: a });
+  for (const e of enemiesNear(sx + ca * L / 2, sy + sa * L / 2, L / 2 + 30)) {
+    const dx = e.x - sx, dy = e.y - sy, along = dx * ca + dy * sa, side = Math.abs(-dx * sa + dy * ca);
+    if (along > -10 && along < L && side < e.r + 22) damageEnemy(e, dmg, ca * 140, sa * 140, 0);
+  }
 }
 function updateFallen(dt) {
   const t = p.t;
@@ -2025,7 +2359,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '3.9';
+const GAME_VERSION = '4.0';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2159,9 +2493,10 @@ function reconnectAll() {
   coop.lastSnap = performance.now();
   if (coop.role === 'guest') guestSend(true);
 }
-function skinInfo() { const c = skinCol(); return { m: c.main, l: c.light, d: c.dark }; }
-function skinFrom(s) { return s && HEX.test(s.m) && HEX.test(s.l) && HEX.test(s.d) ? { main: s.m, light: s.l, dark: s.d } : ORB_COLORS[0]; }
-function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0, tm: (lobby && lobby.myTeam) || 'A' }; }
+function skinInfo() { const c = skinCol(); return { m: c.main, l: c.light, d: c.dark, f: c.fx || '' }; }
+const SKIN_FX = { flame: 1, void: 1, shards: 1, halo: 1 };
+function skinFrom(s) { return s && HEX.test(s.m) && HEX.test(s.l) && HEX.test(s.d) ? { main: s.m, light: s.l, dark: s.d, fx: SKIN_FX[s.f] ? s.f : '' } : ORB_COLORS[0]; }
+function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0, tm: (lobby && lobby.myTeam) || 'A', rs: prog.res.lv }; }
 function coopMsg(t) { $('coopMsg').textContent = t || ''; }
 const MP_INFO = {
   menu: 'Play with up to 3 friends. Your class is the one you picked on the main screen.',
@@ -2330,6 +2665,7 @@ function startCoop(role, round) {
   lobby = null;
   resetWorld();
   me = newPlayer(selClass);
+  if (coop.mode === 'coop') applyResearch(me, prog.res.lv);
   me.team = teamOf(roster[myId]);
   me.id = myId; me.name = (playerName || 'Player').slice(0, 12); me.skin = skinCol();
   players = [me];
@@ -2337,7 +2673,7 @@ function startCoop(role, round) {
     for (const [id, v] of Object.entries(roster)) {
       if (id === myId || !v) continue;
       const q = newPlayer(CLASSES[v.c] ? v.c : 'hunter');
-      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true; q.team = teamOf(v);
+      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true; q.team = teamOf(v); q.rs = v.rs; if (coop.mode === 'coop') applyResearch(q, v.rs);
       q.x = q.tx = rand(-50, 50); q.y = q.ty = rand(-50, 50); q.seen = performance.now();
       players.push(q);
     }
@@ -2383,6 +2719,7 @@ function onPlayersInput(data) {
     if (typeof v.ul === 'number' && v.ul > (q.lastUl || 0)) { q.lastUl = v.ul; castUlt(q); use(me); }
     if (typeof v.fm === 'string') setForm(q, v.fm);
     if (typeof v.fs === 'number' && v.fs > (q.lastFs || 0)) { q.lastFs = v.fs; hostStepFor(q, v.fsx, v.fsy); }
+    if (typeof v.nv === 'number' && v.nv > (q.lastNv || 0)) { q.lastNv = v.nv; use(q); castNova(q); unuse(q); use(me); }
   }
 }
 function hostTick(dt) {
@@ -2416,6 +2753,7 @@ function buildSnapshot() {
       tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
+      nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0,
       tw: (q._twins || []).map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100)]), ft: q.feastT > 0 ? 1 : 0, fc: +(q.stepCd || 0).toFixed(1),
       b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn), +(b.ang || 0).toFixed(2)])
     };
@@ -2427,6 +2765,7 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
+    hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2)]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
     fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
@@ -2500,7 +2839,10 @@ const INTRO = {
   bat: ['Abyss Bat', 'Tiny and fast, flies in zig-zags. Hard to hit.'],
   bomber: ['Bomber', 'Runs at you and explodes when it gets close. Kill it from afar!'],
   shade: ['Shade', 'Every few seconds it blinks forward toward you.'],
-  champ: ['HELL CHAMPION', 'Every 15 minutes. Throws fireballs from afar, then gathers its power and bursts into a storm of fire in every direction. Worth 25 stars.']
+  champ: ['HELL CHAMPION', 'Every 15 minutes. Throws fireballs, marks the ground under you with red circles that explode, and bursts into a storm of fire. Worth 25 stars.'],
+  hound: ['Hellhound', 'Hunts in packs of three. Very fast.'],
+  warlock: ['Warlock', 'Stays back and curses the ground under you. Move before it explodes!'],
+  titan: ['Titan', 'A walking mountain. Stomps the ground around it. Huge HP.']
 };
 function showIntroCard(type) {
   const info = INTRO[type];
@@ -2588,6 +2930,7 @@ function showCoopOver(note) {
   $('againBtn').classList.add('hidden');
   $('overScreen').classList.remove('hidden');
   if (!note && !vs) submitScore(sec, 'co');
+  if (!note) recordRun({ sec, lvl: me.lvl, kills, cls: me.cls, boss: bossesKilled, king: kingsKilled, champ: champsKilled, mode: vs ? 'vs' : 'coop', win: vs && coop.winner === me.team });
   $('classBtn').textContent = 'Leave room';
   if (!note && coop) { coop.retry = coop.retry || {}; $('retryBtn').classList.remove('hidden'); $('retryNote').classList.remove('hidden'); updateRetryUI(); }
   else { $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden'); }
@@ -2621,7 +2964,7 @@ function checkRetry() {
 async function hostRetry() {
   const round = (coop.round || 0) + 1, code = coop.code;
   const roster = {};
-  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark }, tm: q.team };
+  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' }, tm: q.team, rs: q === me ? prog.res.lv : q.rs };
   await api('/rooms/' + code + '/state', 'PUT', { rd: round, t: 0, over: 0 });
   await api('/rooms/' + code + '/retry', 'DELETE');
   await api('/rooms/' + code + '/meta', 'PATCH', { round, paused: false });
@@ -2663,12 +3006,12 @@ function guestSend(force) {
   if (!coop || coop.role !== 'guest' || coop.over) return;
   if (coop.sending && !force) return;
   coop.sending = true;
-  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr, sh: coop.sh || 0, ul: coop.ul || 0, fm: coop.fm || me.form || 'wolf', fs: coop.fs || 0, fsx: coop.fsx || 0, fsy: coop.fsy || 0 };
+  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr, sh: coop.sh || 0, ul: coop.ul || 0, fm: coop.fm || me.form || 'wolf', fs: coop.fs || 0, fsx: coop.fsx || 0, fsy: coop.fsy || 0, nv: coop.nv || 0 };
   if (coop.hl) body.hl = coop.hl;
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -2682,6 +3025,7 @@ function onSnapshot(s) {
   coop.lastBk = s.bk || 0;
   if ((s.kk || 0) > (coop.lastKk || 0)) { for (let i = 0; i < 15; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 90); }
   coop.lastKk = s.kk || 0;
+  bossesKilled = s.bk || 0; kingsKilled = s.kk || 0; champsKilled = s.ck || 0;
   if ((s.ck || 0) > (coop.lastCk || 0)) { for (let i = 0; i < 25; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 70); }
   coop.lastCk = s.ck || 0;
   if ((s.sv || 0) > (coop.lastSv || 0)) { banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 }; Sound.sfx('boss'); Sound.setTempo(140); shake = 22; }
@@ -2703,6 +3047,8 @@ function onSnapshot(s) {
   const mv = ([x, y, vx, vy, kf]) => ({ x, y, vx, vy, king: !!kf, champ: kf === 2 });
   bullets = (s.bu || []).map(mv); ebullets = (s.eb || []).map(mv);
   tornados = (s.tn || []).map(([x, y, r]) => ({ x, y, r, spin: clock * 8 }));
+  hazards = (s.hz || []).map(([x, y, r, k]) => ({ x, y, r, t: k, max: 1 }));
+  if (typeof s.wd === 'number') setWorld(s.wd);
   grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
   for (const f of (s.fx || [])) {
     const [kind, x, y, r, seed, oid] = f;
@@ -2741,7 +3087,7 @@ function onSnapshot(s) {
       track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.oid = id;
       nt.set(key, o); twinsDraw.push(o); myTw.push(o);
     });
-    if (id === myId) { me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
+    if (id === myId) { me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
@@ -2809,6 +3155,7 @@ function guestUpdate(dt) {
   for (const b of bullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
   for (const b of ebullets) { b.x += b.vx * dt; b.y += b.vy * dt; }
   for (const tn of tornados) tn.spin += dt * 8;
+  for (const h of hazards) h.t = Math.max(0, h.t - dt);
   for (const g of grenades) g.t = Math.min(g.dur, g.t + dt);
   for (const f of effects) f.life -= dt;
   effects = effects.filter(f => f.life > 0);
@@ -2902,6 +3249,7 @@ function update(dt) {
     p.grenadeCd = Math.max(0, p.grenadeCd - dt);
     p.healCd = Math.max(0, p.healCd - dt); p.shieldCd = Math.max(0, p.shieldCd - dt); p.shieldT = Math.max(0, p.shieldT - dt);
     p.ultCd = Math.max(0, p.ultCd - dt); tickUlt(p, dt);
+    p.novaCd = Math.max(0, (p.novaCd || 0) - dt);
     p.guardT = Math.max(0, (p.guardT || 0) - dt);
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
     grenades = grenades.filter(g => !g.done);
@@ -2926,7 +3274,7 @@ function update(dt) {
   if (spawnT <= 0) {
     spawnT = Math.max(0.25, 1.2 - time * 0.004);
     const n = 1 + Math.floor(time / 75);
-    for (let i = 0; i < n && enemies.length < 240; i++) spawnEnemy(pickType());
+    for (let i = 0; i < n && enemies.length < 240; i++) spawnPick();
   }
   if (time >= nextSurge) {
     nextSurge += 300; surgeCount++;
@@ -2947,7 +3295,7 @@ function update(dt) {
     surgeT -= dt;
     if (surgeT <= 0) {
       surgeT = 0.12;
-      for (let i = 0; i < 3 && surgeLeft > 0 && enemies.length < 320; i++) { spawnEnemy(pickType()); surgeLeft--; }
+      for (let i = 0; i < 3 && surgeLeft > 0 && enemies.length < 320; i++) { spawnPick(); surgeLeft--; }
     }
   }
   if (time >= nextBoss) {
@@ -3001,6 +3349,7 @@ function update(dt) {
       let sp = e.speed;
       if (!tb && e.type === 'wisp' && d < 240) sp = -e.speed * 0.6;
       if (!tb && e.type === 'necro' && d < 300) sp = -e.speed * 0.6;
+      if (!tb && e.type === 'warlock' && d < 280) sp = -e.speed * 0.6;
       if (e.type === 'champ') sp = e.charging > 0 ? 0 : d < 320 ? -e.speed * 0.6 : sp;
       if (tb && md < e.r + 14) sp = 0;
       e.x += mvx / md * sp * dt; e.y += mvy / md * sp * dt;
@@ -3019,6 +3368,18 @@ function update(dt) {
       }
     }
     if (e.type === 'champ') {
+      e.razeT = (e.razeT === undefined ? 3 : e.razeT) - dt;
+      if (e.razeT <= 0 && !(e.charging > 0)) {
+        e.razeT = 5;
+        const lost = 1 - e.hp / e.maxHp, n = lost >= 0.66 ? 3 : lost >= 0.33 ? 2 : 1;
+        for (const pl of players) {
+          if (pl.dead || (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2 > 1000 * 1000) continue;
+          const l = Math.hypot(pl.vx || 0, pl.vy || 0), ra = rand(0, TAU);
+          const ux = l > 0.1 ? pl.vx / l : Math.cos(ra), uy = l > 0.1 ? pl.vy / l : Math.sin(ra);
+          for (let i = 0; i < n; i++) hazards.push({ x: pl.x + ux * i * 85, y: pl.y + uy * i * 85, r: 65, t: 1, max: 1, dmg: 100 });
+        }
+        Sound.sfx('summon');
+      }
       e.chargeCd = (e.chargeCd === undefined ? 6 : e.chargeCd) - dt;
       if (e.charging > 0) {
         // gathering power: it stands still, shrinks and glows, then bursts
@@ -3035,6 +3396,20 @@ function update(dt) {
           const base = Math.atan2(dy, dx);
           for (let i = -1; i <= 1; i++) { const a = base + i * 0.18; ebullets.push({ x: e.x, y: e.y, vx: Math.cos(a) * 165, vy: Math.sin(a) * 165, life: 5.5, dmg: 18 * (1 + time / 300), king: true, champ: true }); }
         }
+      }
+    }
+    // later demons
+    if (e.type === 'warlock') {
+      e.castT = (e.castT === undefined ? rand(2, 4) : e.castT) - dt;
+      if (e.castT <= 0 && d < 650) { e.castT = 4.5; hazards.push({ x: tp.x, y: tp.y, r: 60, t: 1.2, max: 1.2, dmg: e.dmg * 1.5 }); }
+    }
+    if (e.type === 'titan' && d < 175) {
+      e.castT = (e.castT === undefined ? 1.5 : e.castT) - dt;
+      if (e.castT <= 0) {
+        e.castT = 3.5;
+        effects.push({ kind: 'slam', x: e.x, y: e.y, r: 150, life: 0.45, max: 0.45 });
+        for (const pl of players) if (!pl.dead && (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2 < 150 * 150) hurtTarget(pl, e.dmg * 0.8, null);
+        if (d < 400) shake = Math.max(shake, 8);
       }
     }
     // new demons
@@ -3076,6 +3451,16 @@ function update(dt) {
     }
   }
   ebullets = ebullets.filter(b => b.life > 0);
+  for (const h of hazards) {
+    h.t -= dt;
+    if (h.t <= 0) {
+      h.done = true;
+      effects.push({ kind: 'raze', x: h.x, y: h.y, r: h.r, life: 0.45, max: 0.45 });
+      for (const pl of players) if (!pl.dead && (pl.x - h.x) ** 2 + (pl.y - h.y) ** 2 < (h.r + PR * 0.4) ** 2) hurtTarget(pl, h.dmg, null);
+      Sound.sfx('boom');
+    }
+  }
+  hazards = hazards.filter(h => !h.done);
 
   // gems fly to the closest living player; XP is shared
   for (const g of gems) {
@@ -3162,6 +3547,20 @@ function updateWeapons(dt) {
   } else if (p.cls === 'fallen') {
     updateFallen(dt);
   } else if (p.cls === 'paladin') {
+    // automatic heal: whoever is under 80% HP, the weakest first
+    if (p.healCd <= 0) {
+      const hurt = players.filter(q => !q.dead && q.team === p.team && q.hp < q.maxHp * 0.8 && (q.x - p.x) ** 2 + (q.y - p.y) ** 2 < 520 * 520);
+      if (hurt.length) { hurt.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp); castHeal(p, hurt[0]); }
+    }
+    if (p.conse) {
+      t.conse = (t.conse === undefined ? 2 : t.conse) - dt;
+      if (t.conse <= 0) {
+        t.conse = Math.max(2.5, 5.5 - 0.35 * p.conse);
+        const Rc = 130 + 12 * p.conse;
+        effects.push({ kind: 'conse', x: p.x, y: p.y, r: Rc, life: 0.5, max: 0.5, owner: p });
+        for (const e of enemiesNear(p.x, p.y, Rc)) damageEnemy(e, p.w.dmg * (0.5 + 0.15 * p.conse), 0, 0, 0.2);
+      }
+    }
     t.shot -= dt;
     if (t.shot <= 0) {
       // Zeal 3 and 6: strike the 2 or 3 closest demons at once
@@ -3213,7 +3612,7 @@ function updateWeapons(dt) {
       if (t.storm <= 0) {
         t.storm = Math.max(0.5, 1.6 - 0.2 * p.storm);
         // strikes hit hard and blast everything around the target
-        const dmgS = 60 + 25 * p.storm, splash = 80 + 10 * p.storm;
+        const dmgS = 48 + 20 * p.storm, splash = 80 + 10 * p.storm;
         for (const e of pickRandom(enemiesNear(p.x, p.y, 650), p.storm + 1)) {
           effects.push({ kind: 'bolt', x: e.x, y: e.y, life: 0.3, max: 0.3, seed: Math.random() * 1000 });
           effects.push({ kind: 'zap', x: e.x, y: e.y, r: splash, life: 0.35, max: 0.35 });
@@ -3227,8 +3626,8 @@ function updateWeapons(dt) {
       t.tornado -= dt;
       if (t.tornado <= 0) {
         t.tornado = Math.max(2.5, 6 - 0.6 * p.tornado);
-        // level 1-2: one tornado, level 3-4: two, level 5: three at once
-        for (let i = 0; i < (p.tornado >= 8 ? 4 : p.tornado >= 5 ? 3 : p.tornado >= 3 ? 2 : 1); i++) {
+        // level 1-2: 1 tornado, 3-4: 2, 5-6: 3, 7: 4, 8: 5
+        for (let i = 0; i < (p.tornado >= 8 ? 5 : p.tornado >= 7 ? 4 : p.tornado >= 5 ? 3 : p.tornado >= 3 ? 2 : 1); i++) {
           const a = rand(0, TAU);
           tornados.push({ x: p.x, y: p.y, vx: Math.cos(a) * 140, vy: Math.sin(a) * 140, life: 3 + 0.3 * p.tornado, r: 85 + 12 * p.tornado, tick: 0, spin: 0 });
         }
@@ -3239,7 +3638,7 @@ function updateWeapons(dt) {
       if (t.quake <= 0) {
         const ql = Math.min(8, p.quake);
         t.quake = [0, 6, 5, 4, 3.5, 3, 2.75, 2.5, 2.25][ql];
-        const Rq = 200 + 25 * p.quake;
+        const Rq = 170 + 20 * p.quake;
         effects.push({ kind: 'quake', x: p.x, y: p.y, r: Rq, life: 0.7, max: 0.7, owner: p, seed: Math.random() * 6 });
         for (const e of enemiesNear(p.x, p.y, Rq)) damageEnemy(e, [0, 50, 75, 100, 120, 150, 170, 190, 210][ql], 0, 0, 1);
         if (p === me) shake = Math.max(shake, 10);
@@ -3294,18 +3693,16 @@ function updateHUD(force) {
     $(txt).textContent = cd > 0 ? Math.ceil(cd) : '';
     btn.classList.toggle('ready', cd <= 0);
   };
-  if (me.cls === 'paladin') setBtn($('skillBtn'), 'skillCdText', live, me.healCd, healCdOf(me));
-  else if (me.cls === 'fallen') setBtn($('skillBtn'), 'skillCdText', live && me.step > 0, me.stepCd, STEP_CD[Math.min(8, me.step)]);
-  else $('skillBtn').classList.add('hidden');
+  $('skillBtn').classList.add('hidden');
   // ultimate (unlocks at level 6, gets stronger at 12 and 18)
   const ur = ultRank(me), ub = $('ultBtn');
-  setBtn(ub, 'ultCdText', live && ur > 0, me.ultCd, me.cls === 'fallen' ? 30 : ULT_CD);
+  setBtn(ub, 'ultCdText', live && ur > 0, me.ultCd, me.cls === 'fallen' ? 60 : ULT_CD);
   ub.classList.toggle('active', me.ultT > 0);
   if (me.ultCd <= 0 && ur > 0) $('ultCdText').textContent = ['', 'I', 'II', 'III'][ur];
   const fb = $('formBtn');
   if (live && me.cls === 'druid' && ur > 0) { fb.classList.remove('hidden'); $('formIcon').innerHTML = FORM_ICONS[me.form || 'wolf']; }
   else fb.classList.add('hidden');
-  setBtn($('skill2Btn'), 'skill2CdText', live && me.cls === 'paladin' && me.shield > 0, me.shieldCd, 25);
+  setBtn($('skill2Btn'), 'skill2CdText', live && me.nova > 0, me.novaCd, novaCdOf(me));
   if (!live) $('healPicker').classList.add('hidden');
 }
 
@@ -3337,25 +3734,26 @@ function gameOver() {
   $('overScreen').classList.remove('hidden');
   submitScore(time, '');
   showBoard(true);
+  recordRun({ sec: time, lvl: p.lvl, kills, cls: p.cls, boss: bossesKilled, king: kingsKilled, champ: champsKilled, mode: 'solo' });
 }
 
 // ===== Render =====
 function render() {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.fillStyle = '#050816';
+  ctx.fillStyle = WP().bg;
   ctx.fillRect(0, 0, W, H);
   const cam = camPos();
   const cx = p ? cam.x : clock * 30, cy = p ? cam.y : clock * 12;
   // floor grid
   const gs = 60, ox = -((cx % gs) + gs) % gs + W / 2 % gs, oy = -((cy % gs) + gs) % gs + H / 2 % gs;
   ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(176, 38, 255, 0.08)';
+  ctx.strokeStyle = WP().grid;
   ctx.beginPath();
   for (let x = ox - gs; x < W + gs; x += gs) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
   for (let y = oy - gs; y < H + gs; y += gs) { ctx.moveTo(0, y); ctx.lineTo(W, y); }
   ctx.stroke();
   const vg = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.2, W / 2, H / 2, Math.max(W, H) * 0.75);
-  vg.addColorStop(0, 'rgba(5, 8, 22, 0)'); vg.addColorStop(1, 'rgba(60, 0, 30, 0.45)');
+  vg.addColorStop(0, 'rgba(5, 8, 22, 0)'); vg.addColorStop(1, WP().vig);
   ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
   if (!p) return;
   if (!coop || coop.role === 'host') use(me);
@@ -3369,6 +3767,14 @@ function render() {
   if (shake > 0.4) ctx.translate(rand(-shake, shake), rand(-shake, shake));
   const S2 = (x, y) => [x - cam.x + W / 2, y - cam.y + H / 2];
   drawScenery(S2, cam);
+  // red circles that are about to explode
+  for (const h of hazards) {
+    const [x, y] = S2(h.x, h.y), k = 1 - Math.max(0, h.t) / (h.max || 1);
+    ctx.fillStyle = 'rgba(255, 30, 30, ' + (0.12 + 0.2 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, h.r, 0, TAU); ctx.fill();
+    ctx.fillStyle = 'rgba(255, 40, 20, ' + (0.3 + 0.3 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, h.r * k, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 80, 60, 0.95)'; ctx.lineWidth = 3; ctx.shadowColor = '#ff2a1a'; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(x, y, h.r, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
+  }
 
   // gems
   for (const g of gems) {
@@ -3394,6 +3800,22 @@ function render() {
       ctx.shadowBlur = 0;
       ctx.strokeStyle = 'rgba(255, 59, 92, ' + (0.22 * k) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(x, y, Rr, 0, TAU); ctx.stroke();
+    } else if (f.kind === 'rend') {
+      const a = f.seed || 0, d = f.r * (1 - k), px = x + Math.cos(a) * d, py = y + Math.sin(a) * d;
+      ctx.save(); ctx.translate(px, py); ctx.rotate(a);
+      ctx.shadowColor = '#7b5cff'; ctx.shadowBlur = 16; ctx.fillStyle = 'rgba(185, 164, 255, ' + (0.4 + 0.6 * k) + ')';
+      ctx.beginPath(); ctx.arc(0, 0, 26, -Math.PI / 2, Math.PI / 2); ctx.arc(-10, 0, 22, Math.PI / 2, -Math.PI / 2, true); ctx.closePath(); ctx.fill();
+      ctx.restore();
+    } else if (f.kind === 'conse') {
+      ctx.fillStyle = 'rgba(255, 233, 168, ' + (0.18 * k) + ')'; ctx.strokeStyle = 'rgba(255, 213, 74, ' + k + ')'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(x, y, f.r, 0, TAU); ctx.fill(); ctx.stroke();
+    } else if (f.kind === 'nova') {
+      ctx.strokeStyle = 'rgba(200, 250, 255, ' + k + ')'; ctx.lineWidth = 12 * k + 2; ctx.shadowColor = '#7df9ff'; ctx.shadowBlur = 24;
+      ctx.beginPath(); ctx.arc(x, y, f.r * (1.05 - k * 0.7), 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(125, 249, 255, ' + (0.15 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * (1.05 - k * 0.7), 0, TAU); ctx.fill();
+    } else if (f.kind === 'raze') {
+      ctx.fillStyle = 'rgba(255, 50, 20, ' + (0.55 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * (1.25 - k * 0.25), 0, TAU); ctx.fill();
+      ctx.fillStyle = 'rgba(10, 0, 0, ' + (0.6 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * 0.5 * (1.2 - k * 0.2), 0, TAU); ctx.fill();
     } else if (f.kind === 'halfslash') {
       // half-moon slash sweeping across the front, toward the closest demon
       const a = f.seed || 0, Rr = f.r * 0.9, head = a - Math.PI / 2 + (1 - k) * Math.PI * 1.1;
@@ -3816,7 +4238,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (state === S.PLAYING && (e.code === 'Space' || e.code === 'KeyE')) { e.preventDefault(); skill1(); return; }
-  if (state === S.PLAYING && e.code === 'KeyR') { e.preventDefault(); skill2(); return; }
+  if (state === S.PLAYING && (e.code === 'KeyR' || e.code === 'KeyN')) { e.preventDefault(); skill2(); return; }
   if (state === S.PLAYING && e.code === 'KeyQ') { e.preventDefault(); ultPress(); return; }
   if (state === S.PLAYING && e.code === 'KeyF') { e.preventDefault(); formPress(); return; }
   if (e.code === 'Space' || e.code === 'Enter') {
@@ -3854,6 +4276,13 @@ $('pauseBtn').addEventListener('click', pauseGame);
 $('resumeBtn').addEventListener('click', resumeGame);
 $('soundBtn').addEventListener('click', toggleSound);
 $('shopBtn').addEventListener('click', openShop);
+$('skinsBtn').addEventListener('click', openShop);
+$('researchBtn').addEventListener('click', () => openMeta('research'));
+$('achBtn').addEventListener('click', () => openMeta('ach'));
+$('worldBtn').addEventListener('click', () => openMeta('world'));
+$('metaCloseBtn').addEventListener('click', closeMeta);
+$('metaModal').addEventListener('click', e => { if (e.target === $('metaModal')) closeMeta(); });
+setInterval(() => { resTick(); if (state === S.START || state === S.OVER) refreshMetaUI(); }, 5000);
 $('shopCloseBtn').addEventListener('click', closeShop);
 $('shopModal').addEventListener('click', e => { if (e.target === $('shopModal')) closeShop(); });
 $('skillBtn').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); skill1(); });
@@ -3882,6 +4311,7 @@ resize();
 showClasses();
 showBoard(true);
 updateSoundBtn(); updateStarsUI();
+resTick(); checkAch(); refreshMetaUI();
 requestAnimationFrame(t => { lastTime = t; loop(t); });
 </script>
 </body>
