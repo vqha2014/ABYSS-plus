@@ -208,6 +208,8 @@
   .daily { margin: 0.8rem auto 0; max-width: 460px; font-size: 0.8rem; color: #ffd54a; border: 1px dashed rgba(255, 213, 74, 0.45); border-radius: 8px; padding: 0.5rem 0.7rem; }
   .daily.done { color: #39ff6a; border-color: rgba(57, 255, 106, 0.5); }
   .meta-panel { width: min(580px, 94vw); max-height: 86vh; overflow-y: auto; }
+  .gem-row { display: flex; flex-wrap: wrap; gap: 0.5rem 0.9rem; justify-content: center; font-size: 0.75rem; color: #c9d1e3; margin: 0.4rem 0 0.6rem; }
+  .gem-row i { display: inline-block; width: 10px; height: 10px; transform: rotate(45deg); margin-right: 0.35rem; box-shadow: 0 0 6px currentColor; }
   .mrow { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; padding: 0.6rem 0.2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.07); text-align: left; }
   .mrow b { color: #e8ecf8; font-size: 0.9rem; }
   .mrow small { display: block; color: #8b93a7; font-size: 0.72rem; line-height: 1.45; margin-top: 0.15rem; }
@@ -268,6 +270,8 @@
         <button class="mode-btn" id="researchBtn">Research</button>
         <button class="mode-btn" id="achBtn">Achievements</button>
         <button class="mode-btn" id="skinsBtn">Skins</button>
+        <button class="mode-btn" id="gearBtn">Gear</button>
+        <button class="mode-btn" id="codesBtn">Codes</button>
         <button class="mode-btn" id="helpBtn">Help</button>
       </div>
       <div class="daily" id="dailyBox"></div>
@@ -393,7 +397,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 4.3</span>
+    <span class="version">Version 4.4</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -438,7 +442,7 @@ const UPGRADES = [
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 8, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
   { id: 'h_explode', cls: 'hunter', name: 'Explosive Arrows', max: 8, desc: 'Bolts explode when they hit, hurting every demon around the target.', apply: p => { p.explode++; } },
   { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
-  { id: 'h_volley', cls: 'hunter', name: 'Arrow Rain', max: 8, desc: 'Every 3 seconds, arrows rain down on nearby demons.', apply: p => { p.volley++; } },
+  { id: 'h_rico', cls: 'hunter', name: 'Ricochet', max: 8, desc: 'Bolts can bounce to another demon nearby (20% to 90% chance) for 70% damage.', apply: p => { p.rico = (p.rico || 0) + 1; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
   { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
@@ -496,7 +500,13 @@ const ETYPES = {
   champ: { r: 64, hp: 9000, speed: 40, dmg: 45, xp: 250, color: '#ff8a2a', spikes: 0 },
   hound: { r: 10, hp: 40, speed: 178, dmg: 12, xp: 3, color: '#ff5a1f', spikes: 6 },
   warlock: { r: 14, hp: 130, speed: 70, dmg: 14, xp: 7, color: '#c21aff', spikes: 7 },
-  titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 }
+  titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 },
+  ore_amethyst: { r: 22, hp: 70, speed: 0, dmg: 0, xp: 0, color: '#b26bff', spikes: 0, ore: 'amethyst' },
+  ore_emerald: { r: 22, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#39ff6a', spikes: 0, ore: 'emerald' },
+  ore_sapphire: { r: 22, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#3d8bff', spikes: 0, ore: 'sapphire' },
+  ore_topaz: { r: 22, hp: 100, speed: 0, dmg: 0, xp: 0, color: '#ffd54a', spikes: 0, ore: 'topaz' },
+  ore_ruby: { r: 22, hp: 110, speed: 0, dmg: 0, xp: 0, color: '#ff3b5c', spikes: 0, ore: 'ruby' },
+  ore_diamond: { r: 24, hp: 150, speed: 0, dmg: 0, xp: 0, color: '#e8fbff', spikes: 0, ore: 'diamond' }
 };
 const TYPE_IDX = Object.keys(ETYPES);
 // HELL CHAMPION: a face of black obsidian shards burning inside a ball of fire (every 15 minutes)
@@ -665,6 +675,19 @@ function drawKing(g, R) {
   g.shadowBlur = 0;
 }
 const sprites = {};
+// a grey rock with glowing ore in the colour of its gem
+function drawOre(g, R, col) {
+  const pts = [];
+  for (let i = 0; i < 9; i++) { const a = i * TAU / 9, rr = R * (0.82 + 0.18 * Math.sin(i * 2.7)); pts.push([Math.cos(a) * rr, Math.sin(a) * rr]); }
+  g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
+  const rg = g.createLinearGradient(0, -R, 0, R); rg.addColorStop(0, '#7d8494'); rg.addColorStop(1, '#3a3f4b');
+  g.fillStyle = rg; g.fill(); g.strokeStyle = '#1d2029'; g.lineWidth = 2; g.stroke();
+  g.shadowColor = col; g.shadowBlur = R * 0.5; g.fillStyle = col;
+  for (const [x, y, s] of [[-0.35, -0.25, 0.22], [0.3, -0.35, 0.16], [0.15, 0.25, 0.24], [-0.3, 0.35, 0.14], [0.45, 0.15, 0.12]]) {
+    g.beginPath(); g.moveTo(x * R, (y - s) * R); g.lineTo((x + s * 0.8) * R, y * R); g.lineTo(x * R, (y + s) * R); g.lineTo((x - s * 0.8) * R, y * R); g.closePath(); g.fill();
+  }
+  g.shadowBlur = 0;
+}
 function buildSprites() {
   for (const k in ETYPES) {
     const t = ETYPES[k], pad = t.r * (k === 'king' ? 1.95 : k === 'champ' ? 1.05 : 0.9), size = Math.ceil((t.r + pad) * 2);
@@ -676,6 +699,7 @@ function buildSprites() {
     g.beginPath();
     if (k === 'king') { drawKing(g, t.r); sprites[k] = { c, size }; continue; }
     if (k === 'champ') { drawChampion(g, t.r, 0); sprites[k] = { c, size }; continue; }
+    if (t.ore) { drawOre(g, t.r, t.color); sprites[k] = { c, size }; continue; }
     for (let i = 0; i < t.spikes * 2; i++) {
       const a = (i * Math.PI) / t.spikes - Math.PI / 2, rr = i % 2 ? t.r * 0.62 : t.r;
       i ? g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : g.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
@@ -824,7 +848,7 @@ function fmtDur(ms) {
   return d ? d + 'd ' + h + 'h' : h ? h + 'h ' + m + 'm' : m + 'm ' + (s % 60) + 's';
 }
 // two research slots run at the same time
-const RES_SLOTS = 2;
+const resSlots = () => prog.resSlots || 2;
 function resList() {
   const a = prog.res.active;
   if (!a) prog.res.active = [];
@@ -845,7 +869,7 @@ function resTick() {
 }
 function startResearch(id) {
   const list = resList(), r = RESEARCH.find(x => x.id === id), L = resLv(id) + 1;
-  if (!r || list.length >= RES_SLOTS || list.some(a => a.id === id) || L > r.max) return;
+  if (!r || list.length >= resSlots() || list.some(a => a.id === id) || L > r.max) return;
   const cost = RES_COST(L);
   if (stars < cost) return;
   stars -= cost; saveShop(); updateStarsUI();
@@ -953,6 +977,176 @@ function bindKey(code) {
   try { localStorage.setItem('abyssPlusKeys', JSON.stringify(KB)); } catch (e) {}
   renderMeta();
 }
+
+// ===== Gems, gear and gift codes =====
+const GEMS = [
+  { id: 'amethyst', name: 'Amethyst', color: '#b26bff', bonus: 3, w: 40 },
+  { id: 'emerald', name: 'Emerald', color: '#39ff6a', bonus: 5, w: 25 },
+  { id: 'sapphire', name: 'Sapphire', color: '#3d8bff', bonus: 5, w: 20 },
+  { id: 'topaz', name: 'Topaz', color: '#ffd54a', bonus: 8, w: 8 },
+  { id: 'ruby', name: 'Ruby', color: '#ff3b5c', bonus: 8, w: 5 },
+  { id: 'diamond', name: 'Diamond', color: '#e8fbff', bonus: 15, w: 2 }
+];
+const GEM_CODE = { amethyst: 'a', emerald: 'e', sapphire: 's', topaz: 't', ruby: 'r', diamond: 'd' };
+const GEM_FROM = { a: 'amethyst', e: 'emerald', s: 'sapphire', t: 'topaz', r: 'ruby', d: 'diamond' };
+prog.gems = prog.gems || {}; prog.items = Array.isArray(prog.items) ? prog.items : []; prog.equip = Array.isArray(prog.equip) ? prog.equip : []; prog.codes = prog.codes || {};
+function rollGem() {
+  // rarer gems are more common in harder worlds
+  const list = GEMS.map((g, i) => [g.id, g.w * (i >= 3 ? 1 + worldId * 0.8 : 1)]);
+  let r = Math.random() * list.reduce((a, x) => a + x[1], 0);
+  for (const [id, w] of list) if ((r -= w) < 0) return id;
+  return 'amethyst';
+}
+function gainGem(id, x, y) {
+  const gm = GEMS.find(g => g.id === id);
+  if (!gm) return;
+  prog.gems[id] = (prog.gems[id] || 0) + 1; saveProg();
+  addText(x, y - 20, '+1 ' + gm.name, gm.color);
+}
+const GEAR_TYPES = {
+  dmg: { name: 'Blade', label: '% damage', base: [0, 4, 7, 11, 16, 22] },
+  hp: { name: 'Heart', label: '% max HP', base: [0, 5, 9, 14, 20, 28] },
+  as: { name: 'Gauntlet', label: '% attack speed', base: [0, 3, 5, 8, 12, 16] },
+  armor: { name: 'Shield', label: ' armor', base: [0, 0.5, 1, 1.5, 2.5, 3.5] },
+  speed: { name: 'Boots', label: '% move speed', base: [0, 2, 4, 6, 8, 11] },
+  xp: { name: 'Tome', label: '% XP', base: [0, 5, 9, 14, 20, 28] },
+  regen: { name: 'Amulet', label: ' HP per second', base: [0, 0.3, 0.6, 1, 1.5, 2.2] }
+};
+const TIERS = [null, { name: 'Common', color: '#c9d1e3' }, { name: 'Rare', color: '#3d8bff' }, { name: 'Epic', color: '#b26bff' }, { name: 'Legendary', color: '#ff8a2a' }, { name: 'Mythic', color: '#ff3b5c' }];
+const GEAR_MAX = 15, INV_MAX = 60;
+const gearSlots = () => prog.gearSlots || 3;
+const itemVal = it => GEAR_TYPES[it.type].base[it.tier] * (1 + 0.15 * it.lvl);
+const fmtVal = v => (Math.round(v * 10) / 10).toString();
+const itemName = it => TIERS[it.tier].name + ' ' + GEAR_TYPES[it.type].name + (it.lvl ? ' +' + it.lvl : '');
+const itemStat = it => '+' + fmtVal(itemVal(it)) + GEAR_TYPES[it.type].label;
+function makeItem(tier, type, lvl) {
+  const keys = Object.keys(GEAR_TYPES);
+  return { id: Math.random().toString(36).slice(2, 10), type: type || keys[Math.floor(Math.random() * keys.length)], tier: Math.max(1, Math.min(5, tier)), lvl: lvl || 0 };
+}
+function giveItem(it, why) {
+  if (prog.items.length >= INV_MAX) { toast('Inventory full! Sell something to make room.'); return; }
+  prog.items.push(it); saveProg();
+  toast((why || 'New item') + ': ' + itemName(it) + ' (' + itemStat(it) + ')');
+}
+// bosses drop gear: the later the boss, the better the gear
+function dropGear(kind) {
+  let tier = kind === 'champ' ? 3 : kind === 'king' ? 2 : 1;
+  if (Math.random() < 0.4) tier++;
+  if (time > 1200 || worldId >= 2) { if (Math.random() < 0.3) tier++; }
+  if (worldId >= 3 && Math.random() < 0.3) tier++;
+  giveItem(makeItem(tier), kind === 'champ' ? 'Hell Champion dropped' : kind === 'king' ? 'Demon King dropped' : 'Boss dropped');
+}
+const equipped = () => prog.equip.map(id => prog.items.find(i => i.id === id)).filter(Boolean).slice(0, gearSlots());
+function gearStats(list) {
+  const g = { dmg: 0, hp: 0, as: 0, armor: 0, speed: 0, xp: 0, regen: 0 };
+  for (const it of list || []) if (it && GEAR_TYPES[it.type]) g[it.type] += itemVal(it);
+  return g;
+}
+function applyGear(pl, g) {
+  if (!g || typeof g !== 'object') return;
+  const n = (k, cap) => Math.max(0, Math.min(cap, +g[k] || 0));
+  pl.maxHp *= 1 + n('hp', 300) / 100; pl.hp = pl.maxHp;
+  pl.resDmg = (pl.resDmg || 1) * (1 + n('dmg', 300) / 100);
+  pl.armor += n('armor', 40); pl.speed *= 1 + n('speed', 100) / 100; pl.xpMul += n('xp', 300) / 100; pl.regen += n('regen', 40);
+  const as = 1 + n('as', 200) / 100;
+  if (pl.w.cd) pl.w.cd /= as; else pl.w.dmg *= as;   // druid wolves: harder bites instead
+}
+// enhancing: costs stars, the chance drops with every level, gems raise it, a failure keeps the level
+const enhChance = it => Math.max(5, 100 - it.lvl * 7);
+const enhCost = it => Math.round(40 * it.tier * Math.pow(it.lvl + 1, 1.5));
+let enhPick = {}, metaItem = '';
+function enhGemBonus() { let b = 0; for (const g of GEMS) b += (enhPick[g.id] || 0) * g.bonus; return b; }
+function doEnhance(it) {
+  if (!it || it.lvl >= GEAR_MAX) return;
+  const cost = enhCost(it);
+  if (stars < cost) { toast('Not enough stars'); return; }
+  for (const g of GEMS) if ((enhPick[g.id] || 0) > (prog.gems[g.id] || 0)) return;
+  stars -= cost; saveShop(); updateStarsUI();
+  const chance = Math.min(100, enhChance(it) + enhGemBonus());
+  for (const g of GEMS) prog.gems[g.id] = (prog.gems[g.id] || 0) - (enhPick[g.id] || 0);
+  enhPick = {};
+  if (Math.random() * 100 < chance) { it.lvl++; toast('Success! ' + itemName(it)); Sound.sfx('level'); }
+  else { toast('Failed... the item keeps its level.'); Sound.sfx('hurt'); }
+  saveProg(); renderMeta();
+}
+// gift codes
+const CODES = {
+  TRIPLELAB: { text: 'Research 3 things at once!', give: () => { prog.resSlots = Math.max(resSlots(), 3); } },
+  FOURSLOTS: { text: 'Wear 4 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 4); } },
+  MYTHICGEAR: { text: 'A Mythic item +5!', give: () => { giveItem(makeItem(5, null, 5), 'Gift'); } },
+  STARRAIN: { text: '1,000 stars!', give: () => { addStars(1000); } },
+  GEMSTORM: { text: '5 of every gem!', give: () => { for (const g of GEMS) prog.gems[g.id] = (prog.gems[g.id] || 0) + 5; } },
+  ABYSSPLUS: { text: 'A Legendary item and 500 stars!', give: () => { giveItem(makeItem(4), 'Gift'); addStars(500); } }
+};
+function redeemCode(raw) {
+  const c = String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
+  if (!c) return;
+  if (!CODES[c]) { toast('That code does not work.'); return; }
+  if (prog.codes[c]) { toast('You already used this code.'); return; }
+  prog.codes[c] = 1; CODES[c].give(); saveProg(); updateStarsUI();
+  toast('Code accepted: ' + CODES[c].text);
+  renderMeta();
+}
+function renderGear(body) {
+  $('metaTitle').textContent = 'GEAR';
+  const top = document.createElement('div'); top.className = 'shop-balance'; top.innerHTML = STAR_SVG; top.append(' ' + stars + ' stars'); body.appendChild(top);
+  const gemRow = document.createElement('div'); gemRow.className = 'gem-row';
+  for (const g of GEMS) { const sp = document.createElement('span'); sp.innerHTML = '<i style="background:' + g.color + '"></i>'; sp.append(g.name + ' ' + (prog.gems[g.id] || 0)); gemRow.appendChild(sp); }
+  body.appendChild(gemRow);
+  const eq = equipped(), eqIds = eq.map(i => i.id);
+  const h1 = document.createElement('div'); h1.className = 'shop-section'; h1.textContent = 'WEARING ' + eq.length + '/' + gearSlots(); body.appendChild(h1);
+  const row = (it, worn) => {
+    const act = document.createElement('div'); act.style.display = 'flex'; act.style.gap = '0.35rem';
+    act.appendChild(mbtn('Enhance', it.lvl < GEAR_MAX, () => { metaItem = it.id; enhPick = {}; metaKind = 'enhance'; renderMeta(); }));
+    if (worn) act.appendChild(mbtn('Take off', true, () => { prog.equip = prog.equip.filter(id => id !== it.id); saveProg(); renderMeta(); }));
+    else {
+      act.appendChild(mbtn('Wear', eq.length < gearSlots(), () => { prog.equip = eqIds.concat(it.id); saveProg(); renderMeta(); }));
+      const price = 20 * it.tier * (it.lvl + 1);
+      act.appendChild(mbtn('Sell ' + price, true, () => { prog.items = prog.items.filter(i => i.id !== it.id); addStars(price); saveProg(); updateStarsUI(); renderMeta(); }));
+    }
+    const rw = mrow(itemName(it), itemStat(it), act), last = rw.querySelector && rw.querySelector('b'); if (last) last.style.color = TIERS[it.tier].color;
+  };
+  if (!eq.length) mrow('Nothing worn yet', 'Defeat bosses to find gear, then tap Wear.', null, 'locked');
+  for (const it of eq) row(it, true);
+  const h2 = document.createElement('div'); h2.className = 'shop-section'; h2.textContent = 'INVENTORY ' + prog.items.length + '/' + INV_MAX; body.appendChild(h2);
+  const rest = prog.items.filter(i => !eqIds.includes(i.id)).sort((a, b) => b.tier - a.tier || b.lvl - a.lvl);
+  if (!rest.length) mrow('Empty', 'The Abyss Boss, the Demon King and the Hell Champion all drop gear. Later bosses drop better gear.', null, 'locked');
+  for (const it of rest) row(it, false);
+}
+function renderEnhance(body) {
+  const it = prog.items.find(i => i.id === metaItem);
+  if (!it) { metaKind = 'gear'; renderMeta(); return; }
+  $('metaTitle').textContent = 'ENHANCE';
+  const next = Object.assign({}, it, { lvl: it.lvl + 1 });
+  mrow(itemName(it), it.lvl >= GEAR_MAX ? itemStat(it) + ' \u00b7 max level' : itemStat(it) + '  \u2192  ' + itemStat(next) + ' at +' + next.lvl, null);
+  const h = document.createElement('div'); h.className = 'shop-section'; h.textContent = 'ADD GEMS FOR A BETTER CHANCE'; body.appendChild(h);
+  for (const g of GEMS) {
+    const have = prog.gems[g.id] || 0, use = enhPick[g.id] || 0;
+    const act = document.createElement('div'); act.style.display = 'flex'; act.style.gap = '0.35rem';
+    act.appendChild(mbtn('\u2212', use > 0, () => { enhPick[g.id] = use - 1; renderMeta(); }));
+    act.appendChild(mbtn(String(use), false));
+    act.appendChild(mbtn('+', use < have, () => { enhPick[g.id] = use + 1; renderMeta(); }));
+    const rw = mrow(g.name + '  (+' + g.bonus + '% each)', 'You have ' + have, act, have ? '' : 'locked'), b = rw.querySelector && rw.querySelector('b'); if (b) b.style.color = g.color;
+  }
+  const chance = Math.min(100, enhChance(it) + enhGemBonus()), cost = enhCost(it);
+  const box = document.createElement('div'); box.className = 'res-active';
+  box.textContent = 'Success chance: ' + chance + '% (base ' + enhChance(it) + '%) \u00b7 Cost: ' + cost + ' stars \u00b7 if it fails, the item keeps its level';
+  body.appendChild(box);
+  const act = document.createElement('div'); act.style.display = 'flex'; act.style.gap = '0.5rem'; act.style.justifyContent = 'center'; act.style.margin = '0.6rem 0';
+  act.appendChild(mbtn('Enhance', it.lvl < GEAR_MAX && stars >= cost, () => doEnhance(it)));
+  act.appendChild(mbtn('Back', true, () => { metaKind = 'gear'; enhPick = {}; renderMeta(); }));
+  body.appendChild(act);
+}
+function renderCodes(body) {
+  $('metaTitle').textContent = 'GIFT CODES';
+  const wrap = document.createElement('div'); wrap.style.display = 'flex'; wrap.style.gap = '0.5rem'; wrap.style.justifyContent = 'center'; wrap.style.margin = '0.8rem 0';
+  const inp = document.createElement('input'); inp.className = 'name-input'; inp.placeholder = 'ENTER CODE'; inp.maxLength = 20; inp.style.margin = '0'; inp.style.width = '12rem';
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); redeemCode(inp.value); } });
+  wrap.append(inp, mbtn('Redeem', true, () => redeemCode(inp.value)));
+  body.appendChild(wrap);
+  const used = Object.keys(prog.codes);
+  mrow('Codes used: ' + used.length, used.length ? used.join(', ') : 'None yet', null);
+}
 let metaKind = '', metaTimer = 0;
 function openMeta(kind) {
   metaKind = kind; resTick(); renderMeta();
@@ -967,6 +1161,7 @@ function mrow(title, sub, act, cls) {
   b.textContent = title; sm.textContent = sub; l.append(b, sm); row.appendChild(l);
   if (act) { act.classList.add('act'); row.appendChild(act); }
   $('metaBody').appendChild(row);
+  return row;
 }
 function mbtn(text, on, fn) { const b = document.createElement('button'); b.className = 'mbtn'; b.textContent = text; b.disabled = !on; if (on) b.addEventListener('click', fn); return b; }
 function renderMeta() {
@@ -975,7 +1170,7 @@ function renderMeta() {
     $('metaTitle').textContent = 'RESEARCH';
     const top = document.createElement('div'); top.className = 'shop-balance'; top.innerHTML = STAR_SVG; top.append(' ' + stars + ' stars \u00b7 upgrades for every class, forever'); body.appendChild(top);
     const list = resList();
-    for (let i = 0; i < RES_SLOTS; i++) {
+    for (let i = 0; i < resSlots(); i++) {
       const a = list[i], box = document.createElement('div'); box.className = 'res-active';
       if (!a) { box.textContent = 'Slot ' + (i + 1) + ': free \u00b7 pick something to research'; body.appendChild(box); continue; }
       const r = RESEARCH.find(x => x.id === a.id);
@@ -983,7 +1178,7 @@ function renderMeta() {
       const bar = document.createElement('div'), fill = document.createElement('i'); bar.className = 'res-bar';
       fill.style.width = Math.min(100, (Date.now() - a.start) / (a.end - a.start) * 100) + '%'; bar.appendChild(fill); box.appendChild(bar); body.appendChild(box);
     }
-    const full = list.length >= RES_SLOTS;
+    const full = list.length >= resSlots();
     for (const r of RESEARCH) {
       const lv = resLv(r.id), L = lv + 1, busy = list.some(a => a.id === r.id);
       const act = lv >= r.max ? mbtn('MAX', false) : busy ? mbtn('IN PROGRESS', false) : mbtn(RES_COST(L) + ' \u2605 \u00b7 ' + (RES_HOURS[L] >= 24 ? Math.floor(RES_HOURS[L] / 24) + 'd ' + (RES_HOURS[L] % 24 ? RES_HOURS[L] % 24 + 'h' : '') : RES_HOURS[L] + 'h'), !full && stars >= RES_COST(L), () => startResearch(r.id));
@@ -993,6 +1188,9 @@ function renderMeta() {
     const n = ACH.filter(x => prog.ach[x.id]).length;
     $('metaTitle').textContent = 'ACHIEVEMENTS ' + n + '/' + ACH.length;
     for (const x of ACH) mrow((prog.ach[x.id] ? '\u2713 ' : '') + x.name, x.desc + ' \u00b7 +' + x.reward + ' stars', null, prog.ach[x.id] ? 'done' : 'locked');
+  } else if (metaKind === 'gear') { renderGear(body);
+  } else if (metaKind === 'enhance') { renderEnhance(body);
+  } else if (metaKind === 'codes') { renderCodes(body);
   } else if (metaKind === 'help') {
     $('metaTitle').textContent = 'HOW TO PLAY';
     const kb = (act) => { const b = mbtn(waitBind === act ? 'Press a key\u2026' : keyName(KB[act]), true, () => { waitBind = act; renderMeta(); }); return b; };
@@ -1428,7 +1626,7 @@ let time = 0, kills = 0, spawnT = 0, nextBoss = 120, bossCount = 0, shake = 0, c
 // use(pl) points the shared names at that player's things so the weapon code works for anyone.
 let unlockIdx = 0, nextUnlock = 90, seenTypes = new Set(['imp']), intro = null, introQueue = [];
 let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0, banner = null, nextChamp = 900, champCount = 0, champsKilled = 0;
-let allPets = [], twinsDraw = [], hazards = [];
+let allPets = [], twinsDraw = [], hazards = [], oreT = 12, gemLog = '';
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
 const ringR = () => VS() ? 650 : 380;
@@ -1455,7 +1653,7 @@ function newPlayer(cls) {
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
     t: { shot: 0.3, volley: 3, slam: 4, storm: 2, tornado: 4 }, bladeAng: 0, vx: 0, vy: 0
   };
-  if (cls === 'hunter') pl.w = { cd: 0.45, dmg: 20, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
+  if (cls === 'hunter') pl.w = { cd: 0.45, dmg: 17, count: 1, tandem: 1, pierce: 0, crit: 0.05, speed: 560, range: 560 };
   else if (cls === 'warrior') pl.w = { cd: 1.15, dmg: 18, radius: 85 };
   else if (cls === 'paladin') pl.w = { cd: 1.1, dmg: 22, range: 340, splash: 70 };
   else if (cls === 'fallen') pl.w = { cd: 0.6, dmg: 16, radius: 80, crit: 0.05 };
@@ -1466,7 +1664,7 @@ function newPlayer(cls) {
 }
 
 function resetWorld() {
-  enemies = []; ebullets = []; hazards = []; gems = []; effects = []; particles = []; texts = []; killFx = [];
+  enemies = []; ebullets = []; hazards = []; gems = []; oreT = 12; gemLog = ''; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
   nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null; nextChamp = 900; champCount = 0; champsKilled = 0;
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
@@ -1476,6 +1674,7 @@ function startGame() {
   resetWorld();
   me = newPlayer(selClass);
   applyResearch(me, prog.res.lv);
+  applyGear(me, gearStats(equipped()));
   me.name = playerName || 'Player';
   players = [me];
   use(me);
@@ -1591,8 +1790,18 @@ function damageEnemy(e, dmg, kx, ky, stun) {
   Sound.sfx('hit');
   if (e.hp <= 0) killEnemy(e);
 }
+const BLADE_R = 105;
 function killEnemy(e) {
   e.dead = true;
+  // ore rocks: no kill, no XP, just a gem
+  if (ETYPES[e.type] && ETYPES[e.type].ore) {
+    const gem = ETYPES[e.type].ore;
+    for (let i = 0; i < 14; i++) { const a = rand(0, TAU), sp = rand(1, 5); particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: rand(2, 5), life: 1, decay: 0.03, color: i % 2 ? '#7d8494' : ETYPES[e.type].color }); }
+    if (coop) { killFx.push([Math.round(e.x), Math.round(e.y), TYPE_IDX.indexOf(e.type)]); gemLog += GEM_CODE[gem]; }
+    gainGem(gem, e.x, e.y);
+    Sound.sfx('gem');
+    return;
+  }
   kills++;
   const t = ETYPES[e.type];
   // Blood-thirst: the warrior who got the kill heals
@@ -1600,6 +1809,7 @@ function killEnemy(e) {
   // Bloodfeast: every 15 kills the Fallen goes into a frenzy for 8 seconds
   if (p && p.feast && !p.dead) { p.feastKills = (p.feastKills || 0) + 1; if (p.feastKills >= 15) { p.feastKills = 0; p.feastT = 8; effects.push({ kind: 'feast', x: p.x, y: p.y, r: 44, life: 0.6, max: 0.6, owner: p }); } }
   if (e.type === 'boss') bossesKilled++;
+  if (e.type === 'boss' || e.type === 'king' || e.type === 'champ') dropGear(e.type);
   if (coop) { killFx.push([Math.round(e.x), Math.round(e.y), TYPE_IDX.indexOf(e.type)]); if (killFx.length > 60) killFx.shift(); }
   for (let i = 0; i < (e.type === 'boss' ? 40 : 8); i++) {
     const a = rand(0, TAU), s = rand(1, e.type === 'boss' ? 8 : 4);
@@ -2428,7 +2638,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '4.3';
+const GAME_VERSION = '4.4';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -2565,7 +2775,7 @@ function reconnectAll() {
 function skinInfo() { const c = skinCol(); return { m: c.main, l: c.light, d: c.dark, f: c.fx || '' }; }
 const SKIN_FX = { flame: 1, void: 1, shards: 1, halo: 1 };
 function skinFrom(s) { return s && HEX.test(s.m) && HEX.test(s.l) && HEX.test(s.d) ? { main: s.m, light: s.l, dark: s.d, fx: SKIN_FX[s.f] ? s.f : '' } : ORB_COLORS[0]; }
-function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0, tm: (lobby && lobby.myTeam) || 'A', rs: prog.res.lv }; }
+function myInfo() { return { n: (playerName || 'Player').slice(0, 12), c: selClass, s: skinInfo(), x: 0, y: 0, tm: (lobby && lobby.myTeam) || 'A', rs: prog.res.lv, gs: gearStats(equipped()) }; }
 function coopMsg(t) { $('coopMsg').textContent = t || ''; }
 const MP_INFO = {
   menu: 'Play with up to 3 friends. Your class is the one you picked on the main screen.',
@@ -2734,7 +2944,7 @@ function startCoop(role, round) {
   lobby = null;
   resetWorld();
   me = newPlayer(selClass);
-  if (coop.mode === 'coop') applyResearch(me, prog.res.lv);
+  if (coop.mode === 'coop') { applyResearch(me, prog.res.lv); applyGear(me, gearStats(equipped())); }
   me.team = teamOf(roster[myId]);
   me.id = myId; me.name = (playerName || 'Player').slice(0, 12); me.skin = skinCol();
   players = [me];
@@ -2742,7 +2952,7 @@ function startCoop(role, round) {
     for (const [id, v] of Object.entries(roster)) {
       if (id === myId || !v) continue;
       const q = newPlayer(CLASSES[v.c] ? v.c : 'hunter');
-      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true; q.team = teamOf(v); q.rs = v.rs; if (coop.mode === 'coop') applyResearch(q, v.rs);
+      q.id = id; q.name = String(v.n || 'Player').slice(0, 12); q.skin = skinFrom(v.s); q.remote = true; q.team = teamOf(v); q.rs = v.rs; q.gs = v.gs; if (coop.mode === 'coop') { applyResearch(q, v.rs); applyGear(q, v.gs); }
       q.x = q.tx = rand(-50, 50); q.y = q.ty = rand(-50, 50); q.seen = performance.now();
       players.push(q);
     }
@@ -2834,7 +3044,7 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
-    hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2)]), wd: worldId,
+    gml: gemLog, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2)]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
     fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
@@ -3033,7 +3243,7 @@ function checkRetry() {
 async function hostRetry() {
   const round = (coop.round || 0) + 1, code = coop.code;
   const roster = {};
-  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' }, tm: q.team, rs: q === me ? prog.res.lv : q.rs };
+  for (const q of players) if (!q.left) roster[q.id] = { n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' }, tm: q.team, rs: q === me ? prog.res.lv : q.rs, gs: q === me ? gearStats(equipped()) : q.gs };
   await api('/rooms/' + code + '/state', 'PUT', { rd: round, t: 0, over: 0 });
   await api('/rooms/' + code + '/retry', 'DELETE');
   await api('/rooms/' + code + '/meta', 'PATCH', { round, paused: false });
@@ -3090,6 +3300,9 @@ function onSnapshot(s) {
   // stars, same rules as solo: every 15 kills, 5 per boss
   if (Math.floor(kills / 15) > Math.floor(coop.lastK / 15)) flyStar(W / 2, H / 2);
   coop.lastK = kills;
+  if ((s.bk || 0) > coop.lastBk) dropGear('boss');
+  if ((s.kk || 0) > (coop.lastKk || 0)) dropGear('king');
+  if ((s.ck || 0) > (coop.lastCk || 0)) dropGear('champ');
   if ((s.bk || 0) > coop.lastBk) { for (let i = 0; i < 5; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 120); }
   coop.lastBk = s.bk || 0;
   if ((s.kk || 0) > (coop.lastKk || 0)) { for (let i = 0; i < 15; i++) setTimeout(() => flyStar(W / 2, H / 2), i * 90); }
@@ -3116,6 +3329,11 @@ function onSnapshot(s) {
   const mv = ([x, y, vx, vy, kf]) => ({ x, y, vx, vy, king: !!kf, champ: kf === 2 });
   bullets = (s.bu || []).map(mv); ebullets = (s.eb || []).map(mv);
   tornados = (s.tn || []).map(([x, y, r]) => ({ x, y, r, spin: clock * 8 }));
+  if (typeof s.gml === 'string') {
+    if (s.gml.length < (coop.gemSeen || 0)) coop.gemSeen = 0;
+    for (const ch of s.gml.slice(coop.gemSeen || 0)) { const g = GEM_FROM[ch]; if (g) gainGem(g, me.x, me.y - 30); }
+    coop.gemSeen = s.gml.length;
+  }
   hazards = (s.hz || []).map(([x, y, r, k]) => ({ x, y, r, t: k, max: 1 }));
   if (typeof s.wd === 'number') setWorld(s.wd);
   grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
@@ -3286,6 +3504,16 @@ function update(dt) {
   }
   time += dt;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
+  // ore rocks: break them for gems
+  oreT -= dt;
+  if (oreT <= 0) {
+    oreT = 18;
+    if (enemies.filter(e => ETYPES[e.type].ore).length < 4) {
+      const gc0 = groupCenter(), a = rand(0, TAU), d = rand(380, 650);
+      const o = spawnAt('ore_' + rollGem(), gc0.x + Math.cos(a) * d, gc0.y + Math.sin(a) * d);
+      pushOut(o, o.r, 0);
+    }
+  }
   if (unlockIdx < UNLOCK.length && time >= UNLOCK[unlockIdx][1]) {
     const ty = UNLOCK[unlockIdx++][0];
     startIntro(ty, spawnEnemy(ty));
@@ -3387,6 +3615,7 @@ function update(dt) {
     }
     e.flash -= dt; e.bladeCd -= dt;
     if (e.curseT > 0) e.curseT -= dt;
+    if (e.speed === 0 && ETYPES[e.type].ore) { e.flash -= dt; if ((e.x - me.x) ** 2 + (e.y - me.y) ** 2 > 1800 * 1800 && !coop) e.dead = true; continue; }
     let tp = null, bestD = Infinity;
     for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2; if (dd < bestD) { bestD = dd; tp = pl; } }
     if (!tp) continue;
@@ -3599,8 +3828,8 @@ function updateWeapons(dt) {
       p.bladeAng += dt * 3.2;
       const bd = 10 + 3 * p.blades;
       for (let i = 0; i < p.blades; i++) {
-        const a = p.bladeAng + i * TAU / p.blades, bx = p.x + Math.cos(a) * 72, by = p.y + Math.sin(a) * 72;
-        for (const e of enemiesNear(bx, by, 14)) if (e.bladeCd <= 0) { e.bladeCd = 0.35; damageEnemy(e, bd, Math.cos(a) * 120, Math.sin(a) * 120, 0); }
+        const a = p.bladeAng + i * TAU / p.blades, bx = p.x + Math.cos(a) * BLADE_R, by = p.y + Math.sin(a) * BLADE_R;
+        for (const e of enemiesNear(bx, by, 24)) if (e.bladeCd <= 0) { e.bladeCd = 0.35; damageEnemy(e, bd, Math.cos(a) * 120, Math.sin(a) * 120, 0); }
       }
     }
     if (p.slam) {
@@ -3726,8 +3955,15 @@ function updateWeapons(dt) {
         const crit = Math.random() < w.crit;
         const sp = Math.hypot(b.vx, b.vy) || 1;
         const kb = 70 + (w.knock || 0);
-        damageEnemy(e, w.dmg * (crit ? 2 : 1), b.vx / sp * kb, b.vy / sp * kb, 0);
-        hunterOnHit(e, w.dmg * (crit ? 2 : 1));
+        const bd = w.dmg * (crit ? 2 : 1) * (b.mul || 1);
+        damageEnemy(e, bd, b.vx / sp * kb, b.vy / sp * kb, 0);
+        hunterOnHit(e, bd);
+        // Ricochet: bounce once to the next demon
+        if (p.rico && !b.rico && Math.random() < 0.1 + 0.1 * Math.min(8, p.rico)) {
+          let nx = null, nd = 230 * 230;
+          for (const o of enemies) { if (o === e || o.dead || o.pvp) continue; const dd = (o.x - e.x) ** 2 + (o.y - e.y) ** 2; if (dd < nd) { nd = dd; nx = o; } }
+          if (nx) { const ra = Math.atan2(nx.y - e.y, nx.x - e.x); bullets.push({ x: e.x, y: e.y, vx: Math.cos(ra) * w.speed, vy: Math.sin(ra) * w.speed, life: 0.5, pierce: 0, hit: [e], rico: true, mul: 0.7 }); }
+        }
         if (b.pierce-- <= 0) { b.life = 0; break; }
       }
     }
@@ -4095,9 +4331,9 @@ function render() {
       drawOrb(ctx, x, y, PR, col);
       if (q.blades) for (let i = 0; i < q.blades; i++) {
         const a = q.bladeAng + i * TAU / q.blades;
-        ctx.save(); ctx.translate(x + Math.cos(a) * 72, y + Math.sin(a) * 72); ctx.rotate(a + Math.PI / 2);
+        ctx.save(); ctx.translate(x + Math.cos(a) * BLADE_R, y + Math.sin(a) * BLADE_R); ctx.rotate(a + Math.PI / 2);
         ctx.fillStyle = '#ffd0d8';
-        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(5, 0); ctx.lineTo(0, 12); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(8, 0); ctx.lineTo(0, 20); ctx.lineTo(-8, 0); ctx.closePath(); ctx.fill();
         ctx.restore();
       }
       ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = VS() ? (q.team === 'B' ? '#ff9db0' : '#9df6ff') : '#dbe2f1';
@@ -4123,11 +4359,11 @@ function render() {
     ctx.globalAlpha = 1;
     if (p.cls === 'warrior') {
       for (let i = 0; i < p.blades; i++) {
-        const a = p.bladeAng + i * TAU / p.blades, bx = x + Math.cos(a) * 72, by = y + Math.sin(a) * 72;
+        const a = p.bladeAng + i * TAU / p.blades, bx = x + Math.cos(a) * BLADE_R, by = y + Math.sin(a) * BLADE_R;
         ctx.save(); ctx.translate(bx, by); ctx.rotate(a + Math.PI / 2);
-        ctx.shadowColor = '#ff3b5c'; ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff3b5c'; ctx.shadowBlur = 14;
         ctx.fillStyle = '#ffd0d8';
-        ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(5, 0); ctx.lineTo(0, 12); ctx.lineTo(-5, 0); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(8, 0); ctx.lineTo(0, 20); ctx.lineTo(-8, 0); ctx.closePath(); ctx.fill();
         ctx.restore();
       }
     }
@@ -4302,7 +4538,7 @@ const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', Arr
 window.addEventListener('keydown', e => {
   if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Enter' && e.target.id === 'nameInput') { e.preventDefault(); e.target.blur(); startGame(); } return; }
   if (!$('lbModal').classList.contains('hidden')) { if (e.code === 'Escape') closeModal(); return; }
-  if (!$('metaModal').classList.contains('hidden')) { e.preventDefault(); if (waitBind) bindKey(e.code); else if (e.code === 'Escape') closeMeta(); return; }
+  if (!$('metaModal').classList.contains('hidden')) { if (e.target && e.target.tagName === 'INPUT') return; e.preventDefault(); if (waitBind) bindKey(e.code); else if (e.code === 'Escape') closeMeta(); return; }
   if (!$('shopModal').classList.contains('hidden')) { if (e.code === 'Escape') closeShop(); return; }
   if (KEYMAP[e.code]) { e.preventDefault(); keys[KEYMAP[e.code]] = true; return; }
   if (state === S.LEVELUP && /^Digit[123]$/.test(e.code)) {
@@ -4354,6 +4590,8 @@ $('researchBtn').addEventListener('click', () => openMeta('research'));
 $('achBtn').addEventListener('click', () => openMeta('ach'));
 $('worldBtn').addEventListener('click', () => openMeta('world'));
 $('helpBtn').addEventListener('click', () => openMeta('help'));
+$('gearBtn').addEventListener('click', () => openMeta('gear'));
+$('codesBtn').addEventListener('click', () => openMeta('codes'));
 $('pauseHelpBtn').addEventListener('click', () => openMeta('help'));
 $('metaCloseBtn').addEventListener('click', closeMeta);
 $('metaModal').addEventListener('click', e => { if (e.target === $('metaModal')) closeMeta(); });
