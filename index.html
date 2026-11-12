@@ -397,7 +397,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 4.4</span>
+    <span class="version">Version 4.5</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -442,7 +442,7 @@ const UPGRADES = [
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 8, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
   { id: 'h_explode', cls: 'hunter', name: 'Explosive Arrows', max: 8, desc: 'Bolts explode when they hit, hurting every demon around the target.', apply: p => { p.explode++; } },
   { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
-  { id: 'h_rico', cls: 'hunter', name: 'Ricochet', max: 8, desc: 'Bolts can bounce to another demon nearby (20% to 90% chance) for 70% damage.', apply: p => { p.rico = (p.rico || 0) + 1; } },
+  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.05% to 0.4%).', apply: p => { p.leech = (p.leech || 0) + 1; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
   { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
@@ -466,7 +466,7 @@ const UPGRADES = [
   { id: 'f_crit', cls: 'fallen', name: 'Deep Cuts', max: 8, desc: '+8% chance to deal double damage.', apply: p => { p.w.crit += 0.08; } },
   { id: 'f_hide', cls: 'fallen', name: 'Dark Hide', max: 8, desc: 'Take 5% less damage per level (up to 40%).', apply: p => { p.hide++; } },
   { id: 'f_twins', cls: 'fallen', name: 'Shadow Twins', max: 8, desc: 'Every 20 s, darker copies of you fight for 15 s: 2 copies, 3 at level 4, 4 at level 8. They deal 36% to 50% of your damage and have 45% to 80% of your HP.', apply: p => { p.twins++; } },
-  { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+30% to +100%) and heal from the damage you deal (3% to 13.5%, half on bosses).', apply: p => { p.feast++; } },
+  { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+15% to +50%) and heal from the damage you deal (3% to 13.5%, half on bosses).', apply: p => { p.feast++; } },
   { id: 'f_curse', cls: 'fallen', name: 'Cursed Blades', max: 8, desc: 'Demons you or your twins hit are cursed for 3 s and take 3% to 20% more damage from you and your twins.', apply: p => { p.curse++; } },
   { id: 'p_smite', cls: 'paladin', name: 'Holy Smite', max: 8, desc: 'Smite damage +30%.', apply: p => { p.w.dmg *= 1.3; } },
   { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 8, desc: 'Smite 15% faster and 15% wider. Levels 3 and 6 add one more smite target.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
@@ -1076,7 +1076,12 @@ const CODES = {
   MYTHICGEAR: { text: 'A Mythic item +5!', give: () => { giveItem(makeItem(5, null, 5), 'Gift'); } },
   STARRAIN: { text: '1,000 stars!', give: () => { addStars(1000); } },
   GEMSTORM: { text: '5 of every gem!', give: () => { for (const g of GEMS) prog.gems[g.id] = (prog.gems[g.id] || 0) + 5; } },
-  ABYSSPLUS: { text: 'A Legendary item and 500 stars!', give: () => { giveItem(makeItem(4), 'Gift'); addStars(500); } }
+  ABYSSPLUS: { text: 'A Legendary item and 500 stars!', give: () => { giveItem(makeItem(4), 'Gift'); addStars(500); } },
+  NEONHERO: { text: '2,500 stars!', give: () => { addStars(2500); } },
+  DIAMONDS: { text: '10 Diamonds!', give: () => { prog.gems.diamond = (prog.gems.diamond || 0) + 10; } },
+  RESEARCHNOW: { text: 'All research in progress is finished!', give: () => { for (const a of resList()) a.end = Date.now() - 1; resTick(); } },
+  LUCKYBOX: { text: 'A lucky box: a random item and 3 random gems!', give: () => { giveItem(makeItem(2 + Math.floor(Math.random() * 3)), 'Lucky box'); for (let i = 0; i < 3; i++) { const g = rollGem(); prog.gems[g] = (prog.gems[g] || 0) + 1; } } },
+  NEWWORLD: { text: 'The next world is open!', give: () => { prog.worldsOpen = Math.min(WORLDS.length, prog.worldsOpen + 1); checkAch(); refreshMetaUI(); } }
 };
 function redeemCode(raw) {
   const c = String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
@@ -2406,7 +2411,7 @@ function explodeGrenade(x, y) {
 }
 
 // ===== Fallen: half-moon slashes, shadow twins, bloodfeast, shadow step, demon form =====
-const FEAST_AS = [0, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
+const FEAST_AS = [0, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5];
 const FEAST_LS = [0, 0.03, 0.045, 0.06, 0.075, 0.09, 0.105, 0.12, 0.135];
 const TWIN_DMG = [0, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5];
 const TWIN_HP = [0, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8];
@@ -2638,7 +2643,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '4.4';
+const GAME_VERSION = '4.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3958,11 +3963,11 @@ function updateWeapons(dt) {
         const bd = w.dmg * (crit ? 2 : 1) * (b.mul || 1);
         damageEnemy(e, bd, b.vx / sp * kb, b.vy / sp * kb, 0);
         hunterOnHit(e, bd);
-        // Ricochet: bounce once to the next demon
-        if (p.rico && !b.rico && Math.random() < 0.1 + 0.1 * Math.min(8, p.rico)) {
-          let nx = null, nd = 230 * 230;
-          for (const o of enemies) { if (o === e || o.dead || o.pvp) continue; const dd = (o.x - e.x) ** 2 + (o.y - e.y) ** 2; if (dd < nd) { nd = dd; nx = o; } }
-          if (nx) { const ra = Math.atan2(nx.y - e.y, nx.x - e.x); bullets.push({ x: e.x, y: e.y, vx: Math.cos(ra) * w.speed, vy: Math.sin(ra) * w.speed, life: 0.5, pierce: 0, hit: [e], rico: true, mul: 0.7 }); }
+        // Vampiric Bolts: heal a share of the demon's max HP on every hit
+        if (p.leech && !e.pvp && !p.dead && e.maxHp) {
+          const lv = Math.min(8, p.leech) - 1, big = BIG_DEMONS[e.type];
+          const pct = big ? [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4][lv] : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 1][lv];
+          p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100);
         }
         if (b.pierce-- <= 0) { b.life = 0; break; }
       }
