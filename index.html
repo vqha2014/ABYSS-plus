@@ -125,6 +125,12 @@
   .shop-note { text-align: center; color: var(--muted); font-size: 0.72rem; margin-top: 0.9rem; }
   .panel .btn { display: block; margin: 1.2rem auto 0; padding: 0.7rem 2rem; font-size: 1rem; }
 
+  .passives { display: flex; gap: 0.4rem; margin-top: 0.2rem; }
+  .pbadge { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ffe9a8; background: rgba(5, 8, 22, 0.6); display: grid; place-items: center; overflow: hidden; box-shadow: 0 0 10px rgba(255, 233, 168, 0.3); }
+  .pbadge svg { width: 22px; height: 22px; fill: none; stroke: #ffe9a8; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .pbadge .cd { position: absolute; inset: 0; background: conic-gradient(rgba(5, 8, 22, 0.8) var(--p, 0%), transparent 0); }
+  .pbadge .cdt { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 0.8rem; text-shadow: 0 0 5px #000; }
+  .pbadge.ready { box-shadow: 0 0 14px rgba(255, 233, 168, 0.8); }
   #skillBtn, #skill2Btn, #ultBtn {
     position: absolute; right: calc(1.2rem + env(safe-area-inset-right, 0px)); bottom: 4.4rem; z-index: 9; width: 74px; height: 74px;
     border-radius: 50%; border: 2px solid var(--gold); background: rgba(5, 8, 22, 0.6); color: var(--gold); cursor: pointer;
@@ -242,6 +248,10 @@
       <div class="bar"><i id="hpFill"></i><span id="hpText">100 / 100</span></div>
       <div class="bar"><i id="xpFill"></i></div>
       <div class="lvl">LV <span id="hLvl">1</span></div>
+      <div class="passives">
+        <div class="pbadge hidden" id="healBadge" title="Auto heal"><svg viewBox="0 0 24 24"><path d="M12 20S4 14.5 4 9.5A4 4 0 0 1 12 7a4 4 0 0 1 8 2.5C20 14.5 12 20 12 20Z"/><path d="M12 10V15M9.5 12.5H14.5"/></svg><span class="cd"></span><span class="cdt" id="healCdText"></span></div>
+        <div class="pbadge hidden" id="angelBadge" title="Guardian Angel"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="4" ry="1.4"/><circle cx="12" cy="11" r="2.6"/><path d="M9.5 13C6 12 4 9.5 3.5 7C6 8.5 8 9 9.5 10M14.5 13C18 12 20 9.5 20.5 7C18 8.5 16 9 14.5 10M10 20L12 14L14 20"/></svg><span class="cd"></span><span class="cdt" id="angelCdText"></span></div>
+      </div>
     </div>
     <div class="hud-r">
       <div class="clock" id="hTime">0:00</div>
@@ -397,7 +407,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 4.8</span>
+    <span class="version">Version 4.9</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -444,7 +454,7 @@ const UPGRADES = [
   { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
   { id: 'h_hawk', cls: 'hunter', name: 'Hawk Eye', max: 8, desc: 'Bolts fly 10% farther and faster.', apply: p => { p.w.range *= 1.1; p.w.speed *= 1.1; } },
   { id: 'h_falcon', cls: 'hunter', name: 'Falcon', max: 8, desc: 'A falcon dives at demons every few seconds (more dives and damage with levels).', apply: p => { p.falcon++; } },
-  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.05% to 0.4%).', apply: p => { p.leech = (p.leech || 0) + 1; } },
+  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.01% to 0.08%).', apply: p => { p.leech = (p.leech || 0) + 1; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
   { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
@@ -2258,7 +2268,7 @@ function updateCharger(e, dx, dy, d, dt) {
   e.x += dx / d * e.speed * dt; e.y += dy / d * e.speed * dt;
 }
 // when each demon type first appears (seconds); after 11:30 a new one every 3 minutes
-const UNLOCK = [['runner', 75], ['charger', 150], ['brute', 255], ['wisp', 360], ['splitter', 465], ['necro', 600], ['golem', 735], ['bat', 870], ['bomber', 1005], ['shade', 1140], ['hound', 1275], ['warlock', 1410], ['titan', 1545]];
+const UNLOCK = [['runner', 55], ['charger', 110], ['brute', 190], ['wisp', 270], ['splitter', 350], ['necro', 450], ['golem', 550], ['bat', 650], ['bomber', 750], ['shade', 855], ['hound', 955], ['warlock', 1060], ['titan', 1160]];
 const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7 };
 function pickType() {
   const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx).map(u => u[0])];
@@ -2843,7 +2853,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '4.8';
+const GAME_VERSION = '4.9';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3234,7 +3244,7 @@ function buildSnapshot() {
   for (const q of players) {
     pl[q.id] = {
       x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
-      tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
+      tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, cs: q.conse || 0, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
       nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0,
@@ -3589,7 +3599,7 @@ function onSnapshot(s) {
     if (id === myId) { me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
-      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
+      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
       if (v.d && !me.dead) { me.dead = true; me.deathTime = v.dt || time; youFell(); }
       else if (!v.d && me.dead) { me.dead = false; me.deathTime = 0; $('coopBanner').classList.add('hidden'); Sound.sfx('level'); }
       me.revive = v.rv || 0; me.team = v.tm || 'A';
@@ -4032,13 +4042,13 @@ function updateExtraSkills(dt) {
     if (tg) { effects.push({ kind: 'dbolt', x: p.x, y: p.y, r: tg.x, seed: tg.y, life: 0.2, max: 0.2 }); damageEnemy(tg, p.w.dmg * (2 + 0.3 * p.phantom), 0, 0, 0); }
   }
   if (p.hammer && cd('hammer', 3, Math.max(3, 6.5 - 0.45 * p.hammer))) {
-    const tg = nearestEnemy(p.x, p.y, 400);
+    const tg = nearestEnemy(p.x, p.y, 560);
     if (tg) {
-      const a = Math.atan2(tg.y - p.y, tg.x - p.x), L = 320, ca = Math.cos(a), sa = Math.sin(a), sx = p.x, sy = p.y;
+      const a = Math.atan2(tg.y - p.y, tg.x - p.x), L = 560, ca = Math.cos(a), sa = Math.sin(a), sx = p.x, sy = p.y;
       effects.push({ kind: 'hline', x: sx, y: sy, r: L, life: 0.4, max: 0.4, seed: a });
       for (const e of enemiesNear(sx + ca * L / 2, sy + sa * L / 2, L / 2 + 30)) {
         const dx = e.x - sx, dy = e.y - sy, along = dx * ca + dy * sa, side = Math.abs(-dx * sa + dy * ca);
-        if (along > -10 && along < L && side < e.r + 24) damageEnemy(e, p.w.dmg * (1.2 + 0.25 * p.hammer), ca * 120, sa * 120, 0);
+        if (along > -10 && along < L && side < e.r + 46) damageEnemy(e, p.w.dmg * (1.2 + 0.25 * p.hammer), ca * 120, sa * 120, 0);
       }
     }
   }
@@ -4216,14 +4226,14 @@ function updateWeapons(dt) {
         b.hit.push(e);
         const crit = Math.random() < w.crit;
         const sp = Math.hypot(b.vx, b.vy) || 1;
-        const kb = 70 + (w.knock || 0);
+        const kb = (70 + (w.knock || 0)) * (BIG_DEMONS[e.type] ? 0.3 : 1);
         const bd = w.dmg * (crit ? 2 : 1) * (b.mul || 1);
         damageEnemy(e, bd, b.vx / sp * kb, b.vy / sp * kb, 0);
         hunterOnHit(e, bd);
         // Vampiric Bolts: heal a share of the demon's max HP on every hit
         if (p.leech && !e.pvp && !p.dead && e.maxHp) {
           const lv = Math.min(8, p.leech) - 1, big = BIG_DEMONS[e.type];
-          const pct = big ? [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4][lv] : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 1][lv];
+          const pct = big ? [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08][lv] : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 1][lv];
           p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100);
         }
         if (b.pierce-- <= 0) { b.life = 0; break; }
@@ -4271,6 +4281,9 @@ function updateHUD(force) {
   if (live && me.cls === 'druid' && ur > 0) { fb.classList.remove('hidden'); $('formIcon').innerHTML = FORM_ICONS[me.form || 'wolf']; }
   else fb.classList.add('hidden');
   setBtn($('skill2Btn'), 'skill2CdText', live && me.nova > 0, me.novaCd, novaCdOf(me));
+  // Paladin passives: automatic heal and Guardian Angel
+  setBtn($('healBadge'), 'healCdText', live && me.cls === 'paladin', me.healCd || 0, healCdOf(me));
+  setBtn($('angelBadge'), 'angelCdText', live && me.cls === 'paladin' && (me.angel || (me.ups && me.ups.p_angel)) > 0, me.angelCd || 0, 100 - 7 * Math.min(8, me.angel || (me.ups && me.ups.p_angel) || 1));
   if (!live) $('healPicker').classList.add('hidden');
 }
 
@@ -4390,8 +4403,9 @@ function render() {
     } else if (f.kind === 'hline') {
       const a = f.seed || 0, d = f.r * (1 - k), px = x + Math.cos(a) * d, py = y + Math.sin(a) * d;
       ctx.save(); ctx.translate(px, py); ctx.rotate(a + clock * 20);
-      ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.fillStyle = 'rgba(255, 233, 168, ' + (0.5 + 0.5 * k) + ')';
-      ctx.fillRect(-4, -16, 8, 32); ctx.fillRect(-12, -16, 24, 10);
+      ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 26; ctx.fillStyle = 'rgba(255, 233, 168, ' + (0.6 + 0.4 * k) + ')';
+      ctx.fillRect(-8, -40, 16, 80); ctx.fillRect(-28, -40, 56, 26);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2; ctx.strokeRect(-28, -40, 56, 26);
       ctx.restore();
     } else if (f.kind === 'rend') {
       const a = f.seed || 0, d = f.r * (1 - k), px = x + Math.cos(a) * d, py = y + Math.sin(a) * d;
