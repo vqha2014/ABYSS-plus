@@ -397,7 +397,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 4.5</span>
+    <span class="version">Version 4.6</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -501,6 +501,7 @@ const ETYPES = {
   hound: { r: 10, hp: 40, speed: 178, dmg: 12, xp: 3, color: '#ff5a1f', spikes: 6 },
   warlock: { r: 14, hp: 130, speed: 70, dmg: 14, xp: 7, color: '#c21aff', spikes: 7 },
   titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 },
+  portal: { r: 26, hp: 350, speed: 0, dmg: 0, xp: 0, color: '#7dff3a', spikes: 0, still: true },
   ore_amethyst: { r: 22, hp: 70, speed: 0, dmg: 0, xp: 0, color: '#b26bff', spikes: 0, ore: 'amethyst' },
   ore_emerald: { r: 22, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#39ff6a', spikes: 0, ore: 'emerald' },
   ore_sapphire: { r: 22, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#3d8bff', spikes: 0, ore: 'sapphire' },
@@ -688,6 +689,17 @@ function drawOre(g, R, col) {
   }
   g.shadowBlur = 0;
 }
+// an undead portal: a green-black swirl
+function drawPortal(g, R) {
+  const rg = g.createRadialGradient(0, 0, R * 0.1, 0, 0, R);
+  rg.addColorStop(0, '#000000'); rg.addColorStop(0.6, '#0d2a0a'); rg.addColorStop(1, '#3dff2a');
+  g.fillStyle = rg; g.beginPath(); g.ellipse(0, 0, R, R * 1.15, 0, 0, TAU); g.fill();
+  g.shadowColor = '#7dff3a'; g.shadowBlur = R * 0.6; g.strokeStyle = '#7dff3a'; g.lineWidth = 3;
+  g.beginPath(); g.ellipse(0, 0, R, R * 1.15, 0, 0, TAU); g.stroke();
+  g.lineWidth = 1.5; g.strokeStyle = 'rgba(200, 255, 160, 0.7)';
+  for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(0, 0, R * (0.3 + i * 0.2), i, i + 3.6); g.stroke(); }
+  g.shadowBlur = 0;
+}
 function buildSprites() {
   for (const k in ETYPES) {
     const t = ETYPES[k], pad = t.r * (k === 'king' ? 1.95 : k === 'champ' ? 1.05 : 0.9), size = Math.ceil((t.r + pad) * 2);
@@ -700,6 +712,7 @@ function buildSprites() {
     if (k === 'king') { drawKing(g, t.r); sprites[k] = { c, size }; continue; }
     if (k === 'champ') { drawChampion(g, t.r, 0); sprites[k] = { c, size }; continue; }
     if (t.ore) { drawOre(g, t.r, t.color); sprites[k] = { c, size }; continue; }
+    if (t.still) { drawPortal(g, t.r); sprites[k] = { c, size }; continue; }
     for (let i = 0; i < t.spikes * 2; i++) {
       const a = (i * Math.PI) / t.spikes - Math.PI / 2, rr = i % 2 ? t.r * 0.62 : t.r;
       i ? g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : g.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
@@ -1081,6 +1094,10 @@ const CODES = {
   DIAMONDS: { text: '10 Diamonds!', give: () => { prog.gems.diamond = (prog.gems.diamond || 0) + 10; } },
   RESEARCHNOW: { text: 'All research in progress is finished!', give: () => { for (const a of resList()) a.end = Date.now() - 1; resTick(); } },
   LUCKYBOX: { text: 'A lucky box: a random item and 3 random gems!', give: () => { giveItem(makeItem(2 + Math.floor(Math.random() * 3)), 'Lucky box'); for (let i = 0; i < 3; i++) { const g = rollGem(); prog.gems[g] = (prog.gems[g] || 0) + 1; } } },
+  GEARUP: { text: 'An Epic item +3!', give: () => { giveItem(makeItem(3, null, 3), 'Gift'); } },
+  GEMPACK: { text: '3 Rubies and 3 Topaz!', give: () => { prog.gems.ruby = (prog.gems.ruby || 0) + 3; prog.gems.topaz = (prog.gems.topaz || 0) + 3; } },
+  ORBMASTER: { text: '1,500 stars!', give: () => { addStars(1500); } },
+  SUPERNOVA: { text: 'Nova Bomb research +1 level!', give: () => { prog.res.lv.r_nova = Math.min(10, (prog.res.lv.r_nova || 0) + 1); } },
   NEWWORLD: { text: 'The next world is open!', give: () => { prog.worldsOpen = Math.min(WORLDS.length, prog.worldsOpen + 1); checkAch(); refreshMetaUI(); } }
 };
 function redeemCode(raw) {
@@ -1669,7 +1686,7 @@ function newPlayer(cls) {
 }
 
 function resetWorld() {
-  enemies = []; ebullets = []; hazards = []; gems = []; oreT = 12; gemLog = ''; effects = []; particles = []; texts = []; killFx = [];
+  enemies = []; ebullets = []; hazards = []; gems = []; oreT = 12; gemLog = ''; evt = null; evtT = 90; evtLog = ''; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
   nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null; nextChamp = 900; champCount = 0; champsKilled = 0;
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
@@ -1795,10 +1812,123 @@ function damageEnemy(e, dmg, kx, ky, stun) {
   Sound.sfx('hit');
   if (e.hp <= 0) killEnemy(e);
 }
+
+// ===== Events: every 1:30 something happens somewhere, an arrow points to it =====
+const EVT_INFO = {
+  rescue: { title: 'EVENT: RESCUE', sub: 'Find the survivor and keep it alive for 30 s', goal: 'Protect the survivor', stars: 50 },
+  portals: { title: 'EVENT: UNDEAD PORTALS', sub: 'Destroy all 3 portals within 45 s', goal: 'Destroy the portals', stars: 35 },
+  shrine: { title: 'EVENT: CURSED SHRINE', sub: 'Stand inside the circle for 20 s', goal: 'Hold the shrine', stars: 40 }
+};
+const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine' };
+let evt = null, evtT = 90, evtLog = '';
+function startEvent() {
+  const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
+  const kinds = Object.keys(EVT_INFO), kind = kinds[Math.floor(Math.random() * kinds.length)];
+  evt = { kind, x, y, st: 0, t: 45, pr: 0, spawnT: 2 };
+  if (kind === 'rescue') evt.npc = { x, y, hp: 1, maxHp: 1, flash: 0, dead: false, npc: true };
+  if (kind === 'portals') {
+    evt.st = 1;
+    evt.por = [0, 1, 2].map(i => { const pa = i * TAU / 3, o = spawnAt('portal', x + Math.cos(pa) * 95, y + Math.sin(pa) * 95); pushOut(o, o.r, 0); o.spawnT = rand(1, 2.5); return o; });
+  }
+  banner = { text: EVT_INFO[kind].title, sub: EVT_INFO[kind].sub + ' (+' + EVT_INFO[kind].stars + ' stars)', life: 3.2 };
+  Sound.sfx('summon');
+}
+function evtNear(R) { return players.some(q => !q.dead && (q.x - evt.x) ** 2 + (q.y - evt.y) ** 2 < R * R); }
+function evtSpawnAround(x, y, n, rad) { for (let i = 0; i < n && enemies.length < 260; i++) { const a = rand(0, TAU); spawnAt(pickType(), x + Math.cos(a) * rad, y + Math.sin(a) * rad); } }
+function updateEvent(dt) {
+  if (!evt) { evtT -= dt; if (evtT <= 0) { evtT = 90; startEvent(); } return; }
+  evt.t -= dt; evt.spawnT -= dt;
+  if (evt.kind === 'rescue') {
+    const n = evt.npc;
+    if (evt.st === 0) {
+      if (evtNear(170)) { evt.st = 1; evt.t = 30; n.maxHp = n.hp = 300 * (1 + time / 120); n.dead = false; }
+      else if (evt.t <= 0) endEvent(null);
+    } else {
+      if (evt.spawnT <= 0) { evt.spawnT = 2.5; evtSpawnAround(n.x, n.y, 2, 320); }
+      if (n.dead) endEvent(false); else if (evt.t <= 0) endEvent(true);
+    }
+  } else if (evt.kind === 'portals') {
+    // every portal keeps pouring out demons until it breaks
+    for (const o of evt.por) { if (o.dead) continue; o.spawnT -= dt; if (o.spawnT <= 0) { o.spawnT = 2.5; evtSpawnAround(o.x, o.y, 1, 40); } }
+    if (evt.por.every(o => o.dead)) endEvent(true); else if (evt.t <= 0) endEvent(false);
+  } else if (evt.kind === 'shrine') {
+    if (evt.st === 0) {
+      if (evtNear(110)) { evt.st = 1; evt.t = 60; evt.pr = 0; }
+      else if (evt.t <= 0) endEvent(null);
+    } else {
+      if (evtNear(110)) evt.pr += dt;
+      if (evt.spawnT <= 0) { evt.spawnT = 2; evtSpawnAround(evt.x, evt.y, 2, 300); }
+      if (evt.pr >= 20) endEvent(true); else if (evt.t <= 0) endEvent(false);
+    }
+  }
+}
+function endEvent(ok) {
+  if (!evt) return;
+  if (ok) { const gem = rollGem(); evtLog += EVT_CODE[evt.kind] + GEM_CODE[gem]; evtReward(evt.kind, gem); }
+  else toast(ok === false ? 'Event failed!' : 'Event missed.');
+  if (evt.por) for (const o of evt.por) o.dead = true;
+  evt = null; evtT = 90;
+}
+function evtReward(kind, gem) {
+  const st = EVT_INFO[kind].stars;
+  addStars(st); updateStarsUI();
+  if (me) gainGem(gem, me.x, me.y - 40);
+  toast('Event complete! +' + st + ' stars and a gem');
+  Sound.sfx('level');
+}
+function drawEvent(S2) {
+  if (!evt || !me) return;
+  const [x, y] = S2(evt.x, evt.y), pulse = 0.6 + 0.4 * Math.sin(clock * 5);
+  ctx.save();
+  if (evt.kind === 'rescue' && evt.npc) {
+    if (evt.st === 0) { ctx.strokeStyle = 'rgba(255, 233, 168, ' + (0.4 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.beginPath(); ctx.arc(x, y, 170, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+    if (!evt.npc.dead) {
+      const g = ctx.createRadialGradient(x - 4, y - 4, 1, x, y, 14);
+      g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#ffd54a');
+      ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 14, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe9a8'; ctx.fillText('SURVIVOR', x, y - 26);
+      if (evt.st === 1) { const k = Math.max(0, Math.min(1, evt.npc.hp / evt.npc.maxHp)); ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(x - 22, y - 22, 44, 5); ctx.fillStyle = '#39ff6a'; ctx.fillRect(x - 22, y - 22, 44 * k, 5); }
+    }
+  } else if (evt.kind === 'shrine') {
+    ctx.fillStyle = 'rgba(176, 38, 255, ' + (0.08 + 0.06 * pulse) + ')'; ctx.beginPath(); ctx.arc(x, y, 110, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(200, 120, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 110, 0, TAU); ctx.stroke();
+    if (evt.st === 1) { ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(x, y, 118, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, evt.pr / 20)); ctx.stroke(); }
+    ctx.fillStyle = '#e0b3ff'; ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillText('SHRINE', x, y + 4);
+  } else if (evt.kind === 'portals') {
+    ctx.strokeStyle = 'rgba(125, 255, 58, ' + (0.3 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([8, 8]); ctx.beginPath(); ctx.arc(x, y, 150, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  }
+  ctx.restore();
+  // arrow at the screen edge when the event is off screen
+  const mx = W / 2, my = H / 2, dx = x - mx, dy = y - my, off = x < 30 || y < 30 || x > W - 30 || y > H - 30;
+  if (off) {
+    const a = Math.atan2(dy, dx), m = 46, k = Math.min((W / 2 - m) / Math.abs(Math.cos(a) || 1e-6), (H / 2 - m) / Math.abs(Math.sin(a) || 1e-6));
+    const ax = mx + Math.cos(a) * k, ay = my + Math.sin(a) * k, col = evt.kind === 'portals' ? '#7dff3a' : evt.kind === 'shrine' ? '#e0b3ff' : '#ffd54a';
+    ctx.save(); ctx.translate(ax, ay); ctx.rotate(a);
+    ctx.shadowColor = col; ctx.shadowBlur = 12; ctx.fillStyle = col;
+    ctx.beginPath(); ctx.moveTo(18, 0); ctx.lineTo(-10, -12); ctx.lineTo(-4, 0); ctx.lineTo(-10, 12); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = col; ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(Math.round(Math.hypot(evt.x - me.x, evt.y - me.y) / 10) + 'm', ax - Math.cos(a) * 26, ay - Math.sin(a) * 26 + 4);
+  }
+  // goal text near the top
+  const info = EVT_INFO[evt.kind];
+  let line = info.goal;
+  if (evt.kind === 'rescue') line += evt.st === 0 ? ' \u00b7 go to the survivor' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'portals') line += ' \u00b7 ' + (evt.por ? evt.por.filter(o => !o.dead).length + ' left \u00b7 ' : '') + Math.ceil(Math.max(0, evt.t)) + 's';
+  else line += evt.st === 0 ? ' \u00b7 go to the shrine' : ' \u00b7 ' + Math.floor(evt.pr) + '/20s';
+  ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255, 233, 168, 0.95)';
+  ctx.fillText('EVENT: ' + line, W / 2, H * 0.14);
+}
 const BLADE_R = 105;
 function killEnemy(e) {
   e.dead = true;
   // ore rocks: no kill, no XP, just a gem
+  if (ETYPES[e.type] && ETYPES[e.type].still) {
+    for (let i = 0; i < 18; i++) { const a = rand(0, TAU), sp = rand(1, 6); particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: rand(2, 5), life: 1, decay: 0.03, color: i % 2 ? '#7dff3a' : '#0d2a0a' }); }
+    if (coop) killFx.push([Math.round(e.x), Math.round(e.y), TYPE_IDX.indexOf(e.type)]);
+    Sound.sfx('boom');
+    return;
+  }
   if (ETYPES[e.type] && ETYPES[e.type].ore) {
     const gem = ETYPES[e.type].ore;
     for (let i = 0; i < 14; i++) { const a = rand(0, TAU), sp = rand(1, 5); particles.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, size: rand(2, 5), life: 1, decay: 0.03, color: i % 2 ? '#7d8494' : ETYPES[e.type].color }); }
@@ -2643,7 +2773,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '4.5';
+const GAME_VERSION = '4.6';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3049,7 +3179,7 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
-    gml: gemLog, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2)]), wd: worldId,
+    gml: gemLog, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2)]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
     fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
@@ -3339,6 +3469,13 @@ function onSnapshot(s) {
     for (const ch of s.gml.slice(coop.gemSeen || 0)) { const g = GEM_FROM[ch]; if (g) gainGem(g, me.x, me.y - 30); }
     coop.gemSeen = s.gml.length;
   }
+  if (typeof s.evr === 'string') {
+    if (s.evr.length < (coop.evSeen || 0)) coop.evSeen = 0;
+    const nw = s.evr.slice(coop.evSeen || 0);
+    for (let i = 0; i + 1 < nw.length; i += 2) { const k = EVT_FROM[nw[i]], g = GEM_FROM[nw[i + 1]]; if (k && g) evtReward(k, g); }
+    coop.evSeen = s.evr.length;
+  }
+  evt = s.ev ? { kind: s.ev.k, x: s.ev.x, y: s.ev.y, st: s.ev.st, t: s.ev.t, pr: s.ev.pr, npc: s.ev.k === 'rescue' ? { x: s.ev.x, y: s.ev.y, hp: s.ev.nh, maxHp: 1, dead: false } : null, por: s.ev.k === 'portals' ? Array.from({ length: s.ev.pl }, () => ({ dead: false })) : null } : null;
   hazards = (s.hz || []).map(([x, y, r, k]) => ({ x, y, r, t: k, max: 1 }));
   if (typeof s.wd === 'number') setWorld(s.wd);
   grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
@@ -3509,6 +3646,7 @@ function update(dt) {
   }
   time += dt;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
+  updateEvent(dt);
   // ore rocks: break them for gems
   oreT -= dt;
   if (oreT <= 0) {
@@ -3570,6 +3708,7 @@ function update(dt) {
   }
   allBears = []; allPets = [];
   for (const pl of players) { for (const b of pl._bears) { allBears.push(b); allPets.push(b); } for (const b of (pl._twins || [])) allPets.push(b); }
+  if (evt && evt.npc && evt.st === 1 && !evt.npc.dead) allPets.push(evt.npc);
 
   // spawning
   spawnT -= dt;
@@ -3620,7 +3759,7 @@ function update(dt) {
     }
     e.flash -= dt; e.bladeCd -= dt;
     if (e.curseT > 0) e.curseT -= dt;
-    if (e.speed === 0 && ETYPES[e.type].ore) { e.flash -= dt; if ((e.x - me.x) ** 2 + (e.y - me.y) ** 2 > 1800 * 1800 && !coop) e.dead = true; continue; }
+    if (e.speed === 0 && (ETYPES[e.type].ore || ETYPES[e.type].still)) { e.flash -= dt; if ((e.x - me.x) ** 2 + (e.y - me.y) ** 2 > 1800 * 1800 && !coop) e.dead = true; continue; }
     let tp = null, bestD = Infinity;
     for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2; if (dd < bestD) { bestD = dd; tp = pl; } }
     if (!tp) continue;
@@ -3981,7 +4120,7 @@ function updateWeapons(dt) {
       tn.tick = 0.25;
       for (const e of enemiesNear(tn.x, tn.y, tn.r)) {
         const dx = tn.x - e.x, dy = tn.y - e.y, d = Math.hypot(dx, dy) || 1;
-        damageEnemy(e, [0, 20, 25, 30, 35, 45, 55, 65, 75][Math.min(8, p.tornado)], dx / d * 120, dy / d * 120, 0);
+        damageEnemy(e, [0, 24, 30, 36, 42, 54, 66, 78, 90][Math.min(8, p.tornado)], dx / d * 120, dy / d * 120, 0);
       }
     }
   }
@@ -4078,6 +4217,7 @@ function render() {
   if (shake > 0.4) ctx.translate(rand(-shake, shake), rand(-shake, shake));
   const S2 = (x, y) => [x - cam.x + W / 2, y - cam.y + H / 2];
   drawScenery(S2, cam);
+  drawEvent(S2);
   // red circles that are about to explode
   for (const h of hazards) {
     const [x, y] = S2(h.x, h.y), k = 1 - Math.max(0, h.t) / (h.max || 1);
