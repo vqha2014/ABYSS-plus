@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="color-scheme" content="dark">
-<title>ABYSS+-Neon Orb</title>
+<title>ABYSS+ Neon Orb</title>
 <style>
   :root {
     --bg: #050816; --cyan: #00f0ff; --purple: #b026ff; --green: #39ff6a; --red: #ff3b5c; --gold: #ffd54a; --muted: #6b7280;
@@ -238,6 +238,7 @@
   .author { color: #8b93a7; text-align: right; text-shadow: 0 0 10px rgba(0, 240, 255, 0.25); }
   .author .note { display: block; font-style: italic; color: #5b6275; font-size: 0.9em; }
 </style>
+<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 </head>
 <body>
 <div id="game">
@@ -271,6 +272,7 @@
       <div class="title">ABYSS+</div>
       <div class="subtitle">NEON ORB</div>
       <p class="info">The Demon Legion is pouring out of the Abyss. Your orb attacks on its own: just move to survive. Every level up, pick a new skill.</p>
+      <p class="info" style="font-size:0.7rem;margin-top:0.6rem">Your nickname and scores appear on a public online leaderboard. Do not use your real name.</p>
       <input class="name-input" id="nameInput" type="text" maxlength="12" placeholder="Your name" autocomplete="off" spellcheck="false" aria-label="Your name">
       <div class="classes" id="classList"></div>
       <button class="btn" id="startBtn">Start</button>
@@ -286,7 +288,7 @@
         <button class="mode-btn" id="helpBtn">Help</button>
       </div>
       <div class="daily" id="dailyBox"></div>
-      <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
+      <button class="lb-open">Leaderboard</button>
     </div>
   </div>
 
@@ -305,9 +307,10 @@
       <div class="stars-line"><svg class="star-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0L13.2 10.8L24 12L13.2 13.2L12 24L10.8 13.2L0 12L10.8 10.8Z" fill="#cfe8ff"/><circle cx="12" cy="12" r="3.2" fill="#fff"/></svg> <span id="pauseStars">0</span> stars</div>
       <button class="btn btn-alt" id="shopBtn">Skins</button>
       <button class="btn btn-alt" id="pauseHelpBtn" style="margin-left:0.6rem">Help</button>
-      <button class="btn btn-alt hidden" id="pausePgBtn" style="margin-left:0.6rem">Playground</button><br>
+      <button class="btn btn-alt hidden" id="pausePgBtn" style="margin-left:0.6rem">Playground</button>
+      <button class="btn btn-alt hidden" id="pauseGearBtn" style="margin-left:0.6rem">Gear</button><br>
       <button class="home" id="menuBtn">⌂ ABYSS menu</button>
-      <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
+      <button class="lb-open">Leaderboard</button>
     </div>
   </div>
 
@@ -324,7 +327,7 @@
       <button class="btn hidden" id="retryBtn">Retry together</button>
       <p class="info hidden" id="retryNote"></p><br>
       <button class="btn btn-alt" id="classBtn">ABYSS menu</button><br>
-      <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
+      <button class="lb-open">Leaderboard</button>
     </div>
   </div>
 
@@ -390,6 +393,7 @@
       </div>
       <div id="lobby" class="hidden">
         <div class="code-box">ROOM CODE<b id="roomCode">----</b></div>
+        <button class="mode-btn hidden" id="inviteBtn" style="margin-top:0.8rem">Copy invite link</button>
         <div class="mode-row" id="modeRow"></div>
         <div class="mode-row hidden" id="teamRow"><button class="mode-btn" data-team="A">Team A</button><button class="mode-btn tb" data-team="B">Team B</button></div>
         <ul class="roster" id="roster"></ul>
@@ -409,8 +413,8 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 5.1</span>
-    <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
+    <span class="version">Version 5.2</span>
+    <span class="author">by Ha Q. Vu</span>
   </div>
 </div>
 
@@ -1120,9 +1124,28 @@ function gearStats(list) {
   for (const it of list || []) if (it && GEAR_TYPES[it.type]) g[it.type] += itemVal(it);
   return g;
 }
+const gearN = (g, k, cap) => Math.max(0, Math.min(cap, +g[k] || 0));
+// take worn gear off a running character (used when you swap gear in the playground)
+function unapplyGear(pl) {
+  const g = pl._gs;
+  if (!g) return;
+  const n = (k, cap) => gearN(g, k, cap), ratio = pl.hp / pl.maxHp;
+  pl.maxHp /= 1 + n('hp', 300) / 100; pl.hp = pl.maxHp * ratio;
+  pl.resDmg = (pl.resDmg || 1) / (1 + n('dmg', 300) / 100);
+  pl.armor -= n('armor', 40); pl.speed /= 1 + n('speed', 100) / 100; pl.xpMul -= n('xp', 300) / 100; pl.regen -= n('regen', 40);
+  const as = 1 + n('as', 200) / 100;
+  if (pl.w.cd) pl.w.cd *= as; else pl.w.dmg /= as;
+  pl._gs = null;
+}
+function regear(pl) {
+  const ratio = pl.hp / pl.maxHp;
+  unapplyGear(pl); applyGear(pl, gearStats(equipped()));
+  pl.hp = pl.maxHp * ratio;
+}
 function applyGear(pl, g) {
   if (!g || typeof g !== 'object') return;
-  const n = (k, cap) => Math.max(0, Math.min(cap, +g[k] || 0));
+  pl._gs = Object.assign({}, g);
+  const n = (k, cap) => gearN(g, k, cap);
   pl.maxHp *= 1 + n('hp', 300) / 100; pl.hp = pl.maxHp;
   pl.resDmg = (pl.resDmg || 1) * (1 + n('dmg', 300) / 100);
   pl.armor += n('armor', 40); pl.speed *= 1 + n('speed', 100) / 100; pl.xpMul += n('xp', 300) / 100; pl.regen += n('regen', 40);
@@ -1293,14 +1316,10 @@ function startPlayground() {
   startGame();
   pg.on = true;
   unlockIdx = UNLOCK.length;
-  // jump to the chosen level with random skills
-  for (let i = 1; i < pg.lvl; i++) {
-    me.lvl++;
-    const opts = rollOptions().filter(u => u !== HEAL_CARD);
-    if (opts.length) { const u = opts[0]; u.apply(me); if (u.max) me.ups[u.id] = (me.ups[u.id] || 0) + 1; }
-  }
+  // jump to the chosen level; you pick every skill yourself
+  me.lvl = pg.lvl; me.pending = pg.lvl - 1;
   me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25); me.xp = 0; me.hp = me.maxHp;
-  $('pausePgBtn').classList.remove('hidden');
+  $('pausePgBtn').classList.remove('hidden'); $('pauseGearBtn').classList.remove('hidden');
   banner = { text: 'PLAYGROUND', sub: 'Try anything. No stars, gems, items or records here.', life: 3 };
   updateHUD(true);
 }
@@ -1324,9 +1343,9 @@ function renderPlayground(body) {
   sec('SPAWN SPEED');
   w = wrap();
   for (const r of [1, 2, 3, 5]) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
-  sec('STARTING LEVEL' + (pg.on ? ' (for the next start)' : ''));
+  sec('STARTING LEVEL' + (pg.on ? ' (picking one restarts at that level)' : ''));
   w = wrap();
-  for (const l of [1, 10, 20, 30, 50, 80]) chip(w, 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); renderMeta(); });
+  for (const l of [1, 10, 20, 30, 50, 80]) chip(w, 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) startPlayground(); else renderMeta(); });
   if (pg.on) {
     sec('SPAWN NOW (appears near you)');
     w = wrap();
@@ -1343,7 +1362,8 @@ function openMeta(kind) {
   clearInterval(metaTimer);
   metaTimer = setInterval(() => { resTick(); if (metaKind === 'research') renderMeta(); }, 1000);
 }
-function closeMeta() { waitBind = ''; $('metaModal').classList.add('hidden'); clearInterval(metaTimer); refreshMetaUI(); }
+function closeMeta() { if (pg.on && me && (metaKind === 'gear' || metaKind === 'enhance')) { regear(me); updateHUD(true); }
+  waitBind = ''; $('metaModal').classList.add('hidden'); clearInterval(metaTimer); refreshMetaUI(); }
 function mrow(title, sub, act, cls) {
   const row = document.createElement('div'); row.className = 'mrow' + (cls ? ' ' + cls : '');
   const l = document.createElement('div'), b = document.createElement('b'), sm = document.createElement('small');
@@ -1861,7 +1881,8 @@ function resetWorld() {
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
 }
 function startGame() {
-  pg.on = false; $('pausePgBtn').classList.add('hidden');
+  cgGameplay(true);
+  pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   coop = null;
   resetWorld();
   me = newPlayer(selClass);
@@ -1884,6 +1905,7 @@ function startGame() {
   Sound.startMusic(); Sound.setTempo(116);
 }
 function pauseGame() {
+  if (state === S.PLAYING) cgGameplay(false);
   if (coop) {
     // co-op: pause the whole team
     if (state !== S.PLAYING || coop.over || coop.paused) return;
@@ -1903,6 +1925,7 @@ function pauseGame() {
   Sound.suspend();
 }
 function resumeGame() {
+  cgGameplay(true);
   if (coop) {
     if (!coop.paused) return;
     coop.paused = false;
@@ -1999,7 +2022,6 @@ const EVT_INFO = {
 const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin' };
 let evt = null, evtT = 90, evtLog = '';
 function startEvent() {
-  if (pg.on) return;
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
   const kinds = Object.keys(EVT_INFO), kind = kinds[Math.floor(Math.random() * kinds.length)];
   evt = { kind, x, y, st: 0, t: 45, pr: 0, spawnT: 2 };
@@ -2598,7 +2620,7 @@ function setBearHp(c, on) {
 function castUlt(c) {
   const r = ultRank(c);
   if (!c || c.dead || !r || c.ultCd > 0) return;
-  c.ultR = r; c.ultCd = c.cls === 'fallen' ? 60 : ULT_CD; c.ultT = c.cls === 'fallen' ? DEMON_T[r] : ULT_TIME;
+  c.ultR = r; c.ultCd = pg.on ? 0 : c.cls === 'fallen' ? 60 : ULT_CD; c.ultT = c.cls === 'fallen' ? DEMON_T[r] : ULT_TIME;
   if (c.cls === 'hunter') c.ultMul = [1, 1.5, 2, 2.5][r];
   else if (c.cls === 'warrior') { c.ultHp = [0, 50, 75, 100][r]; c.maxHp += c.ultHp; c.hp += c.ultHp; c.waveT = 0; }
   else if (c.cls === 'druid') { c.roarT = 0; if (c.form === 'bear') setBearHp(c, true); }
@@ -2718,7 +2740,7 @@ function skill1() {
 const novaCdOf = c => [90, 90, 84, 78, 72, 66, 60, 55, 50, 45, 40][Math.min(10, c.nova || 0)];
 function castNova(c) {
   if (!c || c.dead || !c.nova || c.novaCd > 0 || state !== S.PLAYING) return;
-  c.novaCd = novaCdOf(c);
+  c.novaCd = pg.on ? 0 : novaCdOf(c);
   const R = 280, dmg = (60 + 40 * c.nova) * hpScale(), cx = c.x, cy = c.y;
   effects.push({ kind: 'nova', x: cx, y: cy, r: R, life: 0.6, max: 0.6 });
   for (const e of enemiesNear(cx, cy, R)) { const dx = e.x - cx, dy = e.y - cy, d = Math.hypot(dx, dy) || 1; damageEnemy(e, dmg, dx / d * 500, dy / d * 500, 0.5); }
@@ -2989,7 +3011,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '5.1';
+const GAME_VERSION = '5.2';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3185,6 +3207,7 @@ function enterLobby(code, role, mode) {
   $('mpTitle').textContent = lobby.mode === 'coop' ? 'Co-op' : 'Versus';
   $('mpInfo').textContent = MP_INFO[lobby.mode === 'coop' ? 'coop' : 'vs'];
   $('roomCode').textContent = code;
+  cgShowInvite(code);
   $('coopStartBtn').classList.toggle('hidden', role !== 'host');
   $('lobbyNote').textContent = role === 'host' ? 'Share this code with your friends. Press Start when everyone is in.' : 'Waiting for the host to start…';
   lobby.playersStream = stream('/rooms/' + code + '/players', data => {
@@ -3251,6 +3274,7 @@ function renderRoster() {
   }
 }
 async function leaveLobby(text) {
+  cgHideInvite(true);
   if (lobby) {
     closeStreams(lobby.streams);
     if (lobby.role === 'host') api('/rooms/' + lobby.code, 'DELETE');
@@ -3290,6 +3314,7 @@ function startCoop(role, round) {
     pickSeq: 0, pick: null, gr: 0, shownOffer: null, pickedKey: null, emap: new Map(), others: new Map(),
     lastK: 0, lastBk: 0, hostT: 0, over: false, round: round || 0, retry: {}, paused: false, pausedBy: '', lastRoster: 1
   };
+  cgHideInvite(false); cgRoomClosed(); cgGameplay(true);
   coop.mode = lobby.mode || 'coop';
   const teamOf = v => coop.mode === 'coop' ? 'A' : ((v && v.tm) || 'A');
   lobby = null;
@@ -3543,6 +3568,7 @@ function checkAllDead() {
   }
 }
 function showCoopOver(note) {
+  cgGameplay(false);
   if (state === S.OVER) return;
   state = S.OVER;
   const sec = me.dead ? (me.deathTime || time) : time;
@@ -3613,6 +3639,7 @@ function coopLost(text) {
   showCoopOver(text);
 }
 function leaveCoop() {
+  cgHideInvite(true); cgGameplay(false);
   if (!coop) return;
   if (coop.stateStream) coop.streams.push(coop.stateStream);
   if (coop.role === 'host') { api('/rooms/' + coop.code + '/meta', 'PATCH', { ended: true }); const code = coop.code; setTimeout(() => api('/rooms/' + code, 'DELETE'), 3000); }
@@ -3622,7 +3649,8 @@ function leaveCoop() {
   backToStart();
 }
 function backToStart() {
-  pg.on = false; $('pausePgBtn').classList.add('hidden');
+  cgGameplay(false);
+  pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   if (coop) { leaveCoop(); return; }
   $('classBtn').textContent = 'ABYSS menu';
   $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden');
@@ -4456,6 +4484,7 @@ function die() {
   Sound.sfx('die');
 }
 function gameOver() {
+  cgGameplay(false);
   $('overTitle').textContent = 'You fell';
   state = S.OVER;
   const isBest = time > (best[p.cls] || 0);
@@ -5048,6 +5077,7 @@ $('worldBtn').addEventListener('click', () => openMeta('world'));
 $('helpBtn').addEventListener('click', () => openMeta('help'));
 $('pgBtn').addEventListener('click', () => openMeta('playground'));
 $('pausePgBtn').addEventListener('click', () => openMeta('playground'));
+$('pauseGearBtn').addEventListener('click', () => { if (pg.on) openMeta('gear'); });
 $('gearBtn').addEventListener('click', () => openMeta('gear'));
 $('codesBtn').addEventListener('click', () => openMeta('codes'));
 $('pauseHelpBtn').addEventListener('click', () => openMeta('help'));
@@ -5084,6 +5114,53 @@ showBoard(true);
 updateSoundBtn(); updateStarsUI();
 resTick(); checkAch(); refreshMetaUI();
 requestAnimationFrame(t => { lastTime = t; loop(t); });
+// ===== CrazyGames SDK: invite links, instant multiplayer and gameplay events =====
+// Off CrazyGames the SDK is disabled, and every call below is skipped safely.
+const CG = { ready: false };
+function cgCall(fn) {
+  try { if (CG.ready && window.CrazyGames && window.CrazyGames.SDK) return fn(window.CrazyGames.SDK); } catch (e) {}
+  return undefined;
+}
+function cgShowInvite(code) {
+  cgCall(sdk => {
+    sdk.game.showInviteButton({ roomId: code });
+    if (sdk.game.updateRoom) sdk.game.updateRoom({ roomId: code, isJoinable: true });
+  });
+  $('inviteBtn').classList.toggle('hidden', !CG.ready);
+}
+function cgHideInvite(left) {
+  cgCall(sdk => {
+    sdk.game.hideInviteButton();
+    if (left && sdk.game.leftRoom) sdk.game.leftRoom();
+  });
+}
+function cgRoomClosed() { cgCall(sdk => { if (sdk.game.updateRoom) sdk.game.updateRoom({ isJoinable: false }); }); }
+function cgGameplay(on) { cgCall(sdk => on ? sdk.game.gameplayStart() : sdk.game.gameplayStop()); }
+async function cgInit() {
+  try {
+    if (!window.CrazyGames || !window.CrazyGames.SDK) return;
+    await window.CrazyGames.SDK.init();
+    CG.ready = true;
+  } catch (e) { return; }
+  // opened from a friend's invite link: join that room straight away
+  const room = cgCall(sdk => sdk.game.getInviteParam('roomId'));
+  if (room && /^[A-Z0-9]{4}$/i.test(String(room))) {
+    openCoop(); chooseMp('coop');
+    $('codeInput').value = String(room).toUpperCase();
+    joinRoom();
+    return;
+  }
+  // CrazyGames asks for instant multiplayer: open a room at once
+  if (cgCall(sdk => sdk.game.isInstantMultiplayer)) { openCoop(); chooseMp('coop'); createRoom(); }
+}
+$('inviteBtn').addEventListener('click', async () => {
+  if (!lobby) return;
+  const link = cgCall(sdk => sdk.game.inviteLink({ roomId: lobby.code }));
+  if (!link) return;
+  try { await navigator.clipboard.writeText(link); $('lobbyNote').textContent = 'Invite link copied! Send it to your friends.'; }
+  catch (e) { $('lobbyNote').textContent = 'Invite link: ' + link; }
+});
+cgInit();
 </script>
 </body>
 </html>
