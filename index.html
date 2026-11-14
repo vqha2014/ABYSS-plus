@@ -413,7 +413,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 5.4</span>
+    <span class="version">Version 5.5</span>
     <span class="author">by Ha Q. Vu</span>
   </div>
 </div>
@@ -1314,7 +1314,7 @@ function renderCodes(body) {
 const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan'];
 const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
 const pg = { on: false, types: [], rate: 1, lvl: 1, mHp: 1, mDmg: 1, mSpd: 1, res: null };
-try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 50, 80].includes(sv.lvl) ? sv.lvl : 1; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
+try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].includes(sv.lvl) ? sv.lvl : 1; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
 function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
 const pgRes = () => { if (!pg.res) pg.res = Object.assign({}, prog.res.lv); return pg.res; };
 // re-do research and gear on the running character (playground)
@@ -1384,7 +1384,7 @@ function renderPlayground(body) {
   for (const r of [1, 2, 3, 5]) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
   sec(pg.on ? 'LEVEL (lower: pick skills again \u00b7 higher: keep skills, pick the extra ones)' : 'STARTING LEVEL');
   w = wrap();
-  for (const l of [1, 10, 20, 30, 50, 80]) chip(w, 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
+  for (const l of [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]) chip(w, 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
   sec('DEMON STRENGTH (new demons)');
   w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'HP x' + m, pg.mHp === m, () => { pg.mHp = m; savePg(); renderMeta(); });
   w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'Damage x' + m, pg.mDmg === m, () => { pg.mDmg = m; savePg(); renderMeta(); });
@@ -3072,7 +3072,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '5.4';
+const GAME_VERSION = '5.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
