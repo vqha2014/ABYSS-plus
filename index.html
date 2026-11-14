@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="color-scheme" content="dark">
-<title>ABYSS+ Neon Orb</title>
+<title>ABYSS+-Neon Orb</title>
 <style>
   :root {
     --bg: #050816; --cyan: #00f0ff; --purple: #b026ff; --green: #39ff6a; --red: #ff3b5c; --gold: #ffd54a; --muted: #6b7280;
@@ -238,7 +238,6 @@
   .author { color: #8b93a7; text-align: right; text-shadow: 0 0 10px rgba(0, 240, 255, 0.25); }
   .author .note { display: block; font-style: italic; color: #5b6275; font-size: 0.9em; }
 </style>
-<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 </head>
 <body>
 <div id="game">
@@ -272,7 +271,6 @@
       <div class="title">ABYSS+</div>
       <div class="subtitle">NEON ORB</div>
       <p class="info">The Demon Legion is pouring out of the Abyss. Your orb attacks on its own: just move to survive. Every level up, pick a new skill.</p>
-      <p class="info" style="font-size:0.7rem;margin-top:0.6rem">Your nickname and scores appear on a public online leaderboard. Do not use your real name.</p>
       <input class="name-input" id="nameInput" type="text" maxlength="12" placeholder="Your name" autocomplete="off" spellcheck="false" aria-label="Your name">
       <div class="classes" id="classList"></div>
       <button class="btn" id="startBtn">Start</button>
@@ -288,7 +286,7 @@
         <button class="mode-btn" id="helpBtn">Help</button>
       </div>
       <div class="daily" id="dailyBox"></div>
-      <button class="lb-open">Leaderboard</button>
+      <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
 
@@ -310,7 +308,7 @@
       <button class="btn btn-alt hidden" id="pausePgBtn" style="margin-left:0.6rem">Playground</button>
       <button class="btn btn-alt hidden" id="pauseGearBtn" style="margin-left:0.6rem">Gear</button><br>
       <button class="home" id="menuBtn">⌂ ABYSS menu</button>
-      <button class="lb-open">Leaderboard</button>
+      <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
 
@@ -327,7 +325,7 @@
       <button class="btn hidden" id="retryBtn">Retry together</button>
       <p class="info hidden" id="retryNote"></p><br>
       <button class="btn btn-alt" id="classBtn">ABYSS menu</button><br>
-      <button class="lb-open">Leaderboard</button>
+      <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
   </div>
 
@@ -393,7 +391,6 @@
       </div>
       <div id="lobby" class="hidden">
         <div class="code-box">ROOM CODE<b id="roomCode">----</b></div>
-        <button class="mode-btn hidden" id="inviteBtn" style="margin-top:0.8rem">Copy invite link</button>
         <div class="mode-row" id="modeRow"></div>
         <div class="mode-row hidden" id="teamRow"><button class="mode-btn" data-team="A">Team A</button><button class="mode-btn tb" data-team="B">Team B</button></div>
         <ul class="roster" id="roster"></ul>
@@ -413,8 +410,8 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 5.5</span>
-    <span class="author">by Ha Q. Vu</span>
+    <span class="version">Version 5.6</span>
+    <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
 
@@ -1220,6 +1217,16 @@ const CODES = {
   VITALAB: { text: 'Vitality research +2 levels!', give: () => { prog.res.lv.r_hp = Math.min(20, (prog.res.lv.r_hp || 0) + 2); } },
   ALLWORLDS: { text: 'Every world is open!', give: () => { prog.worldsOpen = WORLDS.length; checkAch(); refreshMetaUI(); } },
   THANKYOU: { text: '500 stars. Thanks for playing!', give: () => { addStars(500); } },
+  STARGIFT: { text: '1,000 stars!', give: () => { addStars(1000); } },
+  STARBOX: { text: '2,000 stars!', give: () => { addStars(2000); } },
+  LUCKYSTAR: { text: '7,777 stars!', give: () => { addStars(7777); } },
+  BIGSTAR: { text: '10,000 stars!', give: () => { addStars(10000); } },
+  GALAXY: { text: '25,000 stars!', give: () => { addStars(25000); } },
+  SUPERSTAR: { text: '50,000 stars!', give: () => { addStars(50000); } },
+  STARKING: { text: '100,000 stars!', give: () => { addStars(100000); } },
+  STARLORD: { text: '250,000 stars!', give: () => { addStars(250000); } },
+  NEBULA: { text: '500,000 stars!', give: () => { addStars(500000); } },
+  MILLIONSTARS: { text: '1,000,000 stars!', give: () => { addStars(1000000); } },
   QUADLAB: { text: 'Research 4 things at once!', give: () => { prog.resSlots = Math.max(resSlots(), 4); } },
   FIVESLOTS: { text: 'Wear 5 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 5); } },
   SIXSLOTS: { text: 'Wear 6 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 6); } },
@@ -1941,7 +1948,6 @@ function resetWorld() {
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
 }
 function startGame() {
-  cgGameplay(true);
   pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   coop = null;
   resetWorld();
@@ -1965,7 +1971,6 @@ function startGame() {
   Sound.startMusic(); Sound.setTempo(116);
 }
 function pauseGame() {
-  if (state === S.PLAYING) cgGameplay(false);
   if (coop) {
     // co-op: pause the whole team
     if (state !== S.PLAYING || coop.over || coop.paused) return;
@@ -1985,7 +1990,6 @@ function pauseGame() {
   Sound.suspend();
 }
 function resumeGame() {
-  cgGameplay(true);
   if (coop) {
     if (!coop.paused) return;
     coop.paused = false;
@@ -3072,7 +3076,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '5.5';
+const GAME_VERSION = '5.6';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3268,7 +3272,6 @@ function enterLobby(code, role, mode) {
   $('mpTitle').textContent = lobby.mode === 'coop' ? 'Co-op' : 'Versus';
   $('mpInfo').textContent = MP_INFO[lobby.mode === 'coop' ? 'coop' : 'vs'];
   $('roomCode').textContent = code;
-  cgShowInvite(code);
   $('coopStartBtn').classList.toggle('hidden', role !== 'host');
   $('lobbyNote').textContent = role === 'host' ? 'Share this code with your friends. Press Start when everyone is in.' : 'Waiting for the host to start…';
   lobby.playersStream = stream('/rooms/' + code + '/players', data => {
@@ -3335,7 +3338,6 @@ function renderRoster() {
   }
 }
 async function leaveLobby(text) {
-  cgHideInvite(true);
   if (lobby) {
     closeStreams(lobby.streams);
     if (lobby.role === 'host') api('/rooms/' + lobby.code, 'DELETE');
@@ -3375,7 +3377,6 @@ function startCoop(role, round) {
     pickSeq: 0, pick: null, gr: 0, shownOffer: null, pickedKey: null, emap: new Map(), others: new Map(),
     lastK: 0, lastBk: 0, hostT: 0, over: false, round: round || 0, retry: {}, paused: false, pausedBy: '', lastRoster: 1
   };
-  cgHideInvite(false); cgRoomClosed(); cgGameplay(true);
   coop.mode = lobby.mode || 'coop';
   const teamOf = v => coop.mode === 'coop' ? 'A' : ((v && v.tm) || 'A');
   lobby = null;
@@ -3629,7 +3630,6 @@ function checkAllDead() {
   }
 }
 function showCoopOver(note) {
-  cgGameplay(false);
   if (state === S.OVER) return;
   state = S.OVER;
   const sec = me.dead ? (me.deathTime || time) : time;
@@ -3700,7 +3700,6 @@ function coopLost(text) {
   showCoopOver(text);
 }
 function leaveCoop() {
-  cgHideInvite(true); cgGameplay(false);
   if (!coop) return;
   if (coop.stateStream) coop.streams.push(coop.stateStream);
   if (coop.role === 'host') { api('/rooms/' + coop.code + '/meta', 'PATCH', { ended: true }); const code = coop.code; setTimeout(() => api('/rooms/' + code, 'DELETE'), 3000); }
@@ -3710,7 +3709,6 @@ function leaveCoop() {
   backToStart();
 }
 function backToStart() {
-  cgGameplay(false);
   pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   if (coop) { leaveCoop(); return; }
   $('classBtn').textContent = 'ABYSS menu';
@@ -4545,7 +4543,6 @@ function die() {
   Sound.sfx('die');
 }
 function gameOver() {
-  cgGameplay(false);
   $('overTitle').textContent = 'You fell';
   state = S.OVER;
   const isBest = time > (best[p.cls] || 0);
@@ -5175,53 +5172,6 @@ showBoard(true);
 updateSoundBtn(); updateStarsUI();
 resTick(); checkAch(); refreshMetaUI();
 requestAnimationFrame(t => { lastTime = t; loop(t); });
-// ===== CrazyGames SDK: invite links, instant multiplayer and gameplay events =====
-// Off CrazyGames the SDK is disabled, and every call below is skipped safely.
-const CG = { ready: false };
-function cgCall(fn) {
-  try { if (CG.ready && window.CrazyGames && window.CrazyGames.SDK) return fn(window.CrazyGames.SDK); } catch (e) {}
-  return undefined;
-}
-function cgShowInvite(code) {
-  cgCall(sdk => {
-    sdk.game.showInviteButton({ roomId: code });
-    if (sdk.game.updateRoom) sdk.game.updateRoom({ roomId: code, isJoinable: true });
-  });
-  $('inviteBtn').classList.toggle('hidden', !CG.ready);
-}
-function cgHideInvite(left) {
-  cgCall(sdk => {
-    sdk.game.hideInviteButton();
-    if (left && sdk.game.leftRoom) sdk.game.leftRoom();
-  });
-}
-function cgRoomClosed() { cgCall(sdk => { if (sdk.game.updateRoom) sdk.game.updateRoom({ isJoinable: false }); }); }
-function cgGameplay(on) { cgCall(sdk => on ? sdk.game.gameplayStart() : sdk.game.gameplayStop()); }
-async function cgInit() {
-  try {
-    if (!window.CrazyGames || !window.CrazyGames.SDK) return;
-    await window.CrazyGames.SDK.init();
-    CG.ready = true;
-  } catch (e) { return; }
-  // opened from a friend's invite link: join that room straight away
-  const room = cgCall(sdk => sdk.game.getInviteParam('roomId'));
-  if (room && /^[A-Z0-9]{4}$/i.test(String(room))) {
-    openCoop(); chooseMp('coop');
-    $('codeInput').value = String(room).toUpperCase();
-    joinRoom();
-    return;
-  }
-  // CrazyGames asks for instant multiplayer: open a room at once
-  if (cgCall(sdk => sdk.game.isInstantMultiplayer)) { openCoop(); chooseMp('coop'); createRoom(); }
-}
-$('inviteBtn').addEventListener('click', async () => {
-  if (!lobby) return;
-  const link = cgCall(sdk => sdk.game.inviteLink({ roomId: lobby.code }));
-  if (!link) return;
-  try { await navigator.clipboard.writeText(link); $('lobbyNote').textContent = 'Invite link copied! Send it to your friends.'; }
-  catch (e) { $('lobbyNote').textContent = 'Invite link: ' + link; }
-});
-cgInit();
 </script>
 </body>
 </html>
