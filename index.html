@@ -414,7 +414,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 5.7</span>
+    <span class="version">Version 5.9</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -1227,7 +1227,8 @@ const CODES = {
   LABBOOST: { text: 'All research in progress is finished!', give: () => { for (const a of resList()) a.end = Date.now() - 1; resTick(); } },
   POWERLAB: { text: 'Power research +2 levels!', give: () => { prog.res.lv.r_dmg = Math.min(20, (prog.res.lv.r_dmg || 0) + 2); } },
   VITALAB: { text: 'Vitality research +2 levels!', give: () => { prog.res.lv.r_hp = Math.min(20, (prog.res.lv.r_hp || 0) + 2); } },
-  ALLWORLDS: { text: 'Every world is open!', give: () => { prog.worldsOpen = WORLDS.length; checkAch(); refreshMetaUI(); } },
+  ALLWORLDS: { text: 'Every world is open!', again: () => prog.worldsOpen < WORLDS.length, give: () => { prog.worldsOpen = WORLDS.length; checkAch(); refreshMetaUI(); } },
+  VOIDGATE: { text: 'The Void Rift and the Celestial Spire are open!', give: () => { prog.worldsOpen = WORLDS.length; checkAch(); refreshMetaUI(); } },
   THANKYOU: { text: '500 stars. Thanks for playing!', give: () => { addStars(500); } },
   STARGIFT: { text: '1,000 stars!', give: () => { addStars(1000); } },
   STARBOX: { text: '2,000 stars!', give: () => { addStars(2000); } },
@@ -1256,6 +1257,15 @@ const CODES = {
   XPLAB: { text: 'Insight research +2 levels!', give: () => { prog.res.lv.r_xp = Math.min(12, (prog.res.lv.r_xp || 0) + 2); } },
   LUCKLAB: { text: 'Fortune research +2 levels!', give: () => { prog.res.lv.r_star = Math.min(10, (prog.res.lv.r_star || 0) + 2); } },
   NOVALAB: { text: 'Nova Bomb research +2 levels!', give: () => { prog.res.lv.r_nova = Math.min(10, (prog.res.lv.r_nova || 0) + 2); } },
+  VITAL5: { text: 'Vitality research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_hp'); prog.res.lv.r_hp = Math.min(r.max, (prog.res.lv.r_hp || 0) + 5); checkAch(); } },
+  POWER5: { text: 'Power research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_dmg'); prog.res.lv.r_dmg = Math.min(r.max, (prog.res.lv.r_dmg || 0) + 5); checkAch(); } },
+  ARMOR5: { text: 'Plating research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_armor'); prog.res.lv.r_armor = Math.min(r.max, (prog.res.lv.r_armor || 0) + 5); checkAch(); } },
+  REGEN5: { text: 'Regeneration research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_regen'); prog.res.lv.r_regen = Math.min(r.max, (prog.res.lv.r_regen || 0) + 5); checkAch(); } },
+  SPEED5: { text: 'Swiftness research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_speed'); prog.res.lv.r_speed = Math.min(r.max, (prog.res.lv.r_speed || 0) + 5); checkAch(); } },
+  XP5: { text: 'Insight research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_xp'); prog.res.lv.r_xp = Math.min(r.max, (prog.res.lv.r_xp || 0) + 5); checkAch(); } },
+  LUCK5: { text: 'Fortune research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_star'); prog.res.lv.r_star = Math.min(r.max, (prog.res.lv.r_star || 0) + 5); checkAch(); } },
+  NOVA5: { text: 'Nova Bomb research +5 levels!', give: () => { const r = RESEARCH.find(x => x.id === 'r_nova'); prog.res.lv.r_nova = Math.min(r.max, (prog.res.lv.r_nova || 0) + 5); checkAch(); } },
+  RESEARCHMAX: { text: 'Every research is at max level!', give: () => { for (const r of RESEARCH) prog.res.lv[r.id] = r.max; checkAch(); } },
   MAXLAB: { text: 'Every research +1 level!', give: () => { for (const r of RESEARCH) prog.res.lv[r.id] = Math.min(r.max, (prog.res.lv[r.id] || 0) + 1); checkAch(); } },
   NEWWORLD: { text: 'The next world is open!', give: () => { prog.worldsOpen = Math.min(WORLDS.length, prog.worldsOpen + 1); checkAch(); refreshMetaUI(); } }
 };
@@ -1263,7 +1273,8 @@ function redeemCode(raw) {
   const c = String(raw || '').trim().toUpperCase().replace(/\s+/g, '');
   if (!c) return;
   if (!CODES[c]) { toast('That code does not work.'); return; }
-  if (prog.codes[c]) { toast('You already used this code.'); return; }
+  // a code can come back when there is something new for it (e.g. new worlds for ALLWORLDS)
+  if (prog.codes[c] && !(CODES[c].again && CODES[c].again())) { toast('You already used this code.'); return; }
   prog.codes[c] = 1; CODES[c].give(); saveProg(); updateStarsUI();
   toast('Code accepted: ' + CODES[c].text);
   renderMeta();
@@ -3097,7 +3108,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '5.7';
+const GAME_VERSION = '5.9';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
