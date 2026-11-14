@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="color-scheme" content="dark">
 <title>ABYSS+-Neon Orb</title>
+<meta name="description" content="ABYSS+ Neon Orb: survive the endless Demon Legion. 5 classes, bosses, worlds, gear, co-op and versus.">
+<meta property="og:title" content="ABYSS+ Neon Orb">
+<meta property="og:description" content="Survive the endless Demon Legion. 5 classes, bosses, worlds, gear, co-op and versus.">
+<meta property="og:type" content="website">
 <style>
   :root {
     --bg: #050816; --cyan: #00f0ff; --purple: #b026ff; --green: #39ff6a; --red: #ff3b5c; --gold: #ffd54a; --muted: #6b7280;
@@ -410,7 +414,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 5.6</span>
+    <span class="version">Version 5.7</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -456,8 +460,8 @@ const UPGRADES = [
   { id: 'h_explode', cls: 'hunter', name: 'Explosive Arrows', max: 8, desc: 'Bolts explode when they hit, hurting every demon around the target.', apply: p => { p.explode++; } },
   { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
   { id: 'h_hawk', cls: 'hunter', name: 'Hawk Eye', max: 8, desc: 'Bolts fly 10% farther and faster.', apply: p => { p.w.range *= 1.1; p.w.speed *= 1.1; } },
-  { id: 'h_falcon', cls: 'hunter', name: 'Falcon', max: 8, desc: 'A falcon dives at demons every few seconds (more dives and damage with levels).', apply: p => { p.falcon++; } },
-  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.01% to 0.08%).', apply: p => { p.leech = (p.leech || 0) + 1; } },
+  { id: 'h_falcon', cls: 'hunter', name: 'Falcon', max: 8, desc: 'A falcon flies above you and shoots every time you do, for 65% to 100% of your damage. Multishot gives it more bolts (1/1/2/2/3).', apply: p => { p.falcon++; } },
+  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.01% to 0.08%; less in harder worlds).', apply: p => { p.leech = (p.leech || 0) + 1; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
   { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
@@ -530,7 +534,7 @@ const ETYPES = {
   boss: { r: 44, hp: 900, speed: 52, dmg: 30, xp: 40, color: '#ff2a4d', spikes: 12 },
   king: { r: 62, hp: 3600, speed: 44, dmg: 40, xp: 120, color: '#ff7a1a', spikes: 0 },
   golem: { r: 24, hp: 260, speed: 45, dmg: 22, xp: 10, color: '#8f9bb3', spikes: 6 },
-  bat: { r: 8, hp: 16, speed: 165, dmg: 6, xp: 1, color: '#c77dff', spikes: 3 },
+  bat: { r: 8, hp: 16, speed: 185, dmg: 6, xp: 1, color: '#c77dff', spikes: 3 },
   bomber: { r: 13, hp: 35, speed: 95, dmg: 4, xp: 3, color: '#ff6a00', spikes: 8 },
   shade: { r: 12, hp: 50, speed: 80, dmg: 14, xp: 4, color: '#5a3dff', spikes: 5 },
   champ: { r: 64, hp: 9000, speed: 40, dmg: 45, xp: 250, color: '#ff8a2a', spikes: 0 },
@@ -897,7 +901,13 @@ const WORLDS = [
     pool: ['rgba(140, 255, 40, 0.16)', 'rgba(60, 160, 20, 0.08)', 'rgba(60, 160, 20, 0)'], rune: 'rgba(200, 255, 80, 0.22)', grass: 'rgba(140, 255, 60, 0.38)', shard: ['rgba(180, 255, 60, 0.3)', 'rgba(220, 255, 140, 0.5)'] },
   { name: 'Molten Core', mul: 3.8, star: 3, bg: '#140503', grid: 'rgba(255, 110, 40, 0.08)', vig: 'rgba(80, 10, 0, 0.55)',
     crys: ['#ff6a1a', 'rgba(140, 40, 10, 0.78)', '#ffb070', 'rgba(255, 220, 160, 0.55)', 'rgba(255, 240, 120, 0.8)'], pil: ['#ff3b2a', 'rgba(40, 10, 6, 0.94)', 'rgba(255, 59, 42, 0.45)', 'rgba(255, 170, 120, 0.4)'],
-    pool: ['rgba(255, 90, 20, 0.22)', 'rgba(255, 40, 0, 0.1)', 'rgba(255, 40, 0, 0)'], rune: 'rgba(255, 180, 60, 0.25)', grass: 'rgba(255, 120, 40, 0.3)', shard: ['rgba(255, 150, 60, 0.3)', 'rgba(255, 210, 140, 0.5)'] }
+    pool: ['rgba(255, 90, 20, 0.22)', 'rgba(255, 40, 0, 0.1)', 'rgba(255, 40, 0, 0)'], rune: 'rgba(255, 180, 60, 0.25)', grass: 'rgba(255, 120, 40, 0.3)', shard: ['rgba(255, 150, 60, 0.3)', 'rgba(255, 210, 140, 0.5)'] },
+  { name: 'Void Rift', mul: 5.4, star: 4, bg: '#010003', grid: 'rgba(255, 255, 255, 0.045)', vig: 'rgba(0, 0, 0, 0.75)',
+    crys: ['#e6dcff', 'rgba(20, 10, 40, 0.85)', '#b79cff', 'rgba(255, 255, 255, 0.55)', 'rgba(140, 90, 255, 0.8)'], pil: ['#7a4dff', 'rgba(4, 2, 10, 0.96)', 'rgba(122, 77, 255, 0.45)', 'rgba(230, 220, 255, 0.35)'],
+    pool: ['rgba(120, 60, 255, 0.18)', 'rgba(0, 0, 0, 0.3)', 'rgba(0, 0, 0, 0)'], rune: 'rgba(230, 220, 255, 0.22)', grass: 'rgba(160, 120, 255, 0.25)', shard: ['rgba(255, 255, 255, 0.25)', 'rgba(200, 180, 255, 0.55)'] },
+  { name: 'Celestial Spire', mul: 7.5, star: 5, bg: '#0a0a14', grid: 'rgba(255, 220, 140, 0.07)', vig: 'rgba(20, 15, 0, 0.5)',
+    crys: ['#ffe9a8', 'rgba(120, 100, 40, 0.75)', '#fff6d8', 'rgba(255, 255, 240, 0.6)', 'rgba(255, 255, 255, 0.85)'], pil: ['#ffd54a', 'rgba(30, 26, 14, 0.92)', 'rgba(255, 213, 74, 0.45)', 'rgba(255, 245, 210, 0.4)'],
+    pool: ['rgba(255, 220, 120, 0.18)', 'rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0)'], rune: 'rgba(255, 233, 168, 0.28)', grass: 'rgba(255, 240, 180, 0.3)', shard: ['rgba(255, 245, 210, 0.3)', 'rgba(255, 255, 255, 0.6)'] }
 ];
 let worldId = 0;
 try { worldId = Math.max(0, Math.min(prog.worldsOpen - 1, parseInt(localStorage.getItem('abyssPlusWorld') || '0', 10) || 0)); } catch (e) {}
@@ -994,6 +1004,8 @@ const ACH = [
   { id: 'w2', name: 'Frozen Heart', desc: 'Open the Frozen Depths', reward: 100, test: () => prog.worldsOpen >= 2 },
   { id: 'w3', name: 'Poison Proof', desc: 'Open the Toxic Marsh', reward: 200, test: () => prog.worldsOpen >= 3 },
   { id: 'w4', name: 'Into the Fire', desc: 'Open the Molten Core', reward: 300, test: () => prog.worldsOpen >= 4 },
+  { id: 'w5', name: 'Into the Void', desc: 'Open the Void Rift', reward: 500, test: () => prog.worldsOpen >= 5 },
+  { id: 'w6', name: 'Heaven\u2019s Gate', desc: 'Open the Celestial Spire', reward: 800, test: () => prog.worldsOpen >= 6 },
   { id: 'r5', name: 'Scholar', desc: 'Finish 5 research levels', reward: 100, test: () => resTotal() >= 5 },
   { id: 'r25', name: 'Mad Scientist', desc: 'Finish 25 research levels', reward: 500, test: () => resTotal() >= 25 }
 ];
@@ -2982,6 +2994,15 @@ function stepPress() {
   updateHUD();
 }
 // looks: cold blue flames and two crescent blades circling the orb; demon horns in demon form
+// the hunter's falcon, flapping above the orb
+function drawFalcon(x, y) {
+  const fx = x + Math.sin(clock * 1.7) * 8, fy = y - 46 + Math.sin(clock * 3) * 3, flap = Math.sin(clock * 14) * 6;
+  ctx.save();
+  ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 12; ctx.strokeStyle = '#ffd54a'; ctx.fillStyle = '#fff1b8'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.beginPath(); ctx.moveTo(fx - 16, fy - 4 - flap); ctx.quadraticCurveTo(fx - 7, fy - 8, fx, fy); ctx.quadraticCurveTo(fx + 7, fy - 8, fx + 16, fy - 4 - flap); ctx.stroke();
+  ctx.beginPath(); ctx.arc(fx, fy + 1, 3.5, 0, TAU); ctx.fill();
+  ctx.restore();
+}
 function drawFallenLook(x, y, q, scale, dark) {
   const k = scale || 1;
   ctx.save();
@@ -3076,7 +3097,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '5.6';
+const GAME_VERSION = '5.7';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3470,7 +3491,7 @@ function buildSnapshot() {
       tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, cs: q.conse || 0, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
-      nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0,
+      nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0, fa: q.falcon || 0,
       tw: (q._twins || []).map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100)]), ft: q.feastT > 0 ? 1 : 0, fc: +(q.stepCd || 0).toFixed(1),
       b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn), +(b.ang || 0).toFixed(2)])
     };
@@ -3822,7 +3843,7 @@ function onSnapshot(s) {
       track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.oid = id;
       nt.set(key, o); twinsDraw.push(o); myTw.push(o);
     });
-    if (id === myId) { me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
+    if (id === myId) { me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
@@ -3838,7 +3859,7 @@ function onSnapshot(s) {
     track(q, v.x, v.y); q.cls = CLASSES[v.c] ? v.c : 'hunter'; q.name = String(v.n || 'Player').slice(0, 12);
     q.team = v.tm || 'A';
     q.hp = v.hp; q.maxHp = v.mh; q.shieldT = v.st || 0; q.aura = v.au || 0; q.ultT = v.ut || 0; q.form = v.fm || 'wolf';
-    q.feastT = v.ft ? 1 : 0; q.conse = v.cs || 0;
+    q.feastT = v.ft ? 1 : 0; q.conse = v.cs || 0; q.falcon = v.fa || 0;
     q.skin = skinFrom(v.s); q.dead = !!v.d; q.left = !!v.lf; q.revive = v.rv || 0; q.blades = v.bl || 0; q.bladeAng = v.ba || 0;
     list.push(q);
   }
@@ -4177,7 +4198,7 @@ function update(dt) {
       }
     }
     // new demons
-    if (e.type === 'bat' && !(e.stun > 0)) { const zz = Math.sin(clock * 9 + e.wob) * e.speed * 0.8; e.x += -dy / d * zz * dt; e.y += dx / d * zz * dt; }
+    if (e.type === 'bat' && !(e.stun > 0)) { const zz = Math.sin(clock * 7 + e.wob) * e.speed * 1.4; e.x += -dy / d * zz * dt; e.y += dx / d * zz * dt; }
     if (e.type === 'shade') {
       e.sumT -= dt;
       if (e.sumT <= 0 && d > 90 && d < 600) {
@@ -4250,12 +4271,6 @@ function update(dt) {
 // skills that fire on their own timers
 function updateExtraSkills(dt) {
   const t = p.t, cd = (key, first, sec) => { t[key] = (t[key] === undefined ? first : t[key]) - dt; if (t[key] <= 0) { t[key] = sec; return true; } return false; };
-  if (p.falcon && cd('falcon', 3, Math.max(1.5, 5 - 0.4 * p.falcon))) {
-    for (const e of pickRandom(enemiesNear(p.x, p.y, 450), 1 + Math.floor(p.falcon / 3))) {
-      effects.push({ kind: 'falcon', x: p.x, y: p.y - 30, r: e.x, seed: e.y, life: 0.3, max: 0.3 });
-      damageEnemy(e, p.w.dmg * (1.5 + 0.25 * p.falcon), 0, 0, 0.3);
-    }
-  }
   if (p.whirl && cd('whirl', 2, Math.max(4, 8.5 - 0.55 * p.whirl))) {
     const Rw = 120 + 10 * p.whirl;
     effects.push({ kind: 'whirl', x: p.x, y: p.y, r: Rw, life: 0.45, max: 0.45, owner: p });
@@ -4309,6 +4324,15 @@ function updateWeapons(dt) {
           // Multishot: bolts in the same line fly one behind the other
           for (let j = 0; j < w.tandem; j++) {
             bullets.push({ x: sx - Math.cos(a) * j * 26, y: sy - Math.sin(a) * j * 26, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, life: (w.range + j * 26) / w.speed, pierce: w.pierce, hit: [] });
+          }
+        }
+        // the falcon shoots at the same time
+        if (p.falcon) {
+          const fx = p.x, fy = p.y - 46, fa = Math.atan2(tgt.y - fy, tgt.x - fx);
+          const n = [1, 1, 2, 2, 3][Math.min(4, (p.ups && p.ups.h_multi) || 0)], mul = 0.6 + 0.05 * Math.min(8, p.falcon);
+          for (let i = 0; i < n; i++) {
+            const off = (i - (n - 1) / 2) * 14, bx = fx - Math.sin(fa) * off, by = fy + Math.cos(fa) * off;
+            bullets.push({ x: bx, y: by, vx: Math.cos(fa) * w.speed, vy: Math.sin(fa) * w.speed, life: w.range / w.speed, pierce: w.pierce, hit: [], mul, fal: true });
           }
         }
         Sound.sfx('shoot');
@@ -4466,7 +4490,7 @@ function updateWeapons(dt) {
         b.hit.push(e);
         const crit = Math.random() < w.crit;
         const sp = Math.hypot(b.vx, b.vy) || 1;
-        const kb = (70 + (w.knock || 0)) * (BIG_DEMONS[e.type] ? 0.3 : 1);
+        const kb = (70 + (w.knock || 0)) * (e.type === 'goblin' ? 0 : (BIG_DEMONS[e.type] || e.type === 'golem' || e.type === 'titan') ? 0.3 : 1);
         const bd = w.dmg * (crit ? 2 : 1) * (b.mul || 1);
         damageEnemy(e, bd, b.vx / sp * kb, b.vy / sp * kb, 0);
         hunterOnHit(e, bd);
@@ -4474,7 +4498,7 @@ function updateWeapons(dt) {
         if (p.leech && !e.pvp && !p.dead && e.maxHp) {
           const lv = Math.min(8, p.leech) - 1, big = BIG_DEMONS[e.type];
           const pct = big ? [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08][lv] : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 1][lv];
-          p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100);
+          p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100 * [1, 0.8, 0.6, 0.45, 0.35, 0.25][worldId]);
         }
         if (b.pierce-- <= 0) { b.life = 0; break; }
       }
@@ -4871,6 +4895,7 @@ function render() {
       ctx.shadowBlur = 0;
       drawHoly(x, y, q); drawUltFx(x, y, q);
       if (q.cls === 'fallen') drawFallenLook(x, y, q, 1, false);
+      if (q.falcon) drawFalcon(x, y);
       drawOrb(ctx, x, y, PR, col);
       if (q.blades) for (let i = 0; i < q.blades; i++) {
         const a = q.bladeAng + i * TAU / q.blades;
@@ -4898,6 +4923,7 @@ function render() {
     ctx.shadowBlur = 0;
     drawHoly(x, y, me); drawUltFx(x, y, me);
     if (p.cls === 'fallen') drawFallenLook(x, y, me, 1, false);
+    if (me.falcon) drawFalcon(x, y);
     drawOrb(ctx, x, y, PR, skinCol());
     ctx.globalAlpha = 1;
     if (p.cls === 'warrior') {
