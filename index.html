@@ -282,6 +282,7 @@
         <button class="mode-btn" id="skinsBtn">Skins</button>
         <button class="mode-btn" id="gearBtn">Gear</button>
         <button class="mode-btn" id="codesBtn">Codes</button>
+        <button class="mode-btn" id="pgBtn">Playground</button>
         <button class="mode-btn" id="helpBtn">Help</button>
       </div>
       <div class="daily" id="dailyBox"></div>
@@ -303,7 +304,8 @@
       <button class="btn" id="resumeBtn">Resume</button>
       <div class="stars-line"><svg class="star-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0L13.2 10.8L24 12L13.2 13.2L12 24L10.8 13.2L0 12L10.8 10.8Z" fill="#cfe8ff"/><circle cx="12" cy="12" r="3.2" fill="#fff"/></svg> <span id="pauseStars">0</span> stars</div>
       <button class="btn btn-alt" id="shopBtn">Skins</button>
-      <button class="btn btn-alt" id="pauseHelpBtn" style="margin-left:0.6rem">Help</button><br>
+      <button class="btn btn-alt" id="pauseHelpBtn" style="margin-left:0.6rem">Help</button>
+      <button class="btn btn-alt hidden" id="pausePgBtn" style="margin-left:0.6rem">Playground</button><br>
       <button class="home" id="menuBtn">⌂ ABYSS menu</button>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
     </div>
@@ -407,7 +409,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 5.0</span>
+    <span class="version">Version 5.1</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -538,11 +540,11 @@ const ETYPES = {
   goblin: { r: 13, hp: 260, speed: 125, dmg: 0, xp: 20, color: '#ffd54a', spikes: 0, goblin: true },
   portal: { r: 26, hp: 350, speed: 0, dmg: 0, xp: 0, color: '#7dff3a', spikes: 0, still: true },
   ore_amethyst: { r: 34, hp: 70, speed: 0, dmg: 0, xp: 0, color: '#b26bff', spikes: 0, ore: 'amethyst' },
-  ore_emerald: { r: 34, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#39ff6a', spikes: 0, ore: 'emerald' },
-  ore_sapphire: { r: 34, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#3d8bff', spikes: 0, ore: 'sapphire' },
-  ore_topaz: { r: 34, hp: 100, speed: 0, dmg: 0, xp: 0, color: '#ffd54a', spikes: 0, ore: 'topaz' },
-  ore_ruby: { r: 34, hp: 110, speed: 0, dmg: 0, xp: 0, color: '#ff3b5c', spikes: 0, ore: 'ruby' },
-  ore_diamond: { r: 36, hp: 150, speed: 0, dmg: 0, xp: 0, color: '#e8fbff', spikes: 0, ore: 'diamond' }
+  ore_emerald: { r: 34, hp: 100, speed: 0, dmg: 0, xp: 0, color: '#39ff6a', spikes: 0, ore: 'emerald' },
+  ore_sapphire: { r: 34, hp: 140, speed: 0, dmg: 0, xp: 0, color: '#3d8bff', spikes: 0, ore: 'sapphire' },
+  ore_topaz: { r: 34, hp: 200, speed: 0, dmg: 0, xp: 0, color: '#ffd54a', spikes: 0, ore: 'topaz' },
+  ore_ruby: { r: 34, hp: 280, speed: 0, dmg: 0, xp: 0, color: '#ff3b5c', spikes: 0, ore: 'ruby' },
+  ore_diamond: { r: 36, hp: 400, speed: 0, dmg: 0, xp: 0, color: '#e8fbff', spikes: 0, ore: 'diamond' }
 };
 const TYPE_IDX = Object.keys(ETYPES);
 // HELL CHAMPION: a face of black obsidian shards burning inside a ball of fire (every 15 minutes)
@@ -1054,12 +1056,12 @@ function bindKey(code) {
 
 // ===== Gems, gear and gift codes =====
 const GEMS = [
-  { id: 'amethyst', name: 'Amethyst', color: '#b26bff', bonus: 3, w: 40 },
-  { id: 'emerald', name: 'Emerald', color: '#39ff6a', bonus: 5, w: 25 },
-  { id: 'sapphire', name: 'Sapphire', color: '#3d8bff', bonus: 5, w: 20 },
-  { id: 'topaz', name: 'Topaz', color: '#ffd54a', bonus: 8, w: 8 },
-  { id: 'ruby', name: 'Ruby', color: '#ff3b5c', bonus: 8, w: 5 },
-  { id: 'diamond', name: 'Diamond', color: '#e8fbff', bonus: 15, w: 2 }
+  { id: 'amethyst', name: 'Amethyst', color: '#b26bff', bonus: 2, w: 40 },
+  { id: 'emerald', name: 'Emerald', color: '#39ff6a', bonus: 4, w: 25 },
+  { id: 'sapphire', name: 'Sapphire', color: '#3d8bff', bonus: 6, w: 18 },
+  { id: 'topaz', name: 'Topaz', color: '#ffd54a', bonus: 8, w: 9 },
+  { id: 'ruby', name: 'Ruby', color: '#ff3b5c', bonus: 11, w: 5 },
+  { id: 'diamond', name: 'Diamond', color: '#e8fbff', bonus: 16, w: 2 }
 ];
 const GEM_CODE = { amethyst: 'a', emerald: 'e', sapphire: 's', topaz: 't', ruby: 'r', diamond: 'd' };
 const GEM_FROM = { a: 'amethyst', e: 'emerald', s: 'sapphire', t: 'topaz', r: 'ruby', d: 'diamond' };
@@ -1072,6 +1074,7 @@ function rollGem() {
   return 'amethyst';
 }
 function gainGem(id, x, y) {
+  if (pg.on) return;
   const gm = GEMS.find(g => g.id === id);
   if (!gm) return;
   prog.gems[id] = (prog.gems[id] || 0) + 1; saveProg();
@@ -1104,6 +1107,7 @@ function giveItem(it, why) {
 }
 // bosses drop gear: the later the boss, the better the gear
 function dropGear(kind) {
+  if (pg.on) return;
   let tier = kind === 'champ' ? 3 : kind === 'king' ? 2 : 1;
   if (Math.random() < 0.4) tier++;
   if (time > 1200 || worldId >= 2) { if (Math.random() < 0.3) tier++; }
@@ -1181,6 +1185,7 @@ const CODES = {
   POWERLAB: { text: 'Power research +2 levels!', give: () => { prog.res.lv.r_dmg = Math.min(20, (prog.res.lv.r_dmg || 0) + 2); } },
   VITALAB: { text: 'Vitality research +2 levels!', give: () => { prog.res.lv.r_hp = Math.min(20, (prog.res.lv.r_hp || 0) + 2); } },
   ALLWORLDS: { text: 'Every world is open!', give: () => { prog.worldsOpen = WORLDS.length; checkAch(); refreshMetaUI(); } },
+  THANKYOU: { text: '500 stars. Thanks for playing!', give: () => { addStars(500); } },
   QUADLAB: { text: 'Research 4 things at once!', give: () => { prog.resSlots = Math.max(resSlots(), 4); } },
   FIVESLOTS: { text: 'Wear 5 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 5); } },
   SIXSLOTS: { text: 'Wear 6 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 6); } },
@@ -1270,6 +1275,67 @@ function renderCodes(body) {
   const used = Object.keys(prog.codes);
   mrow('Codes used: ' + used.length, used.length ? used.join(', ') : 'None yet', null);
 }
+
+// ===== Playground: try anything, no rewards =====
+const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan'];
+const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
+const pg = { on: false, types: [], rate: 1, lvl: 1 };
+try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 50, 80].includes(sv.lvl) ? sv.lvl : 1; } } catch (e) {}
+function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ types: pg.types, rate: pg.rate, lvl: pg.lvl })); } catch (e) {} }
+function pgSpawn(type) {
+  if (!pg.on || !me) return;
+  const a = rand(0, TAU), e = spawnAt(type, me.x + Math.cos(a) * 320, me.y + Math.sin(a) * 320);
+  effects.push({ kind: 'summon', x: e.x, y: e.y, r: 60, life: 0.5, max: 0.5 });
+  toast(PG_NAMES[type] + ' spawned');
+}
+function startPlayground() {
+  closeMeta();
+  startGame();
+  pg.on = true;
+  unlockIdx = UNLOCK.length;
+  // jump to the chosen level with random skills
+  for (let i = 1; i < pg.lvl; i++) {
+    me.lvl++;
+    const opts = rollOptions().filter(u => u !== HEAL_CARD);
+    if (opts.length) { const u = opts[0]; u.apply(me); if (u.max) me.ups[u.id] = (me.ups[u.id] || 0) + 1; }
+  }
+  me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25); me.xp = 0; me.hp = me.maxHp;
+  $('pausePgBtn').classList.remove('hidden');
+  banner = { text: 'PLAYGROUND', sub: 'Try anything. No stars, gems, items or records here.', life: 3 };
+  updateHUD(true);
+}
+function pgRespawn() {
+  me.hp = me.maxHp; me.x = 0; me.y = 0; me.inv = 2; me.dead = false;
+  effects.push({ kind: 'heal', x: 0, y: 0, r: 70, life: 0.9, max: 0.9, owner: me });
+  toast('You came back to life at the start');
+}
+function renderPlayground(body) {
+  $('metaTitle').textContent = 'PLAYGROUND';
+  const note = document.createElement('div'); note.className = 'res-active';
+  note.textContent = 'Practise freely. No stars, gems, items, achievements or records. If you fall, you come back to life at the start.';
+  body.appendChild(note);
+  const sec = t => { const h = document.createElement('div'); h.className = 'shop-section'; h.textContent = t; body.appendChild(h); };
+  const wrap = () => { const w = document.createElement('div'); w.className = 'mode-row'; w.style.marginTop = '0.4rem'; body.appendChild(w); return w; };
+  const chip = (w, text, on, fn, dis) => { const b = document.createElement('button'); b.className = 'mode-btn' + (on ? ' on' : ''); b.textContent = text; b.disabled = !!dis; b.addEventListener('click', fn); w.appendChild(b); };
+  sec('DEMON TYPES (none picked = the normal mix)');
+  let w = wrap();
+  for (const t of PG_TYPES) chip(w, PG_NAMES[t], pg.types.includes(t), () => { pg.types = pg.types.includes(t) ? pg.types.filter(x => x !== t) : pg.types.concat(t); savePg(); renderMeta(); });
+  chip(w, 'All', pg.types.length === PG_TYPES.length, () => { pg.types = pg.types.length === PG_TYPES.length ? [] : PG_TYPES.slice(); savePg(); renderMeta(); });
+  sec('SPAWN SPEED');
+  w = wrap();
+  for (const r of [1, 2, 3, 5]) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
+  sec('STARTING LEVEL' + (pg.on ? ' (for the next start)' : ''));
+  w = wrap();
+  for (const l of [1, 10, 20, 30, 50, 80]) chip(w, 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); renderMeta(); });
+  if (pg.on) {
+    sec('SPAWN NOW (appears near you)');
+    w = wrap();
+    for (const t of PG_TYPES.concat(['boss', 'king', 'champ'])) chip(w, PG_NAMES[t], false, () => pgSpawn(t));
+  }
+  const act = document.createElement('div'); act.style.textAlign = 'center'; act.style.margin = '0.8rem 0';
+  act.appendChild(mbtn(pg.on ? 'Back to the game' : 'Start playground (' + CLASSES[selClass].name + ')', true, () => { if (pg.on) closeMeta(); else startPlayground(); }));
+  body.appendChild(act);
+}
 let metaKind = '', metaTimer = 0;
 function openMeta(kind) {
   metaKind = kind; resTick(); renderMeta();
@@ -1314,6 +1380,7 @@ function renderMeta() {
   } else if (metaKind === 'gear') { renderGear(body);
   } else if (metaKind === 'enhance') { renderEnhance(body);
   } else if (metaKind === 'codes') { renderCodes(body);
+  } else if (metaKind === 'playground') { renderPlayground(body);
   } else if (metaKind === 'help') {
     $('metaTitle').textContent = 'HOW TO PLAY';
     const kb = (act) => { const b = mbtn(waitBind === act ? 'Press a key\u2026' : keyName(KB[act]), true, () => { waitBind = act; renderMeta(); }); return b; };
@@ -1346,6 +1413,7 @@ function saveShop() {
 }
 function updateStarsUI() { ['hudStars', 'pauseStars', 'shopStars'].forEach(id => { $(id).textContent = stars; }); }
 function addStars(n) {
+  if (pg.on) return;
   stars += n;
   try { localStorage.setItem('levelPlusStars', String(stars)); } catch (e) {}
   updateStarsUI();
@@ -1793,6 +1861,7 @@ function resetWorld() {
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
 }
 function startGame() {
+  pg.on = false; $('pausePgBtn').classList.add('hidden');
   coop = null;
   resetWorld();
   me = newPlayer(selClass);
@@ -1930,6 +1999,7 @@ const EVT_INFO = {
 const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin' };
 let evt = null, evtT = 90, evtLog = '';
 function startEvent() {
+  if (pg.on) return;
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
   const kinds = Object.keys(EVT_INFO), kind = kinds[Math.floor(Math.random() * kinds.length)];
   evt = { kind, x, y, st: 0, t: 45, pr: 0, spawnT: 2 };
@@ -2336,6 +2406,7 @@ function updateCharger(e, dx, dy, d, dt) {
 const UNLOCK = [['runner', 55], ['charger', 110], ['brute', 190], ['wisp', 270], ['splitter', 350], ['necro', 450], ['golem', 550], ['bat', 650], ['bomber', 750], ['shade', 855], ['hound', 955], ['warlock', 1060], ['titan', 1160]];
 const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7 };
 function pickType() {
+  if (pg.on && pg.types.length) return pg.types[Math.floor(Math.random() * pg.types.length)];
   const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx).map(u => u[0])];
   let r = Math.random() * allowed.reduce((a, k) => a + TYPE_WEIGHT[k], 0);
   for (const k of allowed) { if ((r -= TYPE_WEIGHT[k]) < 0) return k; }
@@ -2918,7 +2989,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '5.0';
+const GAME_VERSION = '5.1';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3551,6 +3622,7 @@ function leaveCoop() {
   backToStart();
 }
 function backToStart() {
+  pg.on = false; $('pausePgBtn').classList.add('hidden');
   if (coop) { leaveCoop(); return; }
   $('classBtn').textContent = 'ABYSS menu';
   $('retryBtn').classList.add('hidden'); $('retryNote').classList.add('hidden');
@@ -3849,6 +3921,7 @@ function update(dt) {
     p.healCd = Math.max(0, p.healCd - dt); p.shieldCd = Math.max(0, p.shieldCd - dt); p.shieldT = Math.max(0, p.shieldT - dt);
     p.ultCd = Math.max(0, p.ultCd - dt); tickUlt(p, dt);
     p.novaCd = Math.max(0, (p.novaCd || 0) - dt);
+    if (p.hp > p.maxHp) p.hp = p.maxHp;
     p.retriCd = Math.max(0, (p.retriCd || 0) - dt); p.angelCd = Math.max(0, (p.angelCd || 0) - dt);
     p.guardT = Math.max(0, (p.guardT || 0) - dt);
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
@@ -3871,7 +3944,7 @@ function update(dt) {
   if (evt && evt.npc && evt.st === 1 && !evt.npc.dead) allPets.push(evt.npc);
 
   // spawning
-  spawnT -= dt;
+  spawnT -= dt * (pg.on ? pg.rate : 1);
   if (spawnT <= 0) {
     spawnT = Math.max(0.25, 1.2 - time * 0.004);
     const n = 1 + Math.floor(time / 75);
@@ -4368,6 +4441,7 @@ function updateHUD(force) {
 }
 
 function die() {
+  if (pg.on) { pgRespawn(); return; }
   if (coop) { coopDeath(p); return; }
   state = S.DYING; stateTimer = 1.6; shake = 28;
   stick.active = false;
@@ -4972,6 +5046,8 @@ $('researchBtn').addEventListener('click', () => openMeta('research'));
 $('achBtn').addEventListener('click', () => openMeta('ach'));
 $('worldBtn').addEventListener('click', () => openMeta('world'));
 $('helpBtn').addEventListener('click', () => openMeta('help'));
+$('pgBtn').addEventListener('click', () => openMeta('playground'));
+$('pausePgBtn').addEventListener('click', () => openMeta('playground'));
 $('gearBtn').addEventListener('click', () => openMeta('gear'));
 $('codesBtn').addEventListener('click', () => openMeta('codes'));
 $('pauseHelpBtn').addEventListener('click', () => openMeta('help'));
