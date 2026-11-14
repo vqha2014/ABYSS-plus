@@ -407,7 +407,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 4.9</span>
+    <span class="version">Version 5.0</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -534,13 +534,15 @@ const ETYPES = {
   hound: { r: 10, hp: 40, speed: 178, dmg: 12, xp: 3, color: '#ff5a1f', spikes: 6 },
   warlock: { r: 14, hp: 130, speed: 70, dmg: 14, xp: 7, color: '#c21aff', spikes: 7 },
   titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 },
+  totem: { r: 30, hp: 2600, speed: 0, dmg: 0, xp: 0, color: '#ff3b2a', spikes: 0, still: true, totem: true },
+  goblin: { r: 13, hp: 260, speed: 125, dmg: 0, xp: 20, color: '#ffd54a', spikes: 0, goblin: true },
   portal: { r: 26, hp: 350, speed: 0, dmg: 0, xp: 0, color: '#7dff3a', spikes: 0, still: true },
-  ore_amethyst: { r: 22, hp: 70, speed: 0, dmg: 0, xp: 0, color: '#b26bff', spikes: 0, ore: 'amethyst' },
-  ore_emerald: { r: 22, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#39ff6a', spikes: 0, ore: 'emerald' },
-  ore_sapphire: { r: 22, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#3d8bff', spikes: 0, ore: 'sapphire' },
-  ore_topaz: { r: 22, hp: 100, speed: 0, dmg: 0, xp: 0, color: '#ffd54a', spikes: 0, ore: 'topaz' },
-  ore_ruby: { r: 22, hp: 110, speed: 0, dmg: 0, xp: 0, color: '#ff3b5c', spikes: 0, ore: 'ruby' },
-  ore_diamond: { r: 24, hp: 150, speed: 0, dmg: 0, xp: 0, color: '#e8fbff', spikes: 0, ore: 'diamond' }
+  ore_amethyst: { r: 34, hp: 70, speed: 0, dmg: 0, xp: 0, color: '#b26bff', spikes: 0, ore: 'amethyst' },
+  ore_emerald: { r: 34, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#39ff6a', spikes: 0, ore: 'emerald' },
+  ore_sapphire: { r: 34, hp: 80, speed: 0, dmg: 0, xp: 0, color: '#3d8bff', spikes: 0, ore: 'sapphire' },
+  ore_topaz: { r: 34, hp: 100, speed: 0, dmg: 0, xp: 0, color: '#ffd54a', spikes: 0, ore: 'topaz' },
+  ore_ruby: { r: 34, hp: 110, speed: 0, dmg: 0, xp: 0, color: '#ff3b5c', spikes: 0, ore: 'ruby' },
+  ore_diamond: { r: 36, hp: 150, speed: 0, dmg: 0, xp: 0, color: '#e8fbff', spikes: 0, ore: 'diamond' }
 };
 const TYPE_IDX = Object.keys(ETYPES);
 // HELL CHAMPION: a face of black obsidian shards burning inside a ball of fire (every 15 minutes)
@@ -711,18 +713,42 @@ function drawKing(g, R) {
 const sprites = {};
 // a grey rock with glowing ore in the colour of its gem
 function drawOre(g, R, col) {
+  // a dark neon rock: glowing outline in the gem colour and bright crystals sticking out
   const pts = [];
-  for (let i = 0; i < 9; i++) { const a = i * TAU / 9, rr = R * (0.82 + 0.18 * Math.sin(i * 2.7)); pts.push([Math.cos(a) * rr, Math.sin(a) * rr]); }
-  g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
-  const rg = g.createLinearGradient(0, -R, 0, R); rg.addColorStop(0, '#7d8494'); rg.addColorStop(1, '#3a3f4b');
-  g.fillStyle = rg; g.fill(); g.strokeStyle = '#1d2029'; g.lineWidth = 2; g.stroke();
-  g.shadowColor = col; g.shadowBlur = R * 0.5; g.fillStyle = col;
-  for (const [x, y, s] of [[-0.35, -0.25, 0.22], [0.3, -0.35, 0.16], [0.15, 0.25, 0.24], [-0.3, 0.35, 0.14], [0.45, 0.15, 0.12]]) {
-    g.beginPath(); g.moveTo(x * R, (y - s) * R); g.lineTo((x + s * 0.8) * R, y * R); g.lineTo(x * R, (y + s) * R); g.lineTo((x - s * 0.8) * R, y * R); g.closePath(); g.fill();
+  for (let i = 0; i < 8; i++) { const a = i * TAU / 8 + 0.2, rr = R * (0.78 + 0.22 * Math.abs(Math.sin(i * 2.3))); pts.push([Math.cos(a) * rr, Math.sin(a) * rr]); }
+  const path = () => { g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
+  path(); g.fillStyle = '#0b0f1e'; g.fill();
+  g.shadowColor = col; g.shadowBlur = R * 0.6; g.strokeStyle = col; g.lineWidth = 3; path(); g.stroke();
+  g.shadowBlur = 0; g.strokeStyle = 'rgba(255, 255, 255, 0.18)'; g.lineWidth = 1.5;
+  g.beginPath(); for (let i = 0; i < pts.length; i += 2) { g.moveTo(0, 0); g.lineTo(pts[i][0] * 0.8, pts[i][1] * 0.8); } g.stroke();
+  g.shadowColor = col; g.shadowBlur = R * 0.5;
+  for (const [x, y, s, a] of [[-0.3, -0.35, 0.34, -0.4], [0.32, -0.25, 0.26, 0.5], [0.05, 0.3, 0.3, 0.1], [-0.4, 0.25, 0.2, -0.9]]) {
+    g.save(); g.translate(x * R, y * R); g.rotate(a);
+    g.fillStyle = col; g.beginPath(); g.moveTo(0, -s * R); g.lineTo(s * R * 0.45, 0); g.lineTo(0, s * R * 0.6); g.lineTo(-s * R * 0.45, 0); g.closePath(); g.fill();
+    g.fillStyle = 'rgba(255, 255, 255, 0.75)'; g.beginPath(); g.moveTo(0, -s * R * 0.8); g.lineTo(s * R * 0.15, -s * R * 0.2); g.lineTo(0, 0); g.closePath(); g.fill();
+    g.restore();
   }
   g.shadowBlur = 0;
 }
-// an undead portal: a green-black swirl
+// demon totem: a tall neon-red pillar with glowing runes
+function drawTotem(g, R) {
+  g.fillStyle = '#12060a'; g.shadowColor = '#ff3b2a'; g.shadowBlur = R * 0.7;
+  g.beginPath(); g.moveTo(-R * 0.55, R); g.lineTo(-R * 0.4, -R * 0.9); g.lineTo(0, -R * 1.25); g.lineTo(R * 0.4, -R * 0.9); g.lineTo(R * 0.55, R); g.closePath(); g.fill();
+  g.strokeStyle = '#ff3b2a'; g.lineWidth = 3; g.stroke();
+  g.shadowBlur = R * 0.4; g.strokeStyle = '#ffb347'; g.lineWidth = 2;
+  for (let i = 0; i < 4; i++) { const y = -R * 0.6 + i * R * 0.42; g.beginPath(); g.moveTo(-R * 0.18, y); g.lineTo(0, y - R * 0.14); g.lineTo(R * 0.18, y); g.lineTo(0, y + R * 0.14); g.closePath(); g.stroke(); }
+  g.shadowBlur = 0;
+}
+// treasure goblin: a small golden orb with a loot sack
+function drawGoblin(g, R) {
+  g.shadowColor = '#ffd54a'; g.shadowBlur = R;
+  g.fillStyle = '#8a5a1e'; g.beginPath(); g.arc(R * 0.55, R * 0.25, R * 0.75, 0, TAU); g.fill();
+  const rg = g.createRadialGradient(-R * 0.3, -R * 0.3, 1, 0, 0, R);
+  rg.addColorStop(0, '#fff6c8'); rg.addColorStop(1, '#ffb000');
+  g.fillStyle = rg; g.beginPath(); g.arc(-R * 0.15, 0, R * 0.85, 0, TAU); g.fill();
+  g.shadowBlur = 0; g.fillStyle = '#1a1000'; g.beginPath(); g.arc(-R * 0.4, -R * 0.15, R * 0.12, 0, TAU); g.arc(0.05 * R, -R * 0.15, R * 0.12, 0, TAU); g.fill();
+  g.fillStyle = '#ffd54a'; for (const [x, y] of [[0.5, 0.1], [0.7, 0.4], [0.35, 0.45]]) { g.beginPath(); g.arc(x * R, y * R, R * 0.14, 0, TAU); g.fill(); }
+}
 function drawPortal(g, R) {
   const rg = g.createRadialGradient(0, 0, R * 0.1, 0, 0, R);
   rg.addColorStop(0, '#000000'); rg.addColorStop(0.6, '#0d2a0a'); rg.addColorStop(1, '#3dff2a');
@@ -745,7 +771,9 @@ function buildSprites() {
     if (k === 'king') { drawKing(g, t.r); sprites[k] = { c, size }; continue; }
     if (k === 'champ') { drawChampion(g, t.r, 0); sprites[k] = { c, size }; continue; }
     if (t.ore) { drawOre(g, t.r, t.color); sprites[k] = { c, size }; continue; }
+    if (t.totem) { drawTotem(g, t.r); sprites[k] = { c, size }; continue; }
     if (t.still) { drawPortal(g, t.r); sprites[k] = { c, size }; continue; }
+    if (t.goblin) { drawGoblin(g, t.r); sprites[k] = { c, size }; continue; }
     for (let i = 0; i < t.spikes * 2; i++) {
       const a = (i * Math.PI) / t.spikes - Math.PI / 2, rr = i % 2 ? t.r * 0.62 : t.r;
       i ? g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : g.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
@@ -1059,7 +1087,7 @@ const GEAR_TYPES = {
   regen: { name: 'Amulet', label: ' HP per second', base: [0, 0.3, 0.6, 1, 1.5, 2.2] }
 };
 const TIERS = [null, { name: 'Common', color: '#c9d1e3' }, { name: 'Rare', color: '#3d8bff' }, { name: 'Epic', color: '#b26bff' }, { name: 'Legendary', color: '#ff8a2a' }, { name: 'Mythic', color: '#ff3b5c' }];
-const GEAR_MAX = 15, INV_MAX = 60;
+const GEAR_MAX = 15, invMax = () => 60 + (prog.bagPlus || 0);
 const gearSlots = () => prog.gearSlots || 3;
 const itemVal = it => GEAR_TYPES[it.type].base[it.tier] * (1 + 0.15 * it.lvl);
 const fmtVal = v => (Math.round(v * 10) / 10).toString();
@@ -1070,7 +1098,7 @@ function makeItem(tier, type, lvl) {
   return { id: Math.random().toString(36).slice(2, 10), type: type || keys[Math.floor(Math.random() * keys.length)], tier: Math.max(1, Math.min(5, tier)), lvl: lvl || 0 };
 }
 function giveItem(it, why) {
-  if (prog.items.length >= INV_MAX) { toast('Inventory full! Sell something to make room.'); return; }
+  if (prog.items.length >= invMax()) { toast('Inventory full! Sell something to make room.'); return; }
   prog.items.push(it); saveProg();
   toast((why || 'New item') + ': ' + itemName(it) + ' (' + itemStat(it) + ')');
 }
@@ -1153,6 +1181,24 @@ const CODES = {
   POWERLAB: { text: 'Power research +2 levels!', give: () => { prog.res.lv.r_dmg = Math.min(20, (prog.res.lv.r_dmg || 0) + 2); } },
   VITALAB: { text: 'Vitality research +2 levels!', give: () => { prog.res.lv.r_hp = Math.min(20, (prog.res.lv.r_hp || 0) + 2); } },
   ALLWORLDS: { text: 'Every world is open!', give: () => { prog.worldsOpen = WORLDS.length; checkAch(); refreshMetaUI(); } },
+  QUADLAB: { text: 'Research 4 things at once!', give: () => { prog.resSlots = Math.max(resSlots(), 4); } },
+  FIVESLOTS: { text: 'Wear 5 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 5); } },
+  SIXSLOTS: { text: 'Wear 6 items at once!', give: () => { prog.gearSlots = Math.max(gearSlots(), 6); } },
+  BIGBAG: { text: '+40 inventory space!', give: () => { prog.bagPlus = (prog.bagPlus || 0) + 40; } },
+  MYTHICBLADE: { text: 'A Mythic Blade!', give: () => { giveItem(makeItem(5, 'dmg'), 'Gift'); } },
+  MYTHICHEART: { text: 'A Mythic Heart!', give: () => { giveItem(makeItem(5, 'hp'), 'Gift'); } },
+  MYTHICGLOVE: { text: 'A Mythic Gauntlet!', give: () => { giveItem(makeItem(5, 'as'), 'Gift'); } },
+  MYTHICSHIELD: { text: 'A Mythic Shield!', give: () => { giveItem(makeItem(5, 'armor'), 'Gift'); } },
+  MYTHICBOOTS: { text: 'Mythic Boots!', give: () => { giveItem(makeItem(5, 'speed'), 'Gift'); } },
+  MYTHICTOME: { text: 'A Mythic Tome!', give: () => { giveItem(makeItem(5, 'xp'), 'Gift'); } },
+  MYTHICAMULET: { text: 'A Mythic Amulet!', give: () => { giveItem(makeItem(5, 'regen'), 'Gift'); } },
+  ARMORLAB: { text: 'Plating research +2 levels!', give: () => { prog.res.lv.r_armor = Math.min(12, (prog.res.lv.r_armor || 0) + 2); } },
+  REGENLAB: { text: 'Regeneration research +2 levels!', give: () => { prog.res.lv.r_regen = Math.min(15, (prog.res.lv.r_regen || 0) + 2); } },
+  SPEEDLAB: { text: 'Swiftness research +2 levels!', give: () => { prog.res.lv.r_speed = Math.min(10, (prog.res.lv.r_speed || 0) + 2); } },
+  XPLAB: { text: 'Insight research +2 levels!', give: () => { prog.res.lv.r_xp = Math.min(12, (prog.res.lv.r_xp || 0) + 2); } },
+  LUCKLAB: { text: 'Fortune research +2 levels!', give: () => { prog.res.lv.r_star = Math.min(10, (prog.res.lv.r_star || 0) + 2); } },
+  NOVALAB: { text: 'Nova Bomb research +2 levels!', give: () => { prog.res.lv.r_nova = Math.min(10, (prog.res.lv.r_nova || 0) + 2); } },
+  MAXLAB: { text: 'Every research +1 level!', give: () => { for (const r of RESEARCH) prog.res.lv[r.id] = Math.min(r.max, (prog.res.lv[r.id] || 0) + 1); checkAch(); } },
   NEWWORLD: { text: 'The next world is open!', give: () => { prog.worldsOpen = Math.min(WORLDS.length, prog.worldsOpen + 1); checkAch(); refreshMetaUI(); } }
 };
 function redeemCode(raw) {
@@ -1185,7 +1231,7 @@ function renderGear(body) {
   };
   if (!eq.length) mrow('Nothing worn yet', 'Defeat bosses to find gear, then tap Wear.', null, 'locked');
   for (const it of eq) row(it, true);
-  const h2 = document.createElement('div'); h2.className = 'shop-section'; h2.textContent = 'INVENTORY ' + prog.items.length + '/' + INV_MAX; body.appendChild(h2);
+  const h2 = document.createElement('div'); h2.className = 'shop-section'; h2.textContent = 'INVENTORY ' + prog.items.length + '/' + invMax(); body.appendChild(h2);
   const rest = prog.items.filter(i => !eqIds.includes(i.id)).sort((a, b) => b.tier - a.tier || b.lvl - a.lvl);
   if (!rest.length) mrow('Empty', 'The Abyss Boss, the Demon King and the Hell Champion all drop gear. Later bosses drop better gear.', null, 'locked');
   for (const it of rest) row(it, false);
@@ -1877,9 +1923,11 @@ function damageEnemy(e, dmg, kx, ky, stun) {
 const EVT_INFO = {
   rescue: { title: 'EVENT: RESCUE', sub: 'Find the survivor and keep it alive for 30 s', goal: 'Protect the survivor', stars: 50 },
   portals: { title: 'EVENT: UNDEAD PORTALS', sub: 'Destroy all 3 portals within 45 s', goal: 'Destroy the portals', stars: 35 },
-  shrine: { title: 'EVENT: CURSED SHRINE', sub: 'Stand inside the circle for 20 s', goal: 'Hold the shrine', stars: 40 }
+  shrine: { title: 'EVENT: CURSED SHRINE', sub: 'Stand inside the circle for 20 s', goal: 'Hold the shrine', stars: 40 },
+  totem: { title: 'EVENT: DEMON TOTEM', sub: 'Break the totem within 45 s. Demons near it get stronger!', goal: 'Break the totem', stars: 45 },
+  goblin: { title: 'EVENT: TREASURE GOBLIN', sub: 'Catch the goblin within 30 s (2 gems)', goal: 'Catch the goblin', stars: 60 }
 };
-const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine' };
+const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin' };
 let evt = null, evtT = 90, evtLog = '';
 function startEvent() {
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
@@ -1890,6 +1938,8 @@ function startEvent() {
     evt.st = 1;
     evt.por = [0, 1, 2].map(i => { const pa = i * TAU / 3, o = spawnAt('portal', x + Math.cos(pa) * 95, y + Math.sin(pa) * 95); pushOut(o, o.r, 0); o.spawnT = rand(1, 2.5); return o; });
   }
+  if (kind === 'totem') { evt.st = 1; evt.tot = spawnAt('totem', x, y); }
+  if (kind === 'goblin') { evt.st = 1; evt.t = 30; evt.gob = spawnAt('goblin', x, y); }
   banner = { text: EVT_INFO[kind].title, sub: EVT_INFO[kind].sub + ' (+' + EVT_INFO[kind].stars + ' stars)', life: 3.2 };
   Sound.sfx('summon');
 }
@@ -1911,6 +1961,16 @@ function updateEvent(dt) {
     // every portal keeps pouring out demons until it breaks
     for (const o of evt.por) { if (o.dead) continue; o.spawnT -= dt; if (o.spawnT <= 0) { o.spawnT = 2.5; evtSpawnAround(o.x, o.y, 1, 40); } }
     if (evt.por.every(o => o.dead)) endEvent(true); else if (evt.t <= 0) endEvent(false);
+  } else if (evt.kind === 'totem') {
+    const tt = evt.tot;
+    // demons near the totem get more HP and hit harder
+    if (!tt.dead) for (const e of enemiesNear(tt.x, tt.y, 450)) { const ty = ETYPES[e.type]; if (e.emp || e.pvp || ty.still || ty.ore || ty.goblin) continue; e.emp = 1; e.maxHp *= 1.6; e.hp *= 1.6; e.dmg *= 1.5; }
+    if (evt.spawnT <= 0) { evt.spawnT = 2.5; evtSpawnAround(tt.x, tt.y, 2, 120); }
+    if (tt.dead) endEvent(true); else if (evt.t <= 0) { tt.dead = true; endEvent(false); }
+  } else if (evt.kind === 'goblin') {
+    const gb = evt.gob;
+    evt.x = gb.x; evt.y = gb.y;
+    if (gb.dead) endEvent(true); else if (evt.t <= 0) { gb.dead = true; endEvent(false); }
   } else if (evt.kind === 'shrine') {
     if (evt.st === 0) {
       if (evtNear(110)) { evt.st = 1; evt.t = 60; evt.pr = 0; }
@@ -1927,12 +1987,14 @@ function endEvent(ok) {
   if (ok) { const gem = rollGem(); evtLog += EVT_CODE[evt.kind] + GEM_CODE[gem]; evtReward(evt.kind, gem); }
   else toast(ok === false ? 'Event failed!' : 'Event missed.');
   if (evt.por) for (const o of evt.por) o.dead = true;
+  if (evt.tot) evt.tot.dead = true;
+  if (evt.gob && !evt.gob.dead) evt.gob.dead = true;
   evt = null; evtT = 90;
 }
 function evtReward(kind, gem) {
   const st = EVT_INFO[kind].stars;
   addStars(st); updateStarsUI();
-  if (me) gainGem(gem, me.x, me.y - 40);
+  if (me) { gainGem(gem, me.x, me.y - 40); if (kind === 'goblin') gainGem(rollGem(), me.x, me.y - 60); }
   toast('Event complete! +' + st + ' stars and a gem');
   Sound.sfx('level');
 }
@@ -1954,6 +2016,8 @@ function drawEvent(S2) {
     ctx.strokeStyle = 'rgba(200, 120, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 110, 0, TAU); ctx.stroke();
     if (evt.st === 1) { ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(x, y, 118, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, evt.pr / 20)); ctx.stroke(); }
     ctx.fillStyle = '#e0b3ff'; ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillText('SHRINE', x, y + 4);
+  } else if (evt.kind === 'totem') {
+    ctx.strokeStyle = 'rgba(255, 59, 42, ' + (0.35 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([12, 10]); ctx.beginPath(); ctx.arc(x, y, 450, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   } else if (evt.kind === 'portals') {
     ctx.strokeStyle = 'rgba(125, 255, 58, ' + (0.3 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([8, 8]); ctx.beginPath(); ctx.arc(x, y, 150, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
@@ -1977,6 +2041,7 @@ function drawEvent(S2) {
   let line = info.goal;
   if (evt.kind === 'rescue') line += evt.st === 0 ? ' \u00b7 go to the survivor' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else if (evt.kind === 'portals') line += ' \u00b7 ' + (evt.por ? evt.por.filter(o => !o.dead).length + ' left \u00b7 ' : '') + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'totem' || evt.kind === 'goblin') line += ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else line += evt.st === 0 ? ' \u00b7 go to the shrine' : ' \u00b7 ' + Math.floor(evt.pr) + '/20s';
   ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255, 233, 168, 0.95)';
   ctx.fillText('EVENT: ' + line, W / 2, H * 0.14);
@@ -2853,7 +2918,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '4.9';
+const GAME_VERSION = '5.0';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3254,7 +3319,7 @@ function buildSnapshot() {
   }
   return {
     rd: coop.round || 0, md: coop.mode || 'coop', win: coop.winner || 0, in: intro ? { ty: intro.type, id: intro.eid } : 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, ck: champsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
-    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0) | (e.psnT > 0 ? 16 : 0)]),
+    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0) | (e.psnT > 0 ? 16 : 0) | (e.emp ? 32 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
@@ -3321,6 +3386,8 @@ function revivePlayer(q) {
 }
 // ===== New demon introduction: pause, show its card and look at it for 3 seconds =====
 const INTRO = {
+  totem: ['Demon Totem', 'Makes the demons around it stronger. Break it!'],
+  goblin: ['Treasure Goblin', 'Runs away with loot. Catch it!'],
   runner: ['Runner', 'Small and quick. Weak alone, dangerous in packs.'],
   charger: ['Charger', 'Stops and glows yellow, then dashes straight at you. Step aside!'],
   brute: ['Brute', 'Big and slow with lots of HP. Hard to push back.'],
@@ -3535,7 +3602,7 @@ function onSnapshot(s) {
     if (!type) continue;
     let e = coop.emap.get(id);
     if (!e) e = { id, type, x, y, r: ETYPES[type].r, maxHp: 100, wob: rand(0, TAU) };
-    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0; e.psnT = fl & 16 ? 1 : 0;
+    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0; e.psnT = fl & 16 ? 1 : 0; e.emp = fl & 32 ? 1 : 0;
     nm.set(id, e);
   }
   coop.emap = nm;
@@ -3677,6 +3744,17 @@ function guestUpdate(dt) {
 // ===== Update =====
 const keys = {};
 const stick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
+// ore rocks and the demon totem are solid
+function blockBySolids(o, r) {
+  for (const e of enemies) {
+    const t = ETYPES[e.type];
+    if (e.dead || !t || !(t.ore || t.totem)) continue;
+    const dx = o.x - e.x, dy = o.y - e.y, m = e.r + r * 0.85;
+    if (dx * dx + dy * dy >= m * m) continue;
+    const d = Math.hypot(dx, dy) || 1;
+    o.x = e.x + dx / d * m; o.y = e.y + dy / d * m;
+  }
+}
 function moveLocal(dt) {
   if (me.dead) return;
   let mx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), my = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
@@ -3689,6 +3767,7 @@ function moveLocal(dt) {
   const spd = me.speed * (me.cls === 'druid' && me.ultT > 0 && me.form === 'wolf' ? 1.4 : 1);
   me.x += mx * spd * dt; me.y += my * spd * dt;
   pushOut(me, PR, 0);
+  blockBySolids(me, PR);
   // Co-op ring: nobody can walk too far from the team
   if (coop) {
     const c = groupCenter(), dx = me.x - c.x, dy = me.y - c.y, d = Math.hypot(dx, dy);
@@ -3874,6 +3953,7 @@ function update(dt) {
       if (!tb && e.type === 'wisp' && d < 240) sp = -e.speed * 0.6;
       if (!tb && e.type === 'necro' && d < 300) sp = -e.speed * 0.6;
       if (!tb && e.type === 'warlock' && d < 280) sp = -e.speed * 0.6;
+      if (e.type === 'goblin') sp = d < 520 ? -e.speed : e.speed * 0.2;
       if (e.type === 'champ') sp = e.charging > 0 ? 0 : d < 320 ? -e.speed * 0.6 : sp;
       if (tb && md < e.r + 14) sp = 0;
       e.x += mvx / md * sp * dt; e.y += mvy / md * sp * dt;
@@ -3965,7 +4045,7 @@ function update(dt) {
         ebullets.push({ x: e.x, y: e.y, vx: dx / d * 190, vy: dy / d * 190, life: 4, dmg: 9 * (1 + time / 300) });
       }
     }
-    if (d < e.r + PR) hurtTarget(tp, e.dmg, e);
+    if (d < e.r + PR && e.dmg > 0) hurtTarget(tp, e.dmg, e);
   }
   for (const b of ebullets) {
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
@@ -4536,6 +4616,7 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, e.r * (1.6 - 0.5 * prog) + Math.sin(clock * 30) * 4, 0, TAU); ctx.fill();
       ctx.drawImage(sp.c, x - sp.size * sc / 2, y - sp.size * sc / 2, sp.size * sc, sp.size * sc);
     } else ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
+    if (e.emp) { ctx.strokeStyle = 'rgba(255, 59, 42, ' + (0.5 + 0.3 * Math.sin(clock * 10)) + ')'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 7, 0, TAU); ctx.stroke(); }
     if (e.curseT > 0) { ctx.strokeStyle = 'rgba(157, 123, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 4, 0, TAU); ctx.stroke(); }
     if (e.psnT > 0) { ctx.fillStyle = 'rgba(80, 255, 90, 0.28)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.9, 0, TAU); ctx.fill(); }
     if (e.flash > 0) { ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.8, 0, TAU); ctx.fill(); }
