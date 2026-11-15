@@ -414,7 +414,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 6.2</span>
+    <span class="version">Version 6.3</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -899,7 +899,7 @@ const WORLDS = [
   { name: 'Toxic Marsh', liq: { style: 'toxic', fill: 'rgba(80, 140, 20, 0.85)', edge: 'rgba(170, 230, 60, 0.85)', slow: 0.7, dmg: 0.015 }, mul: 2.6, star: 2, bg: '#06120a', grid: 'rgba(120, 255, 80, 0.07)', vig: 'rgba(20, 50, 0, 0.5)',
     crys: ['#7dff3a', 'rgba(40, 110, 30, 0.75)', '#b8ff7a', 'rgba(220, 255, 180, 0.5)', 'rgba(255, 240, 80, 0.7)'], pil: ['#c8ff2a', 'rgba(22, 36, 12, 0.92)', 'rgba(200, 255, 42, 0.45)', 'rgba(230, 255, 150, 0.4)'],
     pool: ['rgba(140, 255, 40, 0.16)', 'rgba(60, 160, 20, 0.08)', 'rgba(60, 160, 20, 0)'], rune: 'rgba(200, 255, 80, 0.22)', grass: 'rgba(140, 255, 60, 0.38)', shard: ['rgba(180, 255, 60, 0.3)', 'rgba(220, 255, 140, 0.5)'] },
-  { name: 'Molten Core', liq: { style: 'lava', fill: 'rgba(255, 120, 20, 0.92)', edge: 'rgba(255, 200, 90, 0.95)', slow: 0.7, dmg: 0.04 }, mul: 3.8, star: 3, bg: '#140503', grid: 'rgba(255, 110, 40, 0.08)', vig: 'rgba(80, 10, 0, 0.55)',
+  { name: 'Molten Core', liq: { style: 'lava', fill: 'rgba(238, 104, 40, 0.96)', edge: 'rgba(255, 200, 90, 0.95)', slow: 0.7, dmg: 0.04 }, mul: 3.8, star: 3, bg: '#140503', grid: 'rgba(255, 110, 40, 0.08)', vig: 'rgba(80, 10, 0, 0.55)',
     crys: ['#ff6a1a', 'rgba(140, 40, 10, 0.78)', '#ffb070', 'rgba(255, 220, 160, 0.55)', 'rgba(255, 240, 120, 0.8)'], pil: ['#ff3b2a', 'rgba(40, 10, 6, 0.94)', 'rgba(255, 59, 42, 0.45)', 'rgba(255, 170, 120, 0.4)'],
     pool: ['rgba(255, 90, 20, 0.22)', 'rgba(255, 40, 0, 0.1)', 'rgba(255, 40, 0, 0)'], rune: 'rgba(255, 180, 60, 0.25)', grass: 'rgba(255, 120, 40, 0.3)', shard: ['rgba(255, 150, 60, 0.3)', 'rgba(255, 210, 140, 0.5)'] },
   { name: 'Void Rift', liq: { style: 'void', fill: 'rgba(14, 4, 32, 0.92)', edge: 'rgba(140, 95, 255, 0.85)', slow: 0.4, dmg: 0.04 }, mul: 5.4, star: 4, bg: '#010003', grid: 'rgba(255, 255, 255, 0.045)', vig: 'rgba(0, 0, 0, 0.75)',
@@ -2713,23 +2713,29 @@ function drawLiquids(S2, cam) {
       wv('rgba(40, 80, 10, 0.35)', 26, 6, -0.9, 4);
       dots(24, (x, y, i) => { const f = (clock * 0.5 + i * 0.37) % 1, r = 1.5 + f * 6; ctx.strokeStyle = 'rgba(245, 255, 235, ' + (0.95 * (1 - f)) + ')'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke(); });
     } else if (st === 'lava') {
-      // glowing lava under dark crust plates spread evenly over it, slowly drifting with the flow
-      wv('rgba(255, 235, 140, 0.55)', 14, 3, 0.6, 2);
-      const gs = 30, drift = (clock * 8) % gs;
-      for (let gx = x0 - gs * 2; gx < x1 + gs; gx += gs) for (let gy = y0 - gs; gy < y1 + gs; gy += gs) {
-        const h = Math.sin(gx * 12.9898 + gy * 78.233 + seed) * 43758.5453, f = h - Math.floor(h);
-        const px0 = gx + drift + (f - 0.5) * 12, py0 = gy + drift * 0.35 + ((f * 7) % 1 - 0.5) * 12, rr = gs * (0.34 + 0.16 * f);
+      // orange lava with black rocks of every size scattered around, and thin dark waves
+      const area = (x1 - x0) * (y1 - y0), n = Math.max(4, Math.round(area / 2600)), drift = clock * 6;
+      for (let i = 0; i < n; i++) {
+        const h1 = Math.sin(i * 127.1 + seed * 311.7) * 43758.5453, f1 = h1 - Math.floor(h1);
+        const h2 = Math.sin(i * 269.5 + seed * 183.3) * 43758.5453, f2 = h2 - Math.floor(h2);
+        const h3 = Math.sin(i * 419.2 + seed * 71.9) * 43758.5453, f3 = h3 - Math.floor(h3);
+        const span = x1 - x0 + 80, rx = x0 - 40 + ((f1 * span + drift) % span), ry = y0 + f2 * (y1 - y0);
+        const rr = 6 + f3 * f3 * 26;
         ctx.beginPath();
-        for (let k2 = 0; k2 < 7; k2++) {
-          const a = k2 * TAU / 7 + f * 3, r2 = rr * (0.75 + 0.45 * ((f * (k2 + 3) * 13.7) % 1));
-          const px = px0 + Math.cos(a) * r2 * 1.45, py = py0 + Math.sin(a) * r2 * 0.75;
+        for (let k2 = 0; k2 < 8; k2++) {
+          const a2 = k2 * TAU / 8 + f1 * 6, r2 = rr * (0.75 + 0.35 * ((f3 * (k2 + 2) * 17.3) % 1));
+          const px = rx + Math.cos(a2) * r2, py = ry + Math.sin(a2) * r2 * 0.85;
           if (k2) ctx.lineTo(px, py); else ctx.moveTo(px, py);
         }
         ctx.closePath();
-        ctx.fillStyle = 'rgba(40, 30, 44, 0.9)'; ctx.fill();
-        ctx.strokeStyle = 'rgba(130, 120, 150, 0.35)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = f3 > 0.5 ? '#0d0a0c' : 'rgba(22, 16, 18, 0.95)'; ctx.fill();
+        if (f3 <= 0.5) {
+          // smaller rocks have a rough scribbled surface
+          ctx.strokeStyle = 'rgba(70, 55, 55, 0.7)'; ctx.lineWidth = 1;
+          ctx.beginPath(); for (let k2 = 0; k2 < 4; k2++) { ctx.moveTo(rx - rr * 0.6, ry - rr * 0.4 + k2 * rr * 0.28); ctx.lineTo(rx + rr * 0.6, ry - rr * 0.55 + k2 * rr * 0.3); } ctx.stroke();
+        }
       }
-      wv('rgba(25, 18, 28, 0.45)', 20, 4, 0.3, 1.5);
+      wv('rgba(40, 20, 15, 0.75)', 46, 6, 0.9, 1.6);
     } else if (st === 'void') {
       // dark space with a purple haze and twinkling stars (no waves)
       const hg = ctx.createRadialGradient((x0 + x1) / 2, (y0 + y1) / 2, 0, (x0 + x1) / 2, (y0 + y1) / 2, Math.max(x1 - x0, y1 - y0) / 2);
@@ -3328,7 +3334,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '6.2';
+const GAME_VERSION = '6.3';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
