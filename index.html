@@ -416,7 +416,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 6.6</span>
+    <span class="version">Version 7.0</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -461,6 +461,10 @@ const UPGRADES = [
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 8, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
   { id: 'h_explode', cls: 'hunter', name: 'Explosive Arrows', max: 8, desc: 'Bolts explode when they hit, hurting every demon around the target.', apply: p => { p.explode++; } },
   { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
+  { id: 'h_rapid', cls: 'hunter', name: 'Rapid Fire', max: 8, desc: 'Every few seconds you shoot twice as fast for 2 to 3.4 seconds.', apply: p => { p.rapid = (p.rapid || 0) + 1; } },
+  { id: 'h_scatter', cls: 'hunter', name: 'Scatter Shot', max: 8, desc: 'Every 5th shot also fires a fan of 4 to 11 extra bolts (60% damage).', apply: p => { p.scatter = (p.scatter || 0) + 1; } },
+  { id: 'h_frost', cls: 'hunter', name: 'Frost Arrows', max: 8, desc: 'Bolts chill demons: they move 20% to 48% slower for 1.5 s.', apply: p => { p.frost = (p.frost || 0) + 1; } },
+  { id: 'h_mark', cls: 'hunter', name: "Hunter's Mark", max: 8, desc: 'Every few seconds the toughest demon nearby is marked: it takes 20% to 55% more damage from everyone for 5 s.', apply: p => { p.mark = (p.mark || 0) + 1; } },
   { id: 'h_hawk', cls: 'hunter', name: 'Hawk Eye', max: 8, desc: 'Bolts fly 10% farther and faster.', apply: p => { p.w.range *= 1.1; p.w.speed *= 1.1; } },
   { id: 'h_falcon', cls: 'hunter', name: 'Falcon', max: 8, desc: 'A falcon flies above you and shoots every time you do, for 65% to 100% of your damage. Multishot gives it more bolts (1/1/2/2/3).', apply: p => { p.falcon++; } },
   { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.01% to 0.08%; less in harder worlds).', apply: p => { p.leech = (p.leech || 0) + 1; } },
@@ -471,6 +475,10 @@ const UPGRADES = [
   { id: 'w_slam', cls: 'warrior', name: 'Ground Slam', max: 8, desc: 'A shockwave that damages and stuns demons.', apply: p => { p.slam++; } },
   { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 8, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
   { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 5, desc: 'Every demon you kill heals 0.2% of your max HP per level.', apply: p => { p.blood++; } },
+  { id: 'w_seismic', cls: 'warrior', name: 'Seismic Wave', max: 8, desc: 'Every few seconds a shockwave tears through a line of demons in front of you.', apply: p => { p.seismic = (p.seismic || 0) + 1; } },
+  { id: 'w_jugg', cls: 'warrior', name: 'Juggernaut', max: 8, desc: '+4% move speed and +5% max HP.', apply: p => { p.speed *= 1.04; p.maxHp *= 1.05; p.hp = Math.min(p.maxHp, p.hp * 1.05); } },
+  { id: 'w_bash', cls: 'warrior', name: 'Shield Bash', max: 8, desc: 'Every few seconds you bash the closest demon: big damage and a 1.2 s stun.', apply: p => { p.bash = (p.bash || 0) + 1; } },
+  { id: 'w_hard', cls: 'warrior', name: 'Battle Hardened', max: 8, desc: '+1 armor and +4% max HP.', apply: p => { p.armor += 1; p.maxHp *= 1.04; p.hp = Math.min(p.maxHp, p.hp * 1.04); } },
   { id: 'w_whirl', cls: 'warrior', name: 'Whirlwind', max: 8, desc: 'Every few seconds you spin and cut everything around you.', apply: p => { p.whirl++; } },
   { id: 'w_rage', cls: 'warrior', name: 'Rage', max: 8, desc: 'The lower your HP, the harder you hit (up to +6% damage per level at 0 HP).', apply: p => { p.rage++; } },
   { id: 'w_shout', cls: 'warrior', name: 'War Shout', max: 8, desc: 'Every few seconds a shout stuns nearby demons for 1 second.', apply: p => { p.shout++; } },
@@ -482,6 +490,10 @@ const UPGRADES = [
   { id: 'd_storm', cls: 'druid', name: 'Storm Call', max: 8, desc: 'Lightning strikes demons around you.', apply: p => { p.storm++; } },
   { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 8, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
   { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 8, desc: 'You and your bears heal 2 more HP every second.', apply: p => { p.regen += 2; } },
+  { id: 'd_spore', cls: 'druid', name: 'Spore Burst', max: 8, desc: 'Every few seconds a poison cloud bursts on a demon: damage and 30% slow around it.', apply: p => { p.spore = (p.spore || 0) + 1; } },
+  { id: 'd_alpha', cls: 'druid', name: 'Alpha Pack', max: 8, desc: 'Wolves bite 6% harder. Levels 3 and 6 add one more wolf.', apply: p => { p.w.dmg *= 1.06; p.alphaLv = (p.alphaLv || 0) + 1; if (p.alphaLv === 3 || p.alphaLv === 6) p.wolves++; } },
+  { id: 'd_bloom', cls: 'druid', name: 'Healing Bloom', max: 8, desc: 'Every few seconds flowers heal you and your bears for 5% to 12% of max HP.', apply: p => { p.bloom = (p.bloom || 0) + 1; } },
+  { id: 'd_howl', cls: 'druid', name: 'Wolf Howl', max: 8, desc: 'Your wolves bite 7% harder and run 5% faster.', apply: p => { p.w.dmg *= 1.07; p.w.wspeed *= 1.05; } },
   { id: 'd_thorn', cls: 'druid', name: 'Bramble', max: 8, desc: 'Thorns hit back hard at any demon that hurts you, even from far away and even bosses.', apply: p => { p.bramble = (p.bramble || 0) + 1; } },
   { id: 'd_vines', cls: 'druid', name: 'Entangle', max: 8, desc: 'Every few seconds roots grab every demon around you for 1.5 seconds.', apply: p => { p.vines++; } },
   { id: 'd_moon', cls: 'druid', name: 'Moonbeam', max: 8, desc: 'A beam of moonlight strikes the toughest demon nearby every few seconds.', apply: p => { p.moon++; } },
@@ -495,6 +507,10 @@ const UPGRADES = [
   { id: 'f_hide', cls: 'fallen', name: 'Dark Hide', max: 8, desc: 'Take 5% less damage per level (up to 40%).', apply: p => { p.hide++; } },
   { id: 'f_twins', cls: 'fallen', name: 'Shadow Twins', max: 8, desc: 'Every 20 s, darker copies of you fight for 15 s: 2 copies, 3 at level 4, 4 at level 8. They deal 36% to 50% of your damage and have 45% to 80% of your HP.', apply: p => { p.twins++; } },
   { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+15% to +50%) and heal from the damage you deal (3% to 13.5%, half on bosses).', apply: p => { p.feast++; } },
+  { id: 'f_rift', cls: 'fallen', name: 'Void Rift', max: 8, desc: 'Every few seconds a rift opens under a demon and pulls the demons around it in.', apply: p => { p.rift = (p.rift || 0) + 1; } },
+  { id: 'f_siphon', cls: 'fallen', name: 'Soul Siphon', max: 8, desc: 'Every kill heals you for 0.4% of your max HP per level.', apply: p => { p.siphon = (p.siphon || 0) + 1; } },
+  { id: 'f_terror', cls: 'fallen', name: 'Night Terror', max: 8, desc: 'Every few seconds a wave of dread stuns the demons around you for 1 s.', apply: p => { p.terror = (p.terror || 0) + 1; } },
+  { id: 'f_pact', cls: 'fallen', name: 'Blood Pact', max: 8, desc: '+5% damage and +3% move speed.', apply: p => { p.might += 0.05; p.speed *= 1.03; } },
   { id: 'f_phantom', cls: 'fallen', name: 'Phantom Strike', max: 8, desc: 'Every few seconds a shadow cut hits the farthest demon near you for big damage.', apply: p => { p.phantom++; } },
   { id: 'f_souls', cls: 'fallen', name: 'Soul Harvest', max: 8, desc: 'Every kill gives you a little max HP for the rest of the run (up to +50).', apply: p => { p.souls++; } },
   { id: 'f_echo', cls: 'fallen', name: 'Echo Slash', max: 8, desc: '15% to 50% chance that a slash strikes twice.', apply: p => { p.echo++; } },
@@ -504,6 +520,10 @@ const UPGRADES = [
   { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 8, desc: 'Smite 15% faster and 15% wider. Levels 3 and 6 add one more smite target.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
   { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 8, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
   { id: 'p_heal', cls: 'paladin', name: 'Greater Heal', max: 8, desc: 'Your automatic heal restores 8% more HP and comes back 1.5 s sooner.', apply: p => { p.healPct += 0.08; } },
+  { id: 'p_blind', cls: 'paladin', name: 'Blinding Light', max: 8, desc: 'Every few seconds a flash stuns every demon around you for 0.8 s.', apply: p => { p.blind = (p.blind || 0) + 1; } },
+  { id: 'p_crusader', cls: 'paladin', name: 'Crusader', max: 8, desc: '+6% damage and +0.5 armor.', apply: p => { p.might += 0.06; p.armor += 0.5; } },
+  { id: 'p_hnova', cls: 'paladin', name: 'Holy Nova', max: 8, desc: 'Every few seconds holy light bursts around you: hurts demons and heals your team a little.', apply: p => { p.hnova = (p.hnova || 0) + 1; } },
+  { id: 'p_sacred', cls: 'paladin', name: 'Sacred Shield', max: 8, desc: 'Every 15 s down to 9 s you get a golden shield that blocks 15% to 50% of your max HP in damage.', apply: p => { p.sacred = (p.sacred || 0) + 1; } },
   { id: 'p_bless', cls: 'paladin', name: 'Blessed Armor', max: 8, desc: '+0.75 armor.', apply: p => { p.armor += 0.75; } },
   { id: 'p_retri', cls: 'paladin', name: 'Retribution', max: 8, desc: 'When you are hit, holy light bursts around you.', apply: p => { p.retri++; } },
   { id: 'p_hammer', cls: 'paladin', name: 'Hammer of Light', max: 8, desc: 'Every few seconds a hammer of light flies through a line of demons.', apply: p => { p.hammer++; } },
@@ -544,6 +564,8 @@ const ETYPES = {
   warlock: { r: 14, hp: 130, speed: 70, dmg: 14, xp: 7, color: '#c21aff', spikes: 7 },
   titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 },
   ghoul: { r: 12, hp: 120, speed: 120, dmg: 16, xp: 6, color: '#8fffb0', spikes: 5 },
+  banshee: { r: 12, hp: 150, speed: 95, dmg: 12, xp: 7, color: '#d6c8ff', spikes: 6 },
+  scorpion: { r: 11, hp: 110, speed: 150, dmg: 14, xp: 6, color: '#ff8a2a', spikes: 8 },
   archer: { r: 10, hp: 70, speed: 85, dmg: 9, xp: 5, color: '#ff9de9', spikes: 3 },
   elite: { r: 30, hp: 1800, speed: 72, dmg: 35, xp: 40, color: '#ffd54a', spikes: 10 },
   totem: { r: 30, hp: 2600, speed: 0, dmg: 0, xp: 0, color: '#ff3b2a', spikes: 0, still: true, totem: true },
@@ -907,12 +929,18 @@ const WORLDS = [
   { name: 'Molten Core', liq: { style: 'lava', fill: 'rgba(238, 104, 40, 0.96)', edge: 'rgba(255, 200, 90, 0.95)', slow: 0.7, dmg: 0.04 }, mul: 3.8, star: 3, bg: '#140503', grid: 'rgba(255, 110, 40, 0.08)', vig: 'rgba(80, 10, 0, 0.55)',
     crys: ['#ff6a1a', 'rgba(140, 40, 10, 0.78)', '#ffb070', 'rgba(255, 220, 160, 0.55)', 'rgba(255, 240, 120, 0.8)'], pil: ['#ff3b2a', 'rgba(40, 10, 6, 0.94)', 'rgba(255, 59, 42, 0.45)', 'rgba(255, 170, 120, 0.4)'],
     pool: ['rgba(255, 90, 20, 0.22)', 'rgba(255, 40, 0, 0.1)', 'rgba(255, 40, 0, 0)'], rune: 'rgba(255, 180, 60, 0.25)', grass: 'rgba(255, 120, 40, 0.3)', shard: ['rgba(255, 150, 60, 0.3)', 'rgba(255, 210, 140, 0.5)'] },
-  { name: 'Void Rift', liq: { style: 'void', fill: 'rgba(14, 4, 32, 0.92)', edge: 'rgba(140, 95, 255, 0.85)', slow: 0.4, dmg: 0.04 }, mul: 5.4, star: 4, bg: '#010003', grid: 'rgba(255, 255, 255, 0.045)', vig: 'rgba(0, 0, 0, 0.75)',
+  { name: 'Void Rift', liq: { style: 'void', fill: 'rgba(14, 4, 32, 0.92)', edge: 'rgba(140, 95, 255, 0.85)', slow: 0.4, dmg: 0.05 }, mul: 5.4, star: 4, bg: '#010003', grid: 'rgba(255, 255, 255, 0.045)', vig: 'rgba(0, 0, 0, 0.75)',
     crys: ['#e6dcff', 'rgba(20, 10, 40, 0.85)', '#b79cff', 'rgba(255, 255, 255, 0.55)', 'rgba(140, 90, 255, 0.8)'], pil: ['#7a4dff', 'rgba(4, 2, 10, 0.96)', 'rgba(122, 77, 255, 0.45)', 'rgba(230, 220, 255, 0.35)'],
     pool: ['rgba(120, 60, 255, 0.18)', 'rgba(0, 0, 0, 0.3)', 'rgba(0, 0, 0, 0)'], rune: 'rgba(230, 220, 255, 0.22)', grass: 'rgba(160, 120, 255, 0.25)', shard: ['rgba(255, 255, 255, 0.25)', 'rgba(200, 180, 255, 0.55)'] },
   { name: 'Celestial Spire', liq: { style: 'holy', fill: 'rgba(255, 195, 70, 0.62)', edge: 'rgba(255, 240, 190, 0.95)', slow: 0.7, dmg: 0.08 }, mul: 7.5, star: 5, bg: '#0a0a14', grid: 'rgba(255, 220, 140, 0.07)', vig: 'rgba(20, 15, 0, 0.5)',
     crys: ['#ffe9a8', 'rgba(120, 100, 40, 0.75)', '#fff6d8', 'rgba(255, 255, 240, 0.6)', 'rgba(255, 255, 255, 0.85)'], pil: ['#ffd54a', 'rgba(30, 26, 14, 0.92)', 'rgba(255, 213, 74, 0.45)', 'rgba(255, 245, 210, 0.4)'],
-    pool: ['rgba(255, 220, 120, 0.18)', 'rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0)'], rune: 'rgba(255, 233, 168, 0.28)', grass: 'rgba(255, 240, 180, 0.3)', shard: ['rgba(255, 245, 210, 0.3)', 'rgba(255, 255, 255, 0.6)'] }
+    pool: ['rgba(255, 220, 120, 0.18)', 'rgba(255, 255, 255, 0.06)', 'rgba(255, 255, 255, 0)'], rune: 'rgba(255, 233, 168, 0.28)', grass: 'rgba(255, 240, 180, 0.3)', shard: ['rgba(255, 245, 210, 0.3)', 'rgba(255, 255, 255, 0.6)'] },
+  { name: 'Storm Peaks', liq: { style: 'storm', fill: 'rgba(20, 40, 90, 0.82)', edge: 'rgba(120, 220, 255, 0.9)', slow: 0.6, dmg: 0.1 }, mul: 10, star: 6, bg: '#03050d', grid: 'rgba(120, 200, 255, 0.06)', vig: 'rgba(0, 10, 30, 0.6)',
+    crys: ['#9ef0ff', 'rgba(20, 60, 110, 0.8)', '#d8faff', 'rgba(255, 255, 255, 0.6)', 'rgba(255, 245, 120, 0.85)'], pil: ['#6fd0ff', 'rgba(10, 14, 26, 0.95)', 'rgba(111, 208, 255, 0.45)', 'rgba(220, 245, 255, 0.4)'],
+    pool: ['rgba(120, 200, 255, 0.14)', 'rgba(255, 245, 120, 0.05)', 'rgba(0, 0, 0, 0)'], rune: 'rgba(255, 245, 120, 0.25)', grass: 'rgba(150, 220, 255, 0.28)', shard: ['rgba(200, 245, 255, 0.3)', 'rgba(255, 250, 180, 0.6)'] },
+  { name: 'Sand Wastes', liq: { style: 'sand', fill: 'rgba(170, 120, 60, 0.85)', edge: 'rgba(255, 200, 120, 0.85)', slow: 0.3, dmg: 0.12, pull: 70 }, mul: 13, star: 7, bg: '#120c06', grid: 'rgba(255, 190, 110, 0.06)', vig: 'rgba(40, 20, 0, 0.55)',
+    crys: ['#ffb870', 'rgba(110, 60, 20, 0.8)', '#ffd9a8', 'rgba(255, 240, 210, 0.55)', 'rgba(255, 120, 60, 0.8)'], pil: ['#d98a4a', 'rgba(30, 18, 10, 0.94)', 'rgba(217, 138, 74, 0.45)', 'rgba(255, 220, 180, 0.4)'],
+    pool: ['rgba(255, 170, 90, 0.16)', 'rgba(255, 120, 40, 0.06)', 'rgba(0, 0, 0, 0)'], rune: 'rgba(255, 200, 120, 0.25)', grass: 'rgba(220, 170, 90, 0.3)', shard: ['rgba(255, 210, 150, 0.3)', 'rgba(255, 235, 200, 0.55)'] }
 ];
 let worldId = 0;
 try { worldId = Math.max(0, Math.min(prog.worldsOpen - 1, parseInt(localStorage.getItem('abyssPlusWorld') || '0', 10) || 0)); } catch (e) {}
@@ -1011,6 +1039,8 @@ const ACH = [
   { id: 'w4', name: 'Into the Fire', desc: 'Open the Molten Core', reward: 300, test: () => prog.worldsOpen >= 4 },
   { id: 'w5', name: 'Into the Void', desc: 'Open the Void Rift', reward: 500, test: () => prog.worldsOpen >= 5 },
   { id: 'w6', name: 'Heaven\u2019s Gate', desc: 'Open the Celestial Spire', reward: 800, test: () => prog.worldsOpen >= 6 },
+  { id: 'w7', name: 'Eye of the Storm', desc: 'Open the Storm Peaks', reward: 1200, test: () => prog.worldsOpen >= 7 },
+  { id: 'w8', name: 'Desert Wanderer', desc: 'Open the Sand Wastes', reward: 1600, test: () => prog.worldsOpen >= 8 },
   { id: 'r5', name: 'Scholar', desc: 'Finish 5 research levels', reward: 100, test: () => resTotal() >= 5 },
   { id: 'r25', name: 'Mad Scientist', desc: 'Finish 25 research levels', reward: 500, test: () => resTotal() >= 25 }
 ];
@@ -1346,10 +1376,10 @@ function renderCodes(body) {
 }
 
 // ===== Playground: try anything, no rewards =====
-const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan', 'ghoul', 'archer'];
-const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', ghoul: 'Ghoul', archer: 'Archer', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
+const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan', 'ghoul', 'archer', 'banshee', 'scorpion'];
+const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', ghoul: 'Ghoul', archer: 'Archer', banshee: 'Banshee', scorpion: 'Scorpion', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
 const pg = { on: false, types: [], rate: 1, lvl: 1, mHp: 1, mDmg: 1, mSpd: 1, res: null };
-try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].includes(sv.lvl) ? sv.lvl : 1; pg.noDemons = !!sv.noDemons; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
+try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max'].includes(sv.lvl) ? sv.lvl : 1; pg.noDemons = !!sv.noDemons; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
 function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ noDemons: !!pg.noDemons, types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
 const pgRes = () => { if (!pg.res) pg.res = Object.assign({}, prog.res.lv); return pg.res; };
 // re-do research and gear on the running character (playground)
@@ -1362,7 +1392,11 @@ function pgRestat() {
   updateHUD(true);
 }
 // change the level without restarting: lower = pick again from scratch, higher = keep skills and pick the extra ones
+// the level where a class has every skill (its own and the shared ones) at max
+function maxLevelFor(cls) { let n = 1; for (const u of UPGRADES) if (u.max && (u.cls === cls || u.cls === 'all')) n += u.max; return n; }
+const pgLvlOf = (l, cls) => l === 'max' ? maxLevelFor(cls) : l;
 function pgSetLevel(l) {
+  l = pgLvlOf(l, me ? me.cls : selClass);
   if (!pg.on || !me) return;
   if (l < me.lvl) {
     const x = me.x, y = me.y;
@@ -1374,9 +1408,8 @@ function pgSetLevel(l) {
     me.pending += l - me.lvl; me.lvl = l;
   }
   me.xp = 0; me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25);
-  closeMeta();
-  if (state === S.PAUSED) resumeGame();
-  updateHUD(true);
+  toast('Level ' + me.lvl + ' \u00b7 ' + me.pending + ' skills to pick when you go back');
+  renderMeta(); updateHUD(true);
 }
 function pgSpawn(type) {
   if (!pg.on || !me) return;
@@ -1397,7 +1430,8 @@ function pgAddLevels(n) {
   if (!pg.on || !me) return;
   me.lvl += n; me.pending = (me.pending || 0) + n;
   me.xp = 0; me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25);
-  closeMeta(); if (state === S.PAUSED) resumeGame();
+  toast('Lv ' + me.lvl + ' \u00b7 ' + me.pending + ' skills to pick when you go back');
+  renderMeta();
 }
 // swap to another class at the same level; you pick its skills again
 function pgSetClass(cls) {
@@ -1408,8 +1442,8 @@ function pgSetClass(cls) {
   applyResearch(me, pgRes()); applyGear(me, gearStats(equipped()));
   players = [me]; use(me);
   me.lvl = lv; me.pending = lv - 1; me.xp = 0; me.xpNext = Math.round((4 + lv * 2.6 + lv * lv * 0.18) * 1.25);
-  closeMeta(); if (state === S.PAUSED) resumeGame();
-  updateHUD(true);
+  toast(CLASSES[me.cls].name + ' \u00b7 Lv ' + me.lvl + ' \u00b7 ' + me.pending + ' skills to pick when you go back');
+  renderMeta(); updateHUD(true);
 }
 function startPlayground() {
   closeMeta();
@@ -1421,7 +1455,8 @@ function startPlayground() {
   unlockIdx = UNLOCK.length;
   // jump to the chosen level; you pick every skill yourself
   unapplyGear(me); unapplyResearch(me); applyResearch(me, pgRes()); applyGear(me, gearStats(equipped()));
-  me.lvl = pg.lvl; me.pending = pg.lvl - 1;
+  const startLv = pgLvlOf(pg.lvl, me.cls);
+  me.lvl = startLv; me.pending = startLv - 1;
   me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25); me.xp = 0; me.hp = me.maxHp;
   $('pausePgBtn').classList.remove('hidden'); $('pauseGearBtn').classList.remove('hidden');
   banner = { text: 'PLAYGROUND', sub: 'Try anything. No stars, gems, items or records here.', life: 3 };
@@ -1464,7 +1499,7 @@ function renderPlayground(body) {
   for (const r of [1, 2, 3, 5]) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
   sec(pg.on ? 'LEVEL (lower: pick skills again \u00b7 higher: keep skills, pick the extra ones)' : 'STARTING LEVEL');
   w = wrap();
-  for (const l of [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]) chip(w, 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
+  for (const l of [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max']) chip(w, l === 'max' ? 'MAX (Lv ' + maxLevelFor(me && pg.on ? me.cls : selClass) + ': every skill maxed)' : 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
   sec('DEMON STRENGTH (new demons)');
   w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'HP x' + m, pg.mHp === m, () => { pg.mHp = m; savePg(); renderMeta(); });
   w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'Damage x' + m, pg.mDmg === m, () => { pg.mDmg = m; savePg(); renderMeta(); });
@@ -1482,17 +1517,17 @@ function renderPlayground(body) {
   if (pg.on) {
     sec('SPAWN NOW (appears near you)');
     w = wrap();
-    for (const t of PG_TYPES.concat(['boss', 'king', 'champ'])) chip(w, PG_NAMES[t], false, () => pgSpawn(t));
+    for (const t of PG_TYPES.concat(['boss', 'king', 'champ'])) chip(w, PG_NAMES[t], false, () => { pgSpawn(t); renderMeta(); });
     sec('START AN EVENT NOW');
     w = wrap();
-    const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin', meteor: 'Meteor Shower', elite: 'Elite Hunt' };
+    const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin', meteor: 'Meteor Shower', elite: 'Elite Hunt', chest: 'Cursed Chest', bounty: 'Bounty' };
     for (const k of Object.keys(EVT_INFO)) chip(w, EVT_NAMES[k] || k, evts.some(e => e.kind === k), () => {
-      startEvent(k); evtT = 90; toast(EVT_NAMES[k] + ' started (' + evts.length + ' running)'); closeMeta(); if (state === S.PAUSED) resumeGame();
+      startEvent(k); evtT = 90; toast(EVT_NAMES[k] + ' started (' + evts.length + ' running)'); renderMeta();
     });
     chip(w, 'End all events', false, () => { pgEndEvents(); renderMeta(); }, !evts.length);
   }
   const act = document.createElement('div'); act.style.textAlign = 'center'; act.style.margin = '0.8rem 0';
-  act.appendChild(mbtn(pg.on ? 'Back to the game' : 'Start playground (' + CLASSES[selClass].name + ')', true, () => { if (pg.on) closeMeta(); else startPlayground(); }));
+  act.appendChild(mbtn(pg.on ? 'Back to the game' : 'Start playground (' + CLASSES[selClass].name + ')', true, () => { if (pg.on) { closeMeta(); if (state === S.PAUSED) resumeGame(); } else startPlayground(); }));
   body.appendChild(act);
 }
 
@@ -2090,14 +2125,14 @@ function use(pl) { p = pl; wolves = pl._wolves; bears = pl._bears; bullets = pl.
 function unuse(pl) { pl._bullets = bullets; pl._tornados = tornados; pl._grenades = grenades; }
 const PR = 14;
 
-const CLASS_DMG = { hunter: 1, druid: 1.1, warrior: 2.6, paladin: 2, fallen: 2.4 };
+const CLASS_DMG = { hunter: 1, druid: 1.1, warrior: 7.5, paladin: 5.5, fallen: 6.5 };
 function newPlayer(cls) {
   const c = CLASSES[cls];
   const pl = {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 6, inv: 0, ups: {}, pickLog: [], volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
     thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1, explode: 0, chain: 0, poison: 0,
-    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, curse: 0, conse: 0, falcon: 0, whirl: 0, rage: 0, shout: 0, exec: 0, vines: 0, moon: 0, phantom: 0, souls: 0, soulHp: 0, echo: 0, dodge: 0, retri: 0, retriCd: 0, hammer: 0, angel: 0, angelCd: 0, giant: 0, nova: 0, novaCd: 0, resDmg: 1, _twins: [],
+    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, curse: 0, conse: 0, falcon: 0, whirl: 0, rage: 0, shout: 0, exec: 0, vines: 0, moon: 0, phantom: 0, souls: 0, soulHp: 0, echo: 0, dodge: 0, retri: 0, retriCd: 0, hammer: 0, angel: 0, angelCd: 0, giant: 0, frost: 0, mark: 0, bash: 0, bloom: 0, hnova: 0, sacred: 0, barrier: 0, terror: 0, rapid: 0, rapidT: 0, scatter: 0, volN: 0, seismic: 0, spore: 0, blind: 0, rift: 0, siphon: 0, nova: 0, novaCd: 0, resDmg: 1, _twins: [],
     healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
     ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
@@ -2240,6 +2275,9 @@ function damageEnemy(e, dmg, kx, ky, stun) {
     if (p.exec && !BIG_DEMONS[e.type] && e.hp < e.maxHp * 0.2) dmg *= 1 + 0.15 * Math.min(8, p.exec);
     if (p.giant && BIG_DEMONS[e.type]) dmg *= 1 + 0.08 * Math.min(5, p.giant);
   }
+  if (e.markT > 0) dmg *= e.markMul || 1;
+  {
+  }
   if (p && p.feastT > 0 && p.feast && !p.dead) p.hp = Math.min(p.maxHp, p.hp + Math.min(dmg, Math.max(0, e.hp)) * FEAST_LS[Math.min(8, p.feast)] * (BIG_DEMONS[e.type] ? 0.5 : 1));
   e.hp -= dmg;
   e.flash = 0.1;
@@ -2258,9 +2296,11 @@ const EVT_INFO = {
   totem: { title: 'EVENT: DEMON TOTEM', sub: 'Break the totem within 45 s. Demons near it get stronger!', goal: 'Break the totem', stars: 45 },
   goblin: { title: 'EVENT: TREASURE GOBLIN', sub: 'Catch the goblin within 30 s (2 gems)', goal: 'Catch the goblin', stars: 60 },
   meteor: { title: 'EVENT: METEOR SHOWER', sub: 'Meteors fall around you for 25 s. Stay alive and keep moving!', goal: 'Survive the meteors', stars: 40 },
-  elite: { title: 'EVENT: ELITE HUNT', sub: 'Defeat the golden Elite Demon within 45 s', goal: 'Defeat the Elite Demon', stars: 55 }
+  elite: { title: 'EVENT: ELITE HUNT', sub: 'Defeat the golden Elite Demon within 45 s', goal: 'Defeat the Elite Demon', stars: 55 },
+  chest: { title: 'EVENT: CURSED CHEST', sub: 'Open the chest and survive the demon waves for 20 s', goal: 'Guard the cursed chest', stars: 50 },
+  bounty: { title: 'EVENT: BOUNTY', sub: 'Defeat 40 demons within 40 s', goal: 'Bounty', stars: 45 }
 };
-const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g', meteor: 'm', elite: 'e' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin', m: 'meteor', e: 'elite' };
+const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g', meteor: 'm', elite: 'e', chest: 'c', bounty: 'b' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin', m: 'meteor', e: 'elite', c: 'chest', b: 'bounty' };
 let evt = null, evts = [], evtT = 90, evtLog = '';
 function startEvent(pick) {
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
@@ -2275,6 +2315,7 @@ function startEvent(pick) {
   if (kind === 'goblin') { evt.st = 1; evt.t = 30; evt.gob = spawnAt('goblin', x, y); }
   if (kind === 'meteor') { evt.st = 1; evt.t = 25; evt.x = gc.x; evt.y = gc.y; }
   if (kind === 'elite') { evt.st = 1; evt.el = spawnAt('elite', x, y); }
+  if (kind === 'bounty') { evt.st = 1; evt.t = 40; evt.k0 = kills; evt.x = gc.x; evt.y = gc.y; }
   evts.push(evt);
   banner = { text: EVT_INFO[kind].title, sub: EVT_INFO[kind].sub + ' (+' + EVT_INFO[kind].stars + ' stars)', life: 3.2 };
   Sound.sfx('summon');
@@ -2317,6 +2358,17 @@ function updateEventOne(dt) {
       if (alive.length) { const q = alive[Math.floor(Math.random() * alive.length)], a = rand(0, TAU), d = rand(0, 230); hazards.push({ x: q.x + Math.cos(a) * d, y: q.y + Math.sin(a) * d, r: 55, t: 1.1, max: 1.1, met: 1, dmg: 25 * (1 + time / 240) * METEOR[worldId].hurt, slow: METEOR[worldId].slow }); }
     }
     if (evt.t <= 0) endEvent(players.some(q => !q.dead));
+  } else if (evt.kind === 'chest') {
+    if (evt.st === 0) {
+      if (evtNear(130)) { evt.st = 1; evt.t = 20; evt.spawnT = 0.5; }
+      else if (evt.t <= 0) endEvent(null);
+    } else {
+      if (evt.spawnT <= 0) { evt.spawnT = 3; evtSpawnAround(evt.x, evt.y, 4, 260); }
+      if (evt.t <= 0) endEvent(players.some(q => !q.dead));
+    }
+  } else if (evt.kind === 'bounty') {
+    const gc3 = groupCenter(); evt.x = gc3.x; evt.y = gc3.y; evt.pr = kills - evt.k0;
+    if (evt.pr >= 40) endEvent(true); else if (evt.t <= 0) endEvent(false);
   } else if (evt.kind === 'elite') {
     const el = evt.el;
     evt.x = el.x; evt.y = el.y;
@@ -2376,6 +2428,11 @@ function drawEventOne(S2, idx) {
     ctx.strokeStyle = 'rgba(200, 120, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 110, 0, TAU); ctx.stroke();
     if (evt.st === 1) { ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(x, y, 118, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, evt.pr / 20)); ctx.stroke(); }
     ctx.fillStyle = '#e0b3ff'; ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillText('SHRINE', x, y + 4);
+  } else if (evt.kind === 'chest') {
+    // a glowing treasure chest
+    ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.fillStyle = '#5a3a14'; ctx.fillRect(x - 18, y - 12, 36, 24);
+    ctx.fillStyle = '#ffd54a'; ctx.fillRect(x - 18, y - 4, 36, 4); ctx.fillRect(x - 3, y - 6, 6, 8); ctx.shadowBlur = 0;
+    if (evt.st === 0) { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.4 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.beginPath(); ctx.arc(x, y, 130, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   } else if (evt.kind === 'totem') {
     ctx.strokeStyle = 'rgba(255, 59, 42, ' + (0.35 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([12, 10]); ctx.beginPath(); ctx.arc(x, y, 450, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   } else if (evt.kind === 'portals') {
@@ -2401,6 +2458,8 @@ function drawEventOne(S2, idx) {
   let line = info.goal;
   if (evt.kind === 'rescue') line += evt.st === 0 ? ' \u00b7 go to the survivor' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else if (evt.kind === 'portals') line += ' \u00b7 ' + (evt.por ? evt.por.filter(o => !o.dead).length + ' left \u00b7 ' : '') + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'chest') line += evt.st === 0 ? ' \u00b7 go to the chest' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'bounty') line += ' \u00b7 ' + Math.min(40, evt.pr | 0) + '/40 \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else if (evt.kind === 'totem' || evt.kind === 'goblin' || evt.kind === 'meteor' || evt.kind === 'elite') line += ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else line += evt.st === 0 ? ' \u00b7 go to the shrine' : ' \u00b7 ' + Math.floor(evt.pr) + '/20s';
   ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255, 233, 168, 0.95)';
@@ -2430,6 +2489,7 @@ function killEnemy(e) {
   if (p && p.blood && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.002 * p.blood);
   // Bloodfeast: every 15 kills the Fallen goes into a frenzy for 8 seconds
   if (p && p.feast && !p.dead) { p.feastKills = (p.feastKills || 0) + 1; if (p.feastKills >= 15) { p.feastKills = 0; p.feastT = 8; effects.push({ kind: 'feast', x: p.x, y: p.y, r: 44, life: 0.6, max: 0.6, owner: p }); } }
+  if (p && p.siphon && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.004 * Math.min(8, p.siphon));
   if (p && p.souls && !p.dead && p.soulHp < 50) { const g = Math.min(50 - p.soulHp, 0.06 * Math.min(8, p.souls)); p.soulHp += g; p.maxHp += g; p.hp += g; }
   if (e.type === 'boss') bossesKilled++;
   if (e.type === 'boss' || e.type === 'king' || e.type === 'champ') dropGear(e.type);
@@ -2470,6 +2530,7 @@ function hurtPlayer(d, src) {
   const raw = d;
   d = Math.max(1, d - p.armor);
   if (p.hide) d *= 1 - 0.05 * Math.min(8, p.hide);
+  if (p.barrier > 0) { const ab = Math.min(p.barrier, d); p.barrier -= ab; d -= ab; if (d <= 0) { p.inv = 0.4; return; } }
   p.hp -= d;
   p.inv = 0.7;
   addText(p.x, p.y - 24, '-' + Math.round(d), '#ff3b5c');
@@ -2667,7 +2728,7 @@ function spawnPick() {
   return e;
 }
 // demons get much tougher later on (and in harder worlds)
-function hpScale() { return 1.3 * (1 + time / 60 * 0.45) * (time > 600 ? Math.pow(1 + (time - 600) / 240, 1.6) : 1) * WP().mul; }
+function hpScale() { return 1.55 * (1 + time / 60 * 0.45) * (time > 600 ? Math.pow(1 + (time - 600) / 240, 1.6) : 1) * WP().mul; }
 function spawnAt(type, x, y) {
   const t = ETYPES[type];
   // co-op: demons get a little tougher for each extra player (+20% HP each)
@@ -2699,8 +2760,8 @@ function updateCharger(e, dx, dy, d, dt) {
   e.x += dx / d * e.speed * dt; e.y += dy / d * e.speed * dt;
 }
 // when each demon type first appears (seconds); after 11:30 a new one every 3 minutes
-const UNLOCK = [['runner', 55], ['charger', 110], ['brute', 190], ['wisp', 270], ['splitter', 350], ['necro', 450], ['golem', 550], ['bat', 650], ['bomber', 750], ['shade', 855], ['hound', 955], ['warlock', 1060], ['titan', 1160], ['ghoul', 1250], ['archer', 1340]];
-const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7, ghoul: 2.5, archer: 2 };
+const UNLOCK = [['runner', 55], ['charger', 110], ['brute', 190], ['wisp', 270], ['splitter', 350], ['necro', 450], ['golem', 550], ['bat', 650], ['bomber', 750], ['shade', 855], ['hound', 955], ['warlock', 1060], ['titan', 1160], ['ghoul', 1250], ['archer', 1340], ['banshee', 1430], ['scorpion', 1520]];
+const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7, ghoul: 2.5, archer: 2, banshee: 1.5, scorpion: 2.5 };
 const wUnlockCache = {};
 function WUNLOCK() {
   if (wUnlockCache[worldId]) return wUnlockCache[worldId];
@@ -2826,6 +2887,25 @@ function liqPath(l) {
   l._path = P;
   return P;
 }
+// quicksand: the direction towards the middle of the lake or river you are in
+function liquidPull(x, y) {
+  const ch = getChunk(Math.floor(x / CHUNK), Math.floor(y / CHUNK));
+  for (const l of ch.liq) {
+    if (l.t === 'lake') {
+      const dx = x - l.x, dy = y - l.y, c = Math.cos(-l.rot), s2 = Math.sin(-l.rot), u = dx * c - dy * s2, v = dx * s2 + dy * c;
+      if ((u / l.rx) ** 2 + (v / l.ry) ** 2 < 1) { const d = Math.hypot(dx, dy) || 1; return [-dx / d, -dy / d, d]; }
+    } else {
+      let best = null, bd = Infinity;
+      for (let i = 1; i < l.pts.length; i++) {
+        const [ax, ay] = l.pts[i - 1], [bx, by] = l.pts[i], ex = bx - ax, ey = by - ay, ll = ex * ex + ey * ey;
+        const t2 = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / ll)), px = ax + ex * t2, py = ay + ey * t2, d = Math.hypot(px - x, py - y);
+        if (d < bd) { bd = d; best = [px, py]; }
+      }
+      if (best && bd < l.w / 2) { const d = bd || 1; return [(best[0] - x) / d, (best[1] - y) / d, d]; }
+    }
+  }
+  return null;
+}
 function drawLiquids(S2, cam) {
   const L = WP().liq, st = L.style, ox = W / 2 - cam.x, oy = H / 2 - cam.y;
   for (const ch of chunksAround(cam.x, cam.y, Math.max(W, H) * 0.75)) for (const l of ch.liq) {
@@ -2889,6 +2969,23 @@ function drawLiquids(S2, cam) {
       hg.addColorStop(0, 'rgba(120, 70, 220, 0.35)'); hg.addColorStop(1, 'rgba(0, 0, 0, 0)');
       ctx.fillStyle = hg; ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
       dots(42, (x, y, i) => { const tw = 0.3 + 0.7 * Math.max(0, Math.sin(clock * 3 + i * 1.9)); ctx.fillStyle = 'rgba(255, 255, 255, ' + tw + ')'; ctx.fillRect(x - 1, y - 1, i % 4 ? 2 : 3, i % 4 ? 2 : 3); });
+    } else if (st === 'sand') {
+      // quicksand: slow swirling ripples and drifting grains (no waves)
+      ctx.strokeStyle = 'rgba(255, 215, 150, 0.35)'; ctx.lineWidth = 2;
+      const cxs = (x0 + x1) / 2, cys = (y0 + y1) / 2;
+      for (let i = 1; i <= 6; i++) { ctx.beginPath(); ctx.arc(cxs, cys, i * 16, clock * 0.6 + i, clock * 0.6 + i + 4.2); ctx.stroke(); }
+      dots(30, (x, y, i) => { const off = (clock * 8 + i * 13) % 40; ctx.fillStyle = 'rgba(90, 55, 25, 0.7)'; ctx.fillRect(x + off - 20, y, 2, 2); });
+    } else if (st === 'storm') {
+      // dark storm water with flickering lightning arcs
+      wv('rgba(120, 200, 255, 0.3)', 18, 4, 2.2, 1.5);
+      ctx.strokeStyle = 'rgba(220, 250, 255, 0.95)'; ctx.lineWidth = 2; ctx.shadowColor = '#7fe9ff'; ctx.shadowBlur = 10;
+      dots(5, (x, y, i) => {
+        if (Math.sin(clock * 9 + i * 3.7) < 0.55) return;
+        ctx.beginPath(); ctx.moveTo(x, y);
+        for (let j = 1; j <= 5; j++) ctx.lineTo(x + j * 9 + Math.sin(clock * 40 + j * 2 + i) * 6, y + Math.cos(clock * 37 + j * 3 + i) * 8);
+        ctx.stroke();
+      });
+      ctx.shadowBlur = 0;
     } else if (st === 'holy') {
       // golden shimmer: a warm glow, soft light bands and glittering sparks
       const lg = ctx.createRadialGradient((x0 + x1) / 2, (y0 + y1) / 2, 0, (x0 + x1) / 2, (y0 + y1) / 2, Math.max(x1 - x0, y1 - y0) / 2);
@@ -3381,7 +3478,9 @@ const METEOR = [
   { c: '#7dff3a', core: '#e2ffc0', hurt: 1.6, slow: 0 },
   { c: '#ff5a1f', core: '#ffd54a', hurt: 2, slow: 0 },
   { c: '#9d6bff', core: '#1a0033', hurt: 2.5, slow: 1 },
-  { c: '#ffd54a', core: '#ffffff', hurt: 3, slow: 0 }
+  { c: '#ffd54a', core: '#ffffff', hurt: 3, slow: 0 },
+  { c: '#7fe9ff', core: '#fff7a0', hurt: 3.6, slow: 1 },
+  { c: '#c8782e', core: '#ffd9a8', hurt: 4.3, slow: 1 }
 ];
 function drawMeteor(x, y, r, k) {
   const M = METEOR[worldId] || METEOR[0];
@@ -3482,6 +3581,9 @@ function updateBears(dt) {
     }
     const LQb = WP().liq;
     if (LQb.dmg && inLiquid(b.x, b.y)) { b.hp -= b.maxHp * LQb.dmg * dt; if (b.hp <= 0) { b.hp = 0.001; hurtBear(b, 1); return; } }
+    if (LQb.pull) { const pv = liquidPull(b.x, b.y); if (pv && pv[2] > 4) { b.x += pv[0] * LQb.pull * dt; b.y += pv[1] * LQb.pull * dt; } }
+    // stunned by a titan's stomp
+    if (b.stunT > 0) { b.stunT -= dt; return; }
     b.atk -= dt; b.flash -= dt;
     // the druid was just hit: bears go for the demon closest to the druid
     const tgt = (p.guardT > 0 && nearestEnemy(p.x, p.y, 300)) || nearestEnemy(b.x, b.y, 90);
@@ -3507,7 +3609,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '6.6';
+const GAME_VERSION = '7.0';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3898,7 +4000,7 @@ function buildSnapshot() {
   for (const q of players) {
     pl[q.id] = {
       x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
-      slw: +(q.slowT || 0).toFixed(1), tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
+      slw: +(q.slowT || 0).toFixed(1), stn: +(q.stunT || 0).toFixed(1), tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura, br: r(q.barrier || 0),
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, cs: q.conse || 0, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
       nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0, fa: q.falcon || 0,
@@ -3908,7 +4010,7 @@ function buildSnapshot() {
   }
   return {
     rd: coop.round || 0, md: coop.mode || 'coop', win: coop.winner || 0, in: intro ? { ty: intro.type, id: intro.eid } : 0, t: +time.toFixed(2), k: kills, bk: bossesKilled, kk: kingsKilled, ck: champsKilled, sv: surgeCount, wait: coop.waiting ? 1 : 0, over: coop.over ? 1 : 0, p: pl,
-    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0) | (e.psnT > 0 ? 16 : 0) | (e.emp ? 32 : 0)]),
+    e: enemies.filter(e => !e.dead).map(e => [e.id, TYPE_IDX.indexOf(e.type), r(e.x), r(e.y), r(Math.max(0, e.hp) / e.maxHp * 100), (e.flash > 0 ? 1 : 0) | (e.stun > 0 ? 2 : 0) | (e.wind > 0 ? 4 : 0) | (e.charging > 0 ? 8 : 0) | (e.psnT > 0 ? 16 : 0) | (e.emp ? 32 : 0) | (e.markT > 0 ? 64 : 0) | (e.slowT > 0 ? 128 : 0)]),
     g: gems.slice(0, 200).map(g => [r(g.x), r(g.y), g.v >= 20 ? 2 : g.v >= 4 ? 1 : 0]),
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
@@ -3977,6 +4079,8 @@ function revivePlayer(q) {
 const INTRO = {
   ghoul: ['Ghoul', 'Keeps healing itself. Finish it fast!'],
   archer: ['Imp Archer', 'Stays back and fires three bolts at a time.'],
+  banshee: ['Banshee', 'Screams when you come close: you are slowed for a moment.'],
+  scorpion: ['Scorpion', 'Fast. Its sting slows you down.'],
   elite: ['Elite Demon', 'A huge golden demon with lots of HP.'],
   totem: ['Demon Totem', 'Makes the demons around it stronger. Break it!'],
   goblin: ['Treasure Goblin', 'Runs away with loot. Catch it!'],
@@ -4197,7 +4301,7 @@ function onSnapshot(s) {
     if (!type) continue;
     let e = coop.emap.get(id);
     if (!e) e = { id, type, x, y, r: ETYPES[type].r, maxHp: 100, wob: rand(0, TAU) };
-    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0; e.psnT = fl & 16 ? 1 : 0; e.emp = fl & 32 ? 1 : 0;
+    track(e, x, y); e.hp = hp; e.flash = fl & 1 ? 0.1 : 0; e.stun = fl & 2 ? 1 : 0; e.wind = fl & 4 ? 1 : 0; if (fl & 8) { if (!(e.charging > 0)) e.charging = 2; } else e.charging = 0; e.psnT = fl & 16 ? 1 : 0; e.emp = fl & 32 ? 1 : 0; e.markT = fl & 64 ? 1 : 0; e.slowT = fl & 128 ? 1 : 0;
     nm.set(id, e);
   }
   coop.emap = nm;
@@ -4259,10 +4363,10 @@ function onSnapshot(s) {
       track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.oid = id;
       nt.set(key, o); twinsDraw.push(o); myTw.push(o);
     });
-    if (id === myId) { if (v.slw > (me.slowT || 0)) me.slowT = v.slw; me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
+    if (id === myId) { if (v.slw > (me.slowT || 0)) me.slowT = v.slw; if (v.stn > (me.stunT || 0)) me.stunT = v.stn; me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
-      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
+      me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.barrier = v.br || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
       if (v.d && !me.dead) { me.dead = true; me.deathTime = v.dt || time; youFell(); }
       else if (!v.d && me.dead) { me.dead = false; me.deathTime = 0; $('coopBanner').classList.add('hidden'); Sound.sfx('level'); }
       me.revive = v.rv || 0; me.team = v.tm || 'A';
@@ -4363,8 +4467,10 @@ function moveLocal(dt) {
   const ml = Math.hypot(mx, my);
   if (ml > 1) { mx /= ml; my /= ml; }
   if (me.slowT > 0) me.slowT -= dt;
+  if (me.stunT > 0) { me.stunT -= dt; mx = 0; my = 0; }
   const spd = (me.slowT > 0 ? 0.55 : 1) * me.speed * (me.cls === 'druid' && me.ultT > 0 && me.form === 'wolf' ? 1.4 : 1) * (inLiquid(me.x, me.y) ? WP().liq.slow : 1);
   me.x += mx * spd * dt; me.y += my * spd * dt;
+  if (WP().liq.pull) { const pv = liquidPull(me.x, me.y); if (pv && pv[2] > 4) { me.x += pv[0] * WP().liq.pull * dt; me.y += pv[1] * WP().liq.pull * dt; } }
   pushOut(me, PR, 0);
   blockBySolids(me, PR);
   // Co-op ring: nobody can walk too far from the team
@@ -4460,6 +4566,7 @@ function update(dt) {
       if (p.hp <= 0) { p.hp = 0; die(); }
     }
     if (p.remote && p.slowT > 0) p.slowT -= dt;
+    if (p.remote && p.stunT > 0) p.stunT -= dt;
     p.retriCd = Math.max(0, (p.retriCd || 0) - dt); p.angelCd = Math.max(0, (p.angelCd || 0) - dt);
     p.guardT = Math.max(0, (p.guardT || 0) - dt);
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
@@ -4531,6 +4638,7 @@ function update(dt) {
     }
     e.flash -= dt; e.bladeCd -= dt;
     if (e.curseT > 0) e.curseT -= dt;
+    if (e.markT > 0) e.markT -= dt;
     if (e.speed === 0 && (ETYPES[e.type].ore || ETYPES[e.type].still)) { e.flash -= dt; if ((e.x - me.x) ** 2 + (e.y - me.y) ** 2 > 1800 * 1800 && !coop) e.dead = true; continue; }
     let tp = null, bestD = Infinity;
     for (const pl of players) { if (pl.dead) continue; const dd = (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2; if (dd < bestD) { bestD = dd; tp = pl; } }
@@ -4570,6 +4678,7 @@ function update(dt) {
       if (e.type === 'champ') sp = e.charging > 0 ? 0 : d < 320 ? -e.speed * 0.6 : sp;
       if (tb && md < e.r + 14) sp = 0;
       if (sp > 0 && inLiquid(e.x, e.y)) sp *= 0.85;
+      if (e.slowT > 0) { e.slowT -= dt; sp *= 1 - (e.slowF || 0); }
       e.x += mvx / md * sp * dt; e.y += mvy / md * sp * dt;
       if (solids.length) blockBySolids(e, e.r);
     }
@@ -4627,7 +4736,8 @@ function update(dt) {
       if (e.castT <= 0) {
         e.castT = 3.5;
         effects.push({ kind: 'slam', x: e.x, y: e.y, r: 150, life: 0.45, max: 0.45 });
-        for (const pl of players) if (!pl.dead && (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2 < 150 * 150) hurtTarget(pl, e.dmg * 0.8, null);
+        for (const pl of players) if (!pl.dead && (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2 < 150 * 150) { hurtTarget(pl, e.dmg * 0.8, null); pl.stunT = 0.8; }
+        for (const pl of players) for (const b of pl._bears) if (!b.dead && (b.x - e.x) ** 2 + (b.y - e.y) ** 2 < 150 * 150) b.stunT = 0.8;
         if (d < 400) shake = Math.max(shake, 8);
       }
     }
@@ -4653,6 +4763,10 @@ function update(dt) {
     e.x += e.kx * dt; e.y += e.ky * dt;
     pushOut(e, e.r * 0.8, e.speed * dt * 0.7);
     e.kx *= 0.86; e.ky *= 0.86;
+    if (e.type === 'banshee') {
+      e.castT = (e.castT === undefined ? rand(1, 3) : e.castT) - dt;
+      if (e.castT <= 0 && d < 170) { e.castT = 5; effects.push({ kind: 'roar', x: e.x, y: e.y, r: 170, life: 0.6, max: 0.6 }); for (const pl of players) if (!pl.dead && (pl.x - e.x) ** 2 + (pl.y - e.y) ** 2 < 170 * 170) pl.slowT = Math.max(pl.slowT || 0, 1.2); }
+    }
     if (e.type === 'ghoul') e.hp = Math.min(e.maxHp, e.hp + e.maxHp * 0.05 * dt);
     if (e.type === 'archer') {
       e.shootT = (e.shootT === undefined ? rand(1, 3) : e.shootT) - dt;
@@ -4665,7 +4779,7 @@ function update(dt) {
         ebullets.push({ x: e.x, y: e.y, vx: dx / d * 190, vy: dy / d * 190, life: 4, dmg: 9 * (1 + time / 300), src: e });
       }
     }
-    if (d < e.r + PR && e.dmg > 0) hurtTarget(tp, e.dmg, e);
+    if (d < e.r + PR && e.dmg > 0) { hurtTarget(tp, e.dmg, e); if (e.type === 'scorpion') tp.slowT = Math.max(tp.slowT || 0, 1.5); }
   }
   for (const b of ebullets) {
     b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
@@ -4710,6 +4824,67 @@ function update(dt) {
 // skills that fire on their own timers
 function updateExtraSkills(dt) {
   const t = p.t, cd = (key, first, sec) => { t[key] = (t[key] === undefined ? first : t[key]) - dt; if (t[key] <= 0) { t[key] = sec; return true; } return false; };
+  if (p.rapid && cd('rapid', 4, Math.max(5, 9 - 0.4 * p.rapid))) p.rapidT = 1.8 + 0.2 * Math.min(8, p.rapid);
+  if (p.seismic && cd('seismic', 3, Math.max(3.5, 6.5 - 0.4 * p.seismic))) {
+    const tg = nearestEnemy(p.x, p.y, 420);
+    if (tg) {
+      const a = Math.atan2(tg.y - p.y, tg.x - p.x), L = 420, ca = Math.cos(a), sa = Math.sin(a), sx = p.x, sy = p.y;
+      effects.push({ kind: 'quake', x: sx + ca * L / 2, y: sy + sa * L / 2, r: 60, life: 0.5, max: 0.5, seed: a });
+      effects.push({ kind: 'rend', x: sx, y: sy, r: L, life: 0.35, max: 0.35, seed: a });
+      for (const e of enemiesNear(sx + ca * L / 2, sy + sa * L / 2, L / 2 + 30)) {
+        const dx = e.x - sx, dy = e.y - sy, along = dx * ca + dy * sa, side = Math.abs(-dx * sa + dy * ca);
+        if (along > -10 && along < L && side < e.r + 40) damageEnemy(e, p.w.dmg * (1.3 + 0.25 * p.seismic), ca * 160, sa * 160, 0.4);
+      }
+      shake = Math.max(shake, p === me ? 5 : 0);
+    }
+  }
+  if (p.spore && cd('spore', 3, Math.max(2.5, 5.5 - 0.35 * p.spore))) {
+    const list = enemiesNear(p.x, p.y, 420).filter(e => !e.pvp && !ETYPES[e.type].ore && !ETYPES[e.type].still);
+    const tg = list[Math.floor(Math.random() * list.length)];
+    if (tg) {
+      const cx = tg.x, cy = tg.y;
+      effects.push({ kind: 'vines', x: cx, y: cy, r: 100, life: 0.6, max: 0.6, seed: Math.random() * 6 });
+      effects.push({ kind: 'dsplash', x: cx, y: cy, r: 100, life: 0.5, max: 0.5 });
+      for (const e of enemiesNear(cx, cy, 100)) { damageEnemy(e, 30 + 12 * p.spore, 0, 0, 0); if (!e.pvp) { e.slowT = 2; e.slowF = Math.max(e.slowF || 0, 0.3); } }
+    }
+  }
+  if (p.blind && cd('blind', 3, Math.max(4, 7.5 - 0.45 * p.blind))) {
+    effects.push({ kind: 'judge', x: p.x, y: p.y, r: 220, life: 0.45, max: 0.45, owner: p });
+    for (const e of enemiesNear(p.x, p.y, 220)) damageEnemy(e, p.w.dmg * 0.3, 0, 0, 0.8);
+  }
+  if (p.rift && cd('rift', 3, Math.max(4, 7.5 - 0.45 * p.rift))) {
+    const tg = nearestEnemy(p.x, p.y, 380);
+    if (tg) {
+      const cx = tg.x, cy = tg.y;
+      effects.push({ kind: 'dsplash', x: cx, y: cy, r: 150, life: 0.6, max: 0.6 });
+      for (const e of enemiesNear(cx, cy, 150)) { const dx = cx - e.x, dy = cy - e.y, d = Math.hypot(dx, dy) || 1; damageEnemy(e, p.w.dmg * (0.8 + 0.2 * p.rift), dx / d * 260, dy / d * 260, 0.3); }
+    }
+  }
+  if (p.mark && cd('mark', 2, Math.max(4, 9 - 0.5 * p.mark))) {
+    let tg = null;
+    for (const e of enemiesNear(p.x, p.y, 500)) if (!e.pvp && !ETYPES[e.type].ore && !ETYPES[e.type].still && (!tg || e.hp > tg.hp)) tg = e;
+    if (tg) { tg.markT = 5; tg.markMul = 1.2 + 0.05 * (Math.min(8, p.mark) - 1); }
+  }
+  if (p.bash && cd('bash', 2, Math.max(2.5, 6 - 0.4 * p.bash))) {
+    const tg = nearestEnemy(p.x, p.y, 140);
+    if (tg) { const dx = tg.x - p.x, dy = tg.y - p.y, d = Math.hypot(dx, dy) || 1; effects.push({ kind: 'blast', x: tg.x, y: tg.y, r: 40, life: 0.3, max: 0.3 }); damageEnemy(tg, p.w.dmg * (2 + 0.4 * p.bash), dx / d * 220, dy / d * 220, 1.2); Sound.sfx('slam'); }
+  }
+  if (p.bloom && cd('bloom', 3, Math.max(3, 6.5 - 0.45 * p.bloom))) {
+    const pct = 0.04 + 0.01 * Math.min(8, p.bloom);
+    p.hp = Math.min(p.maxHp, p.hp + p.maxHp * pct);
+    for (const b of p._bears) if (!b.dead) b.hp = Math.min(b.maxHp, b.hp + b.maxHp * pct);
+    effects.push({ kind: 'heal', x: p.x, y: p.y, r: 60, life: 0.8, max: 0.8, owner: p });
+  }
+  if (p.hnova && cd('hnova', 3, Math.max(3.5, 7.5 - 0.5 * p.hnova))) {
+    effects.push({ kind: 'judge', x: p.x, y: p.y, r: 170, life: 0.5, max: 0.5, owner: p });
+    for (const e of enemiesNear(p.x, p.y, 170)) damageEnemy(e, p.w.dmg * (1 + 0.25 * p.hnova), 0, 0, 0);
+    for (const q of players) if (!q.dead && q.team === p.team && (q.x - p.x) ** 2 + (q.y - p.y) ** 2 < 170 * 170) q.hp = Math.min(q.maxHp, q.hp + q.maxHp * 0.03);
+  }
+  if (p.sacred && cd('sacred', 4, Math.max(9, 16 - 0.9 * p.sacred))) p.barrier = p.maxHp * (0.15 + 0.05 * (Math.min(8, p.sacred) - 1));
+  if (p.terror && cd('terror', 3, Math.max(3, 6.5 - 0.45 * p.terror))) {
+    effects.push({ kind: 'dsplash', x: p.x, y: p.y, r: 170, life: 0.4, max: 0.4 });
+    for (const e of enemiesNear(p.x, p.y, 170)) damageEnemy(e, p.w.dmg * (0.6 + 0.15 * p.terror), 0, 0, 1);
+  }
   if (p.whirl && cd('whirl', 2, Math.max(4, 8.5 - 0.55 * p.whirl))) {
     const Rw = 120 + 10 * p.whirl;
     effects.push({ kind: 'whirl', x: p.x, y: p.y, r: Rw, life: 0.45, max: 0.45, owner: p });
@@ -4750,7 +4925,8 @@ function updateExtraSkills(dt) {
 function updateWeapons(dt) {
   const t = p.t, w = p.w;
   if (p.cls === 'hunter') {
-    t.shot -= dt;
+    if (p.rapidT > 0) p.rapidT -= dt;
+    t.shot -= dt * (p.rapidT > 0 ? 2 : 1);
     if (t.shot <= 0) {
       const tgt = nearestEnemy(p.x, p.y, w.range);
       if (tgt) {
@@ -4764,6 +4940,11 @@ function updateWeapons(dt) {
           for (let j = 0; j < w.tandem; j++) {
             bullets.push({ x: sx - Math.cos(a) * j * 26, y: sy - Math.sin(a) * j * 26, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, life: (w.range + j * 26) / w.speed, pierce: w.pierce, hit: [] });
           }
+        }
+        // Scatter Shot: every 5th shot adds a fan of bolts
+        if (p.scatter && ++p.volN % 5 === 0) {
+          const nn = 3 + Math.min(8, p.scatter);
+          for (let i = 0; i < nn; i++) { const a = base + (i - (nn - 1) / 2) * 0.12; bullets.push({ x: p.x, y: p.y, vx: Math.cos(a) * w.speed, vy: Math.sin(a) * w.speed, life: w.range / w.speed, pierce: 0, hit: [], mul: 0.6 }); }
         }
         // the falcon shoots at the same time
         if (p.falcon) {
@@ -4933,11 +5114,12 @@ function updateWeapons(dt) {
         const bd = w.dmg * (crit ? 2 : 1) * (b.mul || 1);
         damageEnemy(e, bd, b.vx / sp * kb, b.vy / sp * kb, 0);
         hunterOnHit(e, bd);
+        if (p.frost && !e.pvp) { e.slowT = 1.5; e.slowF = 0.2 + 0.04 * (Math.min(8, p.frost) - 1); }
         // Vampiric Bolts: heal a share of the demon's max HP on every hit
         if (p.leech && !e.pvp && !p.dead && e.maxHp) {
           const lv = Math.min(8, p.leech) - 1, big = BIG_DEMONS[e.type];
           const pct = big ? [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08][lv] : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 1][lv];
-          p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100 * [1, 0.8, 0.6, 0.45, 0.35, 0.25][worldId]);
+          p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100 * [1, 0.8, 0.6, 0.45, 0.35, 0.25, 0.2, 0.17][worldId]);
         }
         if (b.pierce-- <= 0) { b.life = 0; break; }
       }
@@ -5260,6 +5442,8 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, e.r * (1.6 - 0.5 * prog) + Math.sin(clock * 30) * 4, 0, TAU); ctx.fill();
       ctx.drawImage(sp.c, x - sp.size * sc / 2, y - sp.size * sc / 2, sp.size * sc, sp.size * sc);
     } else ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
+    if (e.markT > 0) { ctx.strokeStyle = 'rgba(255, 70, 70, 0.95)'; ctx.lineWidth = 2; const mr = e.r + 9; ctx.beginPath(); ctx.arc(x, y + bob, mr, 0, TAU); ctx.moveTo(x - mr - 5, y + bob); ctx.lineTo(x - mr + 5, y + bob); ctx.moveTo(x + mr - 5, y + bob); ctx.lineTo(x + mr + 5, y + bob); ctx.moveTo(x, y + bob - mr - 5); ctx.lineTo(x, y + bob - mr + 5); ctx.moveTo(x, y + bob + mr - 5); ctx.lineTo(x, y + bob + mr + 5); ctx.stroke(); }
+    if (e.slowT > 0) { ctx.fillStyle = 'rgba(150, 220, 255, 0.25)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r, 0, TAU); ctx.fill(); }
     if (e.type === 'elite') { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.6 + 0.3 * Math.sin(clock * 6)) + ')'; ctx.lineWidth = 4; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 10, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0; }
     if (e.emp) { ctx.strokeStyle = 'rgba(255, 59, 42, ' + (0.5 + 0.3 * Math.sin(clock * 10)) + ')'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 7, 0, TAU); ctx.stroke(); }
     if (e.curseT > 0) { ctx.strokeStyle = 'rgba(157, 123, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 4, 0, TAU); ctx.stroke(); }
@@ -5382,6 +5566,8 @@ function render() {
     ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
     ctx.shadowBlur = 0;
     drawHoly(x, y, me); drawUltFx(x, y, me);
+    if (me.barrier > 0) { ctx.strokeStyle = 'rgba(255, 213, 74, 0.85)'; ctx.lineWidth = 3; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(x, y, PR + 12, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0; }
+    if (me.stunT > 0) { ctx.fillStyle = '#ffd54a'; for (let i = 0; i < 3; i++) { const a = clock * 6 + i * TAU / 3; ctx.beginPath(); ctx.arc(x + Math.cos(a) * 18, y - PR - 10 + Math.sin(a) * 5, 3, 0, TAU); ctx.fill(); } }
     if (me.slowT > 0) { ctx.strokeStyle = 'rgba(160, 220, 255, 0.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, PR + 7, 0, TAU); ctx.stroke(); }
     if (p.cls === 'fallen') drawFallenLook(x, y, me, 1, false);
     if (me.falcon) drawFalcon(x, y);
