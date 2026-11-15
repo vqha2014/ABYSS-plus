@@ -416,7 +416,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 6.5</span>
+    <span class="version">Version 6.6</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -1349,8 +1349,8 @@ function renderCodes(body) {
 const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan', 'ghoul', 'archer'];
 const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', ghoul: 'Ghoul', archer: 'Archer', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
 const pg = { on: false, types: [], rate: 1, lvl: 1, mHp: 1, mDmg: 1, mSpd: 1, res: null };
-try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].includes(sv.lvl) ? sv.lvl : 1; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
-function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
+try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].includes(sv.lvl) ? sv.lvl : 1; pg.noDemons = !!sv.noDemons; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
+function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ noDemons: !!pg.noDemons, types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
 const pgRes = () => { if (!pg.res) pg.res = Object.assign({}, prog.res.lv); return pg.res; };
 // re-do research and gear on the running character (playground)
 function pgRestat() {
@@ -1384,6 +1384,33 @@ function pgSpawn(type) {
   effects.push({ kind: 'summon', x: e.x, y: e.y, r: 60, life: 0.5, max: 0.5 });
   toast(PG_NAMES[type] + ' spawned');
 }
+function pgEndEvents() {
+  for (const e of evts) { if (e.por) for (const o of e.por) o.dead = true; if (e.tot) e.tot.dead = true; if (e.gob) e.gob.dead = true; if (e.el) e.el.dead = true; }
+  evts = []; evt = null; evtT = 90;
+}
+// clear the field: every demon, bullet and event goes away
+function pgRefresh() {
+  enemies = []; ebullets = []; hazards = []; pgEndEvents();
+  toast('Playground refreshed');
+}
+function pgAddLevels(n) {
+  if (!pg.on || !me) return;
+  me.lvl += n; me.pending = (me.pending || 0) + n;
+  me.xp = 0; me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25);
+  closeMeta(); if (state === S.PAUSED) resumeGame();
+}
+// swap to another class at the same level; you pick its skills again
+function pgSetClass(cls) {
+  if (!pg.on || !me || !CLASSES[cls]) return;
+  const lv = me.lvl, x = me.x, y = me.y;
+  selClass = cls; showClasses();
+  me = newPlayer(cls); me.name = playerName || 'Player'; me.x = x; me.y = y;
+  applyResearch(me, pgRes()); applyGear(me, gearStats(equipped()));
+  players = [me]; use(me);
+  me.lvl = lv; me.pending = lv - 1; me.xp = 0; me.xpNext = Math.round((4 + lv * 2.6 + lv * lv * 0.18) * 1.25);
+  closeMeta(); if (state === S.PAUSED) resumeGame();
+  updateHUD(true);
+}
 function startPlayground() {
   closeMeta();
   if (!pg.on && pg.prevWorld === undefined) pg.prevWorld = worldId;
@@ -1416,6 +1443,18 @@ function renderPlayground(body) {
   sec('WORLD' + (pg.on ? ' (changes right away)' : ''));
   let ww = wrap();
   WORLDS.forEach((wd, i) => chip(ww, wd.name, worldId === i, () => { if (!pg.on) pg.prevWorld = pg.prevWorld === undefined ? worldId : pg.prevWorld; setWorld(i); renderMeta(); }));
+  sec('DEMONS');
+  ww = wrap();
+  chip(ww, pg.noDemons ? 'No demons: ON' : 'No demons: OFF', !!pg.noDemons, () => { pg.noDemons = !pg.noDemons; savePg(); renderMeta(); });
+  if (pg.on) chip(ww, 'Refresh (clear the field)', false, () => { pgRefresh(); renderMeta(); });
+  if (pg.on) {
+    sec('CHARACTER (same level, pick skills again)');
+    ww = wrap();
+    for (const c of Object.keys(CLASSES)) chip(ww, CLASSES[c].name, me && me.cls === c, () => pgSetClass(c));
+    sec('ADD LEVELS (now: Lv ' + me.lvl + ')');
+    ww = wrap();
+    for (const n of [1, 2, 3, 4, 5, 10]) chip(ww, '+' + n, false, () => pgAddLevels(n));
+  }
   sec('DEMON TYPES (none picked = the normal mix)');
   let w = wrap();
   for (const t of PG_TYPES) chip(w, PG_NAMES[t], pg.types.includes(t), () => { pg.types = pg.types.includes(t) ? pg.types.filter(x => x !== t) : pg.types.concat(t); savePg(); renderMeta(); });
@@ -1447,10 +1486,10 @@ function renderPlayground(body) {
     sec('START AN EVENT NOW');
     w = wrap();
     const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin', meteor: 'Meteor Shower', elite: 'Elite Hunt' };
-    for (const k of Object.keys(EVT_INFO)) chip(w, EVT_NAMES[k] || k, evt && evt.kind === k, () => {
-      if (evt) { if (evt.por) for (const o of evt.por) o.dead = true; if (evt.tot) evt.tot.dead = true; if (evt.gob) evt.gob.dead = true; if (evt.el) evt.el.dead = true; evt = null; }
-      startEvent(k); evtT = 90; toast(EVT_NAMES[k] + ' started'); closeMeta(); if (state === S.PAUSED) resumeGame();
+    for (const k of Object.keys(EVT_INFO)) chip(w, EVT_NAMES[k] || k, evts.some(e => e.kind === k), () => {
+      startEvent(k); evtT = 90; toast(EVT_NAMES[k] + ' started (' + evts.length + ' running)'); closeMeta(); if (state === S.PAUSED) resumeGame();
     });
+    chip(w, 'End all events', false, () => { pgEndEvents(); renderMeta(); }, !evts.length);
   }
   const act = document.createElement('div'); act.style.textAlign = 'center'; act.style.margin = '0.8rem 0';
   act.appendChild(mbtn(pg.on ? 'Back to the game' : 'Start playground (' + CLASSES[selClass].name + ')', true, () => { if (pg.on) closeMeta(); else startPlayground(); }));
@@ -2075,7 +2114,7 @@ function newPlayer(cls) {
 }
 
 function resetWorld() {
-  enemies = []; ebullets = []; hazards = []; gems = []; oreT = 12; gemLog = ''; evt = null; evtT = 90; evtLog = ''; effects = []; particles = []; texts = []; killFx = [];
+  enemies = []; ebullets = []; hazards = []; gems = []; oreT = 12; gemLog = ''; evt = null; evts = []; evtT = 90; evtLog = ''; effects = []; particles = []; texts = []; killFx = [];
   time = 0; kills = 0; spawnT = 0.5; nextBoss = 120; bossCount = 0; bossesKilled = 0; nextEid = 1; shake = 0; shock = null;
   nextSurge = 300; surgeCount = 0; surgeLeft = 0; surgeT = 0; kingsKilled = 0; banner = null; nextChamp = 900; champCount = 0; champsKilled = 0;
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
@@ -2222,7 +2261,7 @@ const EVT_INFO = {
   elite: { title: 'EVENT: ELITE HUNT', sub: 'Defeat the golden Elite Demon within 45 s', goal: 'Defeat the Elite Demon', stars: 55 }
 };
 const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g', meteor: 'm', elite: 'e' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin', m: 'meteor', e: 'elite' };
-let evt = null, evtT = 90, evtLog = '';
+let evt = null, evts = [], evtT = 90, evtLog = '';
 function startEvent(pick) {
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
   const kinds = Object.keys(EVT_INFO), kind = EVT_INFO[pick] ? pick : kinds[Math.floor(Math.random() * kinds.length)];
@@ -2236,13 +2275,20 @@ function startEvent(pick) {
   if (kind === 'goblin') { evt.st = 1; evt.t = 30; evt.gob = spawnAt('goblin', x, y); }
   if (kind === 'meteor') { evt.st = 1; evt.t = 25; evt.x = gc.x; evt.y = gc.y; }
   if (kind === 'elite') { evt.st = 1; evt.el = spawnAt('elite', x, y); }
+  evts.push(evt);
   banner = { text: EVT_INFO[kind].title, sub: EVT_INFO[kind].sub + ' (+' + EVT_INFO[kind].stars + ' stars)', life: 3.2 };
   Sound.sfx('summon');
 }
 function evtNear(R) { return players.some(q => !q.dead && (q.x - evt.x) ** 2 + (q.y - evt.y) ** 2 < R * R); }
-function evtSpawnAround(x, y, n, rad) { for (let i = 0; i < n && enemies.length < 260; i++) { const a = rand(0, TAU); spawnAt(pickType(), x + Math.cos(a) * rad, y + Math.sin(a) * rad); } }
+function evtSpawnAround(x, y, n, rad) {
+  if (pg.on && pg.noDemons) return; for (let i = 0; i < n && enemies.length < 260; i++) { const a = rand(0, TAU); spawnAt(pickType(), x + Math.cos(a) * rad, y + Math.sin(a) * rad); } }
 function updateEvent(dt) {
-  if (!evt) { evtT -= dt; if (evtT <= 0) { evtT = 90; startEvent(); } return; }
+  if (!evts.length) { evt = null; evtT -= dt; if (evtT <= 0) { evtT = 90; startEvent(); } return; }
+  for (const e of evts.slice()) { evt = e; updateEventOne(dt); if (!evt) evts = evts.filter(x => x !== e); }
+  evt = evts[0] || null;
+}
+function updateEventOne(dt) {
+  if (!evt) return;
   evt.t -= dt; evt.spawnT -= dt;
   if (evt.kind === 'rescue') {
     const n = evt.npc;
@@ -2308,6 +2354,11 @@ function evtReward(kind, gem) {
   Sound.sfx('level');
 }
 function drawEvent(S2) {
+  const keep = evt;
+  evts.forEach((e, i) => { evt = e; drawEventOne(S2, i); });
+  evt = keep;
+}
+function drawEventOne(S2, idx) {
   if (!evt || !me) return;
   const [x, y] = S2(evt.x, evt.y), pulse = 0.6 + 0.4 * Math.sin(clock * 5);
   ctx.save();
@@ -2353,7 +2404,7 @@ function drawEvent(S2) {
   else if (evt.kind === 'totem' || evt.kind === 'goblin' || evt.kind === 'meteor' || evt.kind === 'elite') line += ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else line += evt.st === 0 ? ' \u00b7 go to the shrine' : ' \u00b7 ' + Math.floor(evt.pr) + '/20s';
   ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255, 233, 168, 0.95)';
-  ctx.fillText('EVENT: ' + line, W / 2, H * 0.14);
+  ctx.fillText('EVENT: ' + line, W / 2, H * 0.14 + idx * 16);
 }
 const BLADE_R = 105;
 function killEnemy(e) {
@@ -2610,6 +2661,7 @@ function spawnEnemy(type) {
 }
 // Hellhounds come in packs of three
 function spawnPick() {
+  if (pg.on && pg.noDemons) return null;
   const ty = pickType(), e = spawnEnemy(ty);
   if (ty === 'hound') for (let i = 0; i < 2; i++) spawnAt('hound', e.x + rand(-34, 34), e.y + rand(-34, 34));
   return e;
@@ -3308,7 +3360,7 @@ function drawMinimap() {
     ctx.strokeStyle = '#000'; ctx.lineWidth = 1; ctx.stroke();
   }
   for (const q of players) { if (q === me || q.dead) continue; const [x, y] = edge(...P(q.x, q.y)); ctx.fillStyle = '#00f0ff'; ctx.beginPath(); ctx.arc(x, y, 3, 0, TAU); ctx.fill(); }
-  if (evt) {
+  for (const evt of evts) {
     const [ex, ey] = P(evt.x, evt.y), inside = ex > mx && ex < mx + S && ey > my && ey < my + S;
     const col = evt.kind === 'portals' ? '#7dff3a' : evt.kind === 'shrine' ? '#e0b3ff' : evt.kind === 'totem' ? '#ff3b2a' : '#ffd54a', bl = 0.5 + 0.5 * Math.abs(Math.sin(clock * 6));
     ctx.globalAlpha = bl; ctx.fillStyle = col;
@@ -3455,7 +3507,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '6.5';
+const GAME_VERSION = '6.6';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -4166,6 +4218,7 @@ function onSnapshot(s) {
     coop.evSeen = s.evr.length;
   }
   evt = s.ev ? { kind: s.ev.k, x: s.ev.x, y: s.ev.y, st: s.ev.st, t: s.ev.t, pr: s.ev.pr, npc: s.ev.k === 'rescue' ? { x: s.ev.x, y: s.ev.y, hp: s.ev.nh, maxHp: 1, dead: false } : null, por: s.ev.k === 'portals' ? Array.from({ length: s.ev.pl }, () => ({ dead: false })) : null } : null;
+  evts = evt ? [evt] : [];
   hazards = (s.hz || []).map(([x, y, r, k, m]) => ({ x, y, r, t: k, max: 1, met: m }));
   if (typeof s.wd === 'number') setWorld(s.wd);
   grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
@@ -4426,7 +4479,7 @@ function update(dt) {
   }
   allBears = []; allPets = [];
   for (const pl of players) { for (const b of pl._bears) { allBears.push(b); allPets.push(b); } for (const b of (pl._twins || [])) allPets.push(b); }
-  if (evt && evt.npc && evt.st === 1 && !evt.npc.dead) allPets.push(evt.npc);
+  for (const e2 of evts) if (e2.npc && e2.st === 1 && !e2.npc.dead) allPets.push(e2.npc);
 
   // spawning
   spawnT -= dt * (pg.on ? pg.rate : 1);
@@ -4435,7 +4488,7 @@ function update(dt) {
     const n = 1 + Math.floor(time / 75);
     for (let i = 0; i < n && enemies.length < 240; i++) spawnPick();
   }
-  if (time >= nextSurge) {
+  if (time >= nextSurge && !(pg.on && pg.noDemons)) {
     nextSurge += 300; surgeCount++;
     surgeLeft = 80; surgeT = 0;
     const kg = spawnEnemy('king');
@@ -4443,7 +4496,7 @@ function update(dt) {
     banner = { text: 'THE ABYSS OPENS', sub: 'The Demon King is coming', life: 3.5 };
     Sound.sfx('boss'); Sound.setTempo(140); shake = 22;
   }
-  if (time >= nextChamp) {
+  if (time >= nextChamp && !(pg.on && pg.noDemons)) {
     nextChamp += 900; champCount++;
     const ch = spawnEnemy('champ');
     if (!seenTypes.has('champ')) startIntro('champ', ch);
@@ -4457,7 +4510,7 @@ function update(dt) {
       for (let i = 0; i < 3 && surgeLeft > 0 && enemies.length < 320; i++) { spawnPick(); surgeLeft--; }
     }
   }
-  if (time >= nextBoss) {
+  if (time >= nextBoss && !(pg.on && pg.noDemons)) {
     const bo = spawnEnemy('boss');
     if (!seenTypes.has('boss')) startIntro('boss', bo);
     bossCount++;
