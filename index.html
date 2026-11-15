@@ -266,6 +266,7 @@
 
   <div class="top-controls">
     <button id="pauseBtn" class="hidden" aria-label="Pause">II</button>
+    <button id="speedBtn" class="hidden" aria-label="Game speed" style="width:52px;border-radius:20px">x1</button>
     <button id="soundBtn" aria-label="Sound on/off" aria-pressed="true">♪</button>
     <button id="leaveBtn" class="hidden">Leave</button>
   </div>
@@ -327,6 +328,7 @@
       <div class="best" id="oBest">Best: 0:00</div>
       <button class="btn" id="againBtn">Play again</button>
       <button class="btn hidden" id="retryBtn">Retry together</button>
+      <button class="btn btn-alt hidden" id="stageBtn">Retry level</button>
       <p class="info hidden" id="retryNote"></p><br>
       <button class="btn btn-alt" id="classBtn">ABYSS menu</button><br>
       <a class="home" href="https://vqha2014.github.io/">◂ All games</a><button class="lb-open">Leaderboard</button>
@@ -414,7 +416,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 6.3</span>
+    <span class="version">Version 6.5</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -541,6 +543,9 @@ const ETYPES = {
   hound: { r: 10, hp: 40, speed: 178, dmg: 12, xp: 3, color: '#ff5a1f', spikes: 6 },
   warlock: { r: 14, hp: 130, speed: 70, dmg: 14, xp: 7, color: '#c21aff', spikes: 7 },
   titan: { r: 32, hp: 1500, speed: 36, dmg: 40, xp: 30, color: '#8a5a3e', spikes: 9 },
+  ghoul: { r: 12, hp: 120, speed: 120, dmg: 16, xp: 6, color: '#8fffb0', spikes: 5 },
+  archer: { r: 10, hp: 70, speed: 85, dmg: 9, xp: 5, color: '#ff9de9', spikes: 3 },
+  elite: { r: 30, hp: 1800, speed: 72, dmg: 35, xp: 40, color: '#ffd54a', spikes: 10 },
   totem: { r: 30, hp: 2600, speed: 0, dmg: 0, xp: 0, color: '#ff3b2a', spikes: 0, still: true, totem: true },
   goblin: { r: 13, hp: 260, speed: 125, dmg: 0, xp: 20, color: '#ffd54a', spikes: 0, goblin: true },
   portal: { r: 26, hp: 350, speed: 0, dmg: 0, xp: 0, color: '#7dff3a', spikes: 0, still: true },
@@ -1341,8 +1346,8 @@ function renderCodes(body) {
 }
 
 // ===== Playground: try anything, no rewards =====
-const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan'];
-const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
+const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan', 'ghoul', 'archer'];
+const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', ghoul: 'Ghoul', archer: 'Archer', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
 const pg = { on: false, types: [], rate: 1, lvl: 1, mHp: 1, mDmg: 1, mSpd: 1, res: null };
 try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].includes(sv.lvl) ? sv.lvl : 1; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
 function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
@@ -1381,7 +1386,10 @@ function pgSpawn(type) {
 }
 function startPlayground() {
   closeMeta();
+  if (!pg.on && pg.prevWorld === undefined) pg.prevWorld = worldId;
+  const keep = worldId; pg.starting = true;
   startGame();
+  pg.starting = false; setWorld(keep);
   pg.on = true;
   unlockIdx = UNLOCK.length;
   // jump to the chosen level; you pick every skill yourself
@@ -1405,6 +1413,9 @@ function renderPlayground(body) {
   const sec = t => { const h = document.createElement('div'); h.className = 'shop-section'; h.textContent = t; body.appendChild(h); };
   const wrap = () => { const w = document.createElement('div'); w.className = 'mode-row'; w.style.marginTop = '0.4rem'; body.appendChild(w); return w; };
   const chip = (w, text, on, fn, dis) => { const b = document.createElement('button'); b.className = 'mode-btn' + (on ? ' on' : ''); b.textContent = text; b.disabled = !!dis; b.addEventListener('click', fn); w.appendChild(b); };
+  sec('WORLD' + (pg.on ? ' (changes right away)' : ''));
+  let ww = wrap();
+  WORLDS.forEach((wd, i) => chip(ww, wd.name, worldId === i, () => { if (!pg.on) pg.prevWorld = pg.prevWorld === undefined ? worldId : pg.prevWorld; setWorld(i); renderMeta(); }));
   sec('DEMON TYPES (none picked = the normal mix)');
   let w = wrap();
   for (const t of PG_TYPES) chip(w, PG_NAMES[t], pg.types.includes(t), () => { pg.types = pg.types.includes(t) ? pg.types.filter(x => x !== t) : pg.types.concat(t); savePg(); renderMeta(); });
@@ -1435,9 +1446,9 @@ function renderPlayground(body) {
     for (const t of PG_TYPES.concat(['boss', 'king', 'champ'])) chip(w, PG_NAMES[t], false, () => pgSpawn(t));
     sec('START AN EVENT NOW');
     w = wrap();
-    const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin' };
+    const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin', meteor: 'Meteor Shower', elite: 'Elite Hunt' };
     for (const k of Object.keys(EVT_INFO)) chip(w, EVT_NAMES[k] || k, evt && evt.kind === k, () => {
-      if (evt) { if (evt.por) for (const o of evt.por) o.dead = true; if (evt.tot) evt.tot.dead = true; if (evt.gob) evt.gob.dead = true; evt = null; }
+      if (evt) { if (evt.por) for (const o of evt.por) o.dead = true; if (evt.tot) evt.tot.dead = true; if (evt.gob) evt.gob.dead = true; if (evt.el) evt.el.dead = true; evt = null; }
       startEvent(k); evtT = 90; toast(EVT_NAMES[k] + ' started'); closeMeta(); if (state === S.PAUSED) resumeGame();
     });
   }
@@ -1464,6 +1475,7 @@ function continueRun() {
   closeMeta();
   if (!d) { startGame(); return; }
   selClass = d.cls; showClasses();
+  pg.prevWorld = undefined;
   setWorld(Math.min(d.world | 0, prog.worldsOpen - 1));
   startGame();
   // rebuild the character from the skills you picked, in the same order
@@ -1479,12 +1491,67 @@ function continueRun() {
 function renderContinue(body) {
   const d = loadRun();
   $('metaTitle').textContent = 'PLAY';
-  if (!d) { metaKind = ''; closeMeta(); startGame(); return; }
-  mrow('Saved game', CLASSES[d.cls].name + ' \u00b7 Level ' + d.lvl + ' \u00b7 ' + fmtTime(d.time || 0) + ' \u00b7 ' + (WORLDS[d.world] ? WORLDS[d.world].name : WORLDS[0].name), null);
+  if (d) mrow('Saved game', CLASSES[d.cls].name + ' \u00b7 Level ' + d.lvl + ' \u00b7 ' + fmtTime(d.time || 0) + ' \u00b7 ' + (WORLDS[d.world] ? WORLDS[d.world].name : WORLDS[0].name), null);
   const act = document.createElement('div'); act.style.display = 'flex'; act.style.gap = '0.6rem'; act.style.justifyContent = 'center'; act.style.margin = '0.9rem 0';
-  act.appendChild(mbtn('Continue', true, continueRun));
-  act.appendChild(mbtn('New game (' + CLASSES[selClass].name + ')', true, () => { clearRun(); closeMeta(); startGame(); }));
+  act.appendChild(mbtn('Continue', !!d, continueRun));
+  act.appendChild(mbtn('New game (' + CLASSES[selClass].name + ')', true, () => { metaKind = 'levels'; renderMeta(); }));
   body.appendChild(act);
+}
+// pick which level to start from: any level you have reached in this world
+function renderLevels(body) {
+  $('metaTitle').textContent = 'NEW GAME \u00b7 ' + WP().name.toUpperCase();
+  const top = Math.max(1, prog.maxStage[worldId] || 1);
+  const note = document.createElement('div'); note.className = 'res-active';
+  note.textContent = 'Start from any level you have reached. Each level is one minute: same time, same demons. Starting above level 1 does not count for the leaderboard.';
+  body.appendChild(note);
+  const w = document.createElement('div'); w.className = 'mode-row'; w.style.marginTop = '0.6rem'; body.appendChild(w);
+  for (let n = 1; n <= top; n++) {
+    const b = document.createElement('button'); b.className = 'mode-btn' + (n === 1 ? ' on' : ''); b.textContent = 'Level ' + n + ' \u00b7 ' + fmtTime((n - 1) * 60);
+    b.addEventListener('click', () => { clearRun(); if (n === 1) { closeMeta(); startGame(); } else retryStage(n); });
+    w.appendChild(b);
+  }
+  const act = document.createElement('div'); act.style.textAlign = 'center'; act.style.margin = '0.8rem 0';
+  act.appendChild(mbtn('Back', true, () => { metaKind = 'continue'; renderMeta(); }));
+  body.appendChild(act);
+}
+
+// ===== Levels: every minute you survive is a level; you can retry the level you fell on =====
+const stageOf = t => Math.floor(t / 60) + 1;
+let runFromStage = 0, lastStage = 1;
+prog.maxStage = prog.maxStage || {};
+function stageTick() {
+  const st2 = stageOf(time);
+  if (st2 !== lastStage) {
+    lastStage = st2;
+    if (!pg.on) { prog.maxStage[worldId] = Math.max(prog.maxStage[worldId] || 1, st2); }
+    if (!banner || banner.life < 1) banner = { text: 'LEVEL ' + st2, sub: 'Level ' + (st2 - 1) + ' cleared!', life: 2 };
+  }
+}
+// start a fresh run at a given level: the same demons as that minute, with skills to pick for your level
+function retryStage(n) {
+  closeMeta();
+  startGame();
+  runFromStage = n; lastStage = n;
+  time = (n - 1) * 60;
+  unlockIdx = WUNLOCK().filter(u => u[1] <= time).length;
+  seenTypes = new Set(['imp', ...WUNLOCK().slice(0, unlockIdx).map(u => u[0])]);
+  bossCount = Math.floor(time / 120); nextBoss = (bossCount + 1) * 120;
+  surgeCount = Math.floor(time / 300); nextSurge = (surgeCount + 1) * 300;
+  champCount = Math.floor(time / 900); nextChamp = (champCount + 1) * 900;
+  const lv = Math.min(80, Math.round(1 + (n - 1) * 4.2));
+  me.lvl = lv; me.pending = lv - 1; me.xp = 0; me.xpNext = Math.round((4 + lv * 2.6 + lv * lv * 0.18) * 1.25);
+  banner = { text: 'LEVEL ' + n, sub: 'Pick your skills, then survive!', life: 2.5 };
+  updateHUD(true);
+}
+function drawStage() {
+  if (!me || state === S.START) return;
+  const st2 = stageOf(time), f = (time % 60) / 60, bw = 130, bx = W / 2 - bw / 2, by = 60;
+  ctx.save();
+  ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(232, 236, 248, 0.9)';
+  ctx.fillText('LEVEL ' + st2 + (pg.on ? '  (PLAYGROUND)' : ''), W / 2, by);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.12)'; ctx.fillRect(bx, by + 5, bw, 4);
+  ctx.fillStyle = '#00f0ff'; ctx.fillRect(bx, by + 5, bw * f, 4);
+  ctx.restore();
 }
 let metaKind = '', metaTimer = 0;
 function openMeta(kind) {
@@ -1532,6 +1599,7 @@ function renderMeta() {
   } else if (metaKind === 'enhance') { renderEnhance(body);
   } else if (metaKind === 'codes') { renderCodes(body);
   } else if (metaKind === 'continue') { renderContinue(body);
+  } else if (metaKind === 'levels') { renderLevels(body);
   } else if (metaKind === 'playground') { renderPlayground(body);
   } else if (metaKind === 'help') {
     $('metaTitle').textContent = 'HOW TO PLAY';
@@ -1549,7 +1617,7 @@ function renderMeta() {
     $('metaTitle').textContent = 'WORLDS';
     WORLDS.forEach((w, i) => {
       const open = i < prog.worldsOpen;
-      const sub = open ? 'Demons x' + w.mul + ' HP \u00b7 stars x' + w.star + ' \u00b7 best ' + fmtTime(prog.worldBest[i] || 0) : 'Locked: survive 15:30 in ' + WORLDS[i - 1].name;
+      const sub = open ? 'Demons x' + w.mul + ' HP \u00b7 stars x' + w.star + ' \u00b7 best ' + fmtTime(prog.worldBest[i] || 0) + ' \u00b7 level ' + (prog.maxStage[i] || 1) : 'Locked: survive 15:30 in ' + WORLDS[i - 1].name;
       const act = i === worldId ? mbtn('PLAYING', false) : mbtn('Select', open, () => { setWorld(i); try { localStorage.setItem('abyssPlusWorld', String(i)); } catch (e) {} renderMeta(); refreshMetaUI(); });
       mrow(w.name, sub, act, open ? '' : 'locked');
     });
@@ -2013,6 +2081,8 @@ function resetWorld() {
   unlockIdx = 0; nextUnlock = 90; seenTypes = new Set(['imp']); introQueue = []; if (intro) endIntro();
 }
 function startGame() {
+  if (pg.prevWorld !== undefined && !pg.starting) { setWorld(pg.prevWorld); pg.prevWorld = undefined; }
+  runFromStage = 0; lastStage = 1;
   pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   coop = null;
   resetWorld();
@@ -2147,9 +2217,11 @@ const EVT_INFO = {
   portals: { title: 'EVENT: UNDEAD PORTALS', sub: 'Destroy all 3 portals within 45 s', goal: 'Destroy the portals', stars: 35 },
   shrine: { title: 'EVENT: CURSED SHRINE', sub: 'Stand inside the circle for 20 s', goal: 'Hold the shrine', stars: 40 },
   totem: { title: 'EVENT: DEMON TOTEM', sub: 'Break the totem within 45 s. Demons near it get stronger!', goal: 'Break the totem', stars: 45 },
-  goblin: { title: 'EVENT: TREASURE GOBLIN', sub: 'Catch the goblin within 30 s (2 gems)', goal: 'Catch the goblin', stars: 60 }
+  goblin: { title: 'EVENT: TREASURE GOBLIN', sub: 'Catch the goblin within 30 s (2 gems)', goal: 'Catch the goblin', stars: 60 },
+  meteor: { title: 'EVENT: METEOR SHOWER', sub: 'Meteors fall around you for 25 s. Stay alive and keep moving!', goal: 'Survive the meteors', stars: 40 },
+  elite: { title: 'EVENT: ELITE HUNT', sub: 'Defeat the golden Elite Demon within 45 s', goal: 'Defeat the Elite Demon', stars: 55 }
 };
-const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin' };
+const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g', meteor: 'm', elite: 'e' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin', m: 'meteor', e: 'elite' };
 let evt = null, evtT = 90, evtLog = '';
 function startEvent(pick) {
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), x = gc.x + Math.cos(a) * d, y = gc.y + Math.sin(a) * d;
@@ -2162,6 +2234,8 @@ function startEvent(pick) {
   }
   if (kind === 'totem') { evt.st = 1; evt.tot = spawnAt('totem', x, y); }
   if (kind === 'goblin') { evt.st = 1; evt.t = 30; evt.gob = spawnAt('goblin', x, y); }
+  if (kind === 'meteor') { evt.st = 1; evt.t = 25; evt.x = gc.x; evt.y = gc.y; }
+  if (kind === 'elite') { evt.st = 1; evt.el = spawnAt('elite', x, y); }
   banner = { text: EVT_INFO[kind].title, sub: EVT_INFO[kind].sub + ' (+' + EVT_INFO[kind].stars + ' stars)', life: 3.2 };
   Sound.sfx('summon');
 }
@@ -2189,6 +2263,18 @@ function updateEvent(dt) {
     if (!tt.dead) for (const e of enemiesNear(tt.x, tt.y, 450)) { const ty = ETYPES[e.type]; if (e.emp || e.pvp || ty.still || ty.ore || ty.goblin) continue; e.emp = 1; e.maxHp *= 1.6; e.hp *= 1.6; e.dmg *= 1.5; }
     if (evt.spawnT <= 0) { evt.spawnT = 2.5; evtSpawnAround(tt.x, tt.y, 2, 120); }
     if (tt.dead) endEvent(true); else if (evt.t <= 0) { tt.dead = true; endEvent(false); }
+  } else if (evt.kind === 'meteor') {
+    const gc2 = groupCenter(); evt.x = gc2.x; evt.y = gc2.y;
+    if (evt.spawnT <= 0) {
+      evt.spawnT = 0.45;
+      const alive = players.filter(q => !q.dead);
+      if (alive.length) { const q = alive[Math.floor(Math.random() * alive.length)], a = rand(0, TAU), d = rand(0, 230); hazards.push({ x: q.x + Math.cos(a) * d, y: q.y + Math.sin(a) * d, r: 55, t: 1.1, max: 1.1, met: 1, dmg: 25 * (1 + time / 240) * METEOR[worldId].hurt, slow: METEOR[worldId].slow }); }
+    }
+    if (evt.t <= 0) endEvent(players.some(q => !q.dead));
+  } else if (evt.kind === 'elite') {
+    const el = evt.el;
+    evt.x = el.x; evt.y = el.y;
+    if (el.dead) endEvent(true); else if (evt.t <= 0) { el.dead = true; endEvent(false); }
   } else if (evt.kind === 'goblin') {
     const gb = evt.gob;
     evt.x = gb.x; evt.y = gb.y;
@@ -2211,6 +2297,7 @@ function endEvent(ok) {
   if (evt.por) for (const o of evt.por) o.dead = true;
   if (evt.tot) evt.tot.dead = true;
   if (evt.gob && !evt.gob.dead) evt.gob.dead = true;
+  if (evt.el && !evt.el.dead) evt.el.dead = true;
   evt = null; evtT = 90;
 }
 function evtReward(kind, gem) {
@@ -2263,7 +2350,7 @@ function drawEvent(S2) {
   let line = info.goal;
   if (evt.kind === 'rescue') line += evt.st === 0 ? ' \u00b7 go to the survivor' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else if (evt.kind === 'portals') line += ' \u00b7 ' + (evt.por ? evt.por.filter(o => !o.dead).length + ' left \u00b7 ' : '') + Math.ceil(Math.max(0, evt.t)) + 's';
-  else if (evt.kind === 'totem' || evt.kind === 'goblin') line += ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'totem' || evt.kind === 'goblin' || evt.kind === 'meteor' || evt.kind === 'elite') line += ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else line += evt.st === 0 ? ' \u00b7 go to the shrine' : ' \u00b7 ' + Math.floor(evt.pr) + '/20s';
   ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255, 233, 168, 0.95)';
   ctx.fillText('EVENT: ' + line, W / 2, H * 0.14);
@@ -2560,11 +2647,19 @@ function updateCharger(e, dx, dy, d, dt) {
   e.x += dx / d * e.speed * dt; e.y += dy / d * e.speed * dt;
 }
 // when each demon type first appears (seconds); after 11:30 a new one every 3 minutes
-const UNLOCK = [['runner', 55], ['charger', 110], ['brute', 190], ['wisp', 270], ['splitter', 350], ['necro', 450], ['golem', 550], ['bat', 650], ['bomber', 750], ['shade', 855], ['hound', 955], ['warlock', 1060], ['titan', 1160]];
-const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7 };
+const UNLOCK = [['runner', 55], ['charger', 110], ['brute', 190], ['wisp', 270], ['splitter', 350], ['necro', 450], ['golem', 550], ['bat', 650], ['bomber', 750], ['shade', 855], ['hound', 955], ['warlock', 1060], ['titan', 1160], ['ghoul', 1250], ['archer', 1340]];
+const TYPE_WEIGHT = { imp: 10, runner: 7, charger: 3, brute: 4, splitter: 3, wisp: 2.5, necro: 1.2, golem: 2, bat: 5, bomber: 2, shade: 2, hound: 2.5, warlock: 1.4, titan: 0.7, ghoul: 2.5, archer: 2 };
+const wUnlockCache = {};
+function WUNLOCK() {
+  if (wUnlockCache[worldId]) return wUnlockCache[worldId];
+  // world 1 keeps the normal order; every other world shuffles which demon comes at which minute
+  const types = UNLOCK.map(u => u[0]);
+  if (worldId > 0) { const r3 = rng(hash2(worldId * 31 + 7, 99)); for (let i = types.length - 1; i > 0; i--) { const j = Math.floor(r3() * (i + 1)); [types[i], types[j]] = [types[j], types[i]]; } }
+  return (wUnlockCache[worldId] = UNLOCK.map((u, i) => [types[i], u[1]]));
+}
 function pickType() {
   if (pg.on && pg.types.length) return pg.types[Math.floor(Math.random() * pg.types.length)];
-  const allowed = ['imp', ...UNLOCK.slice(0, unlockIdx).map(u => u[0])];
+  const allowed = ['imp', ...WUNLOCK().slice(0, unlockIdx).map(u => u[0])];
   let r = Math.random() * allowed.reduce((a, k) => a + TYPE_WEIGHT[k], 0);
   for (const k of allowed) { if ((r -= TYPE_WEIGHT[k]) < 0) return k; }
   return 'imp';
@@ -3227,6 +3322,32 @@ function drawMinimap() {
   ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, TAU); ctx.fill();
   ctx.restore();
 }
+// meteors: a different kind in every world (later worlds hit harder; ice and void ones slow you)
+const METEOR = [
+  { c: '#ff8a3d', core: '#ffe2b0', hurt: 1, slow: 0 },
+  { c: '#7fd8ff', core: '#ffffff', hurt: 1.3, slow: 1 },
+  { c: '#7dff3a', core: '#e2ffc0', hurt: 1.6, slow: 0 },
+  { c: '#ff5a1f', core: '#ffd54a', hurt: 2, slow: 0 },
+  { c: '#9d6bff', core: '#1a0033', hurt: 2.5, slow: 1 },
+  { c: '#ffd54a', core: '#ffffff', hurt: 3, slow: 0 }
+];
+function drawMeteor(x, y, r, k) {
+  const M = METEOR[worldId] || METEOR[0];
+  ctx.save();
+  // the target circle on the ground
+  ctx.globalAlpha = 0.25 + 0.35 * k; ctx.fillStyle = M.c; ctx.beginPath(); ctx.arc(x, y, r * k, 0, TAU); ctx.fill();
+  ctx.globalAlpha = 0.9; ctx.strokeStyle = M.c; ctx.lineWidth = 2.5; ctx.setLineDash([8, 6]); ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  // the meteor falling from high up, speeding up as it comes down
+  const e2 = k * k, sx = x + 240, sy = y - 520, mx2 = sx + (x - sx) * e2, my2 = sy + (y - sy) * e2;
+  const tl = ctx.createLinearGradient(mx2, my2, mx2 + 70, my2 - 150);
+  tl.addColorStop(0, M.c); tl.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.globalAlpha = 0.9; ctx.strokeStyle = tl; ctx.lineWidth = 14; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(mx2, my2); ctx.lineTo(mx2 + 70, my2 - 150); ctx.stroke();
+  ctx.globalAlpha = 1; ctx.shadowColor = M.c; ctx.shadowBlur = 22;
+  ctx.fillStyle = M.c; ctx.beginPath(); ctx.arc(mx2, my2, 13, 0, TAU); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = M.core; ctx.beginPath(); ctx.arc(mx2 - 2, my2 - 2, 6, 0, TAU); ctx.fill();
+  ctx.restore();
+}
 function drawFalcon(x, y) {
   const fx = x + Math.sin(clock * 1.7) * 8, fy = y - 46 + Math.sin(clock * 3) * 3, flap = Math.sin(clock * 14) * 6;
   ctx.save();
@@ -3334,7 +3455,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '6.3';
+const GAME_VERSION = '6.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3725,7 +3846,7 @@ function buildSnapshot() {
   for (const q of players) {
     pl[q.id] = {
       x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
-      tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
+      slw: +(q.slowT || 0).toFixed(1), tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura,
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, cs: q.conse || 0, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
       nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0, fa: q.falcon || 0,
@@ -3740,7 +3861,7 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
-    gml: gemLog, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2)]), wd: worldId,
+    gml: gemLog, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.met ? 1 : 0]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
     fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt' || f.kind === 'falcon') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
@@ -3802,6 +3923,9 @@ function revivePlayer(q) {
 }
 // ===== New demon introduction: pause, show its card and look at it for 3 seconds =====
 const INTRO = {
+  ghoul: ['Ghoul', 'Keeps healing itself. Finish it fast!'],
+  archer: ['Imp Archer', 'Stays back and fires three bolts at a time.'],
+  elite: ['Elite Demon', 'A huge golden demon with lots of HP.'],
   totem: ['Demon Totem', 'Makes the demons around it stronger. Break it!'],
   goblin: ['Treasure Goblin', 'Runs away with loot. Catch it!'],
   runner: ['Runner', 'Small and quick. Weak alone, dangerous in packs.'],
@@ -3888,6 +4012,7 @@ function checkAllDead() {
   }
 }
 function showCoopOver(note) {
+  $('stageBtn').classList.add('hidden');
   if (state === S.OVER) return;
   state = S.OVER;
   const sec = me.dead ? (me.deathTime || time) : time;
@@ -3967,6 +4092,7 @@ function leaveCoop() {
   backToStart();
 }
 function backToStart() {
+  if (pg.on && pg.prevWorld !== undefined) { setWorld(pg.prevWorld); pg.prevWorld = undefined; }
   pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   if (coop) { leaveCoop(); return; }
   $('classBtn').textContent = 'ABYSS menu';
@@ -3989,7 +4115,7 @@ function guestSend(force) {
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { falcon: 0.3, whirl: 0.45, vines: 0.7, moon: 0.5, hline: 0.4, rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { metboom: 0.45, falcon: 0.3, whirl: 0.45, vines: 0.7, moon: 0.5, hline: 0.4, rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -4040,7 +4166,7 @@ function onSnapshot(s) {
     coop.evSeen = s.evr.length;
   }
   evt = s.ev ? { kind: s.ev.k, x: s.ev.x, y: s.ev.y, st: s.ev.st, t: s.ev.t, pr: s.ev.pr, npc: s.ev.k === 'rescue' ? { x: s.ev.x, y: s.ev.y, hp: s.ev.nh, maxHp: 1, dead: false } : null, por: s.ev.k === 'portals' ? Array.from({ length: s.ev.pl }, () => ({ dead: false })) : null } : null;
-  hazards = (s.hz || []).map(([x, y, r, k]) => ({ x, y, r, t: k, max: 1 }));
+  hazards = (s.hz || []).map(([x, y, r, k, m]) => ({ x, y, r, t: k, max: 1, met: m }));
   if (typeof s.wd === 'number') setWorld(s.wd);
   grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
   for (const f of (s.fx || [])) {
@@ -4080,7 +4206,7 @@ function onSnapshot(s) {
       track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.oid = id;
       nt.set(key, o); twinsDraw.push(o); myTw.push(o);
     });
-    if (id === myId) { me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
+    if (id === myId) { if (v.slw > (me.slowT || 0)) me.slowT = v.slw; me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
@@ -4162,10 +4288,11 @@ function guestUpdate(dt) {
 const keys = {};
 const stick = { active: false, id: null, ox: 0, oy: 0, x: 0, y: 0 };
 // ore rocks and the demon totem are solid
+let solids = [];
+const refreshSolids = () => { solids = enemies.filter(e => !e.dead && ETYPES[e.type] && (ETYPES[e.type].ore || ETYPES[e.type].totem)); };
 function blockBySolids(o, r) {
-  for (const e of enemies) {
-    const t = ETYPES[e.type];
-    if (e.dead || !t || !(t.ore || t.totem)) continue;
+  for (const e of solids) {
+    if (e === o || e.dead) continue;
     const dx = o.x - e.x, dy = o.y - e.y, m = e.r + r * 0.85;
     if (dx * dx + dy * dy >= m * m) continue;
     const d = Math.hypot(dx, dy) || 1;
@@ -4173,6 +4300,7 @@ function blockBySolids(o, r) {
   }
 }
 function moveLocal(dt) {
+  refreshSolids();
   if (me.dead) return;
   let mx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), my = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
   if (stick.active) {
@@ -4181,7 +4309,8 @@ function moveLocal(dt) {
   }
   const ml = Math.hypot(mx, my);
   if (ml > 1) { mx /= ml; my /= ml; }
-  const spd = me.speed * (me.cls === 'druid' && me.ultT > 0 && me.form === 'wolf' ? 1.4 : 1) * (inLiquid(me.x, me.y) ? WP().liq.slow : 1);
+  if (me.slowT > 0) me.slowT -= dt;
+  const spd = (me.slowT > 0 ? 0.55 : 1) * me.speed * (me.cls === 'druid' && me.ultT > 0 && me.form === 'wolf' ? 1.4 : 1) * (inLiquid(me.x, me.y) ? WP().liq.slow : 1);
   me.x += mx * spd * dt; me.y += my * spd * dt;
   pushOut(me, PR, 0);
   blockBySolids(me, PR);
@@ -4223,6 +4352,7 @@ function update(dt) {
   time += dt;
   if (banner) { banner.life -= dt; if (banner.life <= 0) banner = null; }
   updateEvent(dt);
+  stageTick();
   if (!coop && !pg.on) { runSaveT -= dt; if (runSaveT <= 0) { runSaveT = 5; saveRun(); } }
   // ore rocks: break them for gems
   oreT -= dt;
@@ -4234,8 +4364,8 @@ function update(dt) {
       pushOut(o, o.r, 0);
     }
   }
-  if (unlockIdx < UNLOCK.length && time >= UNLOCK[unlockIdx][1]) {
-    const ty = UNLOCK[unlockIdx++][0];
+  if (unlockIdx < WUNLOCK().length && time >= WUNLOCK()[unlockIdx][1]) {
+    const ty = WUNLOCK()[unlockIdx++][0];
     startIntro(ty, spawnEnemy(ty));
   }
   const gc = groupCenter();
@@ -4276,6 +4406,7 @@ function update(dt) {
       if (p.liqT > 3) { addText(p.x, p.y - 26, '-' + Math.round(p.liqT), '#ffb347'); p.liqT = 0; }
       if (p.hp <= 0) { p.hp = 0; die(); }
     }
+    if (p.remote && p.slowT > 0) p.slowT -= dt;
     p.retriCd = Math.max(0, (p.retriCd || 0) - dt); p.angelCd = Math.max(0, (p.angelCd || 0) - dt);
     p.guardT = Math.max(0, (p.guardT || 0) - dt);
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
@@ -4338,6 +4469,7 @@ function update(dt) {
 
   // demons: each one hunts the closest living player
   const far = Math.max(W, H) * 1.3;
+  refreshSolids();
   for (const e of enemies) {
     if (e.dead) continue;
     if (e.psnT > 0) {
@@ -4381,10 +4513,12 @@ function update(dt) {
       if (!tb && e.type === 'necro' && d < 300) sp = -e.speed * 0.6;
       if (!tb && e.type === 'warlock' && d < 280) sp = -e.speed * 0.6;
       if (e.type === 'goblin') sp = d < 520 ? -e.speed : e.speed * 0.2;
+      if (!tb && e.type === 'archer' && d < 300) sp = -e.speed * 0.6;
       if (e.type === 'champ') sp = e.charging > 0 ? 0 : d < 320 ? -e.speed * 0.6 : sp;
       if (tb && md < e.r + 14) sp = 0;
       if (sp > 0 && inLiquid(e.x, e.y)) sp *= 0.85;
       e.x += mvx / md * sp * dt; e.y += mvy / md * sp * dt;
+      if (solids.length) blockBySolids(e, e.r);
     }
     if (e.type === 'necro') {
       e.sumT -= dt;
@@ -4466,6 +4600,11 @@ function update(dt) {
     e.x += e.kx * dt; e.y += e.ky * dt;
     pushOut(e, e.r * 0.8, e.speed * dt * 0.7);
     e.kx *= 0.86; e.ky *= 0.86;
+    if (e.type === 'ghoul') e.hp = Math.min(e.maxHp, e.hp + e.maxHp * 0.05 * dt);
+    if (e.type === 'archer') {
+      e.shootT = (e.shootT === undefined ? rand(1, 3) : e.shootT) - dt;
+      if (e.shootT <= 0 && d < 520) { e.shootT = 3; const ba = Math.atan2(dy, dx); for (const k3 of [-0.15, 0, 0.15]) ebullets.push({ x: e.x, y: e.y, vx: Math.cos(ba + k3) * 220, vy: Math.sin(ba + k3) * 220, life: 3.5, dmg: e.dmg, src: e }); }
+    }
     if (e.type === 'wisp' && d < 430) {
       e.shootT -= dt;
       if (e.shootT <= 0) {
@@ -4487,8 +4626,8 @@ function update(dt) {
     h.t -= dt;
     if (h.t <= 0) {
       h.done = true;
-      effects.push({ kind: 'raze', x: h.x, y: h.y, r: h.r, life: 0.45, max: 0.45 });
-      for (const pl of players) if (!pl.dead && (pl.x - h.x) ** 2 + (pl.y - h.y) ** 2 < (h.r + PR * 0.4) ** 2) hurtTarget(pl, h.dmg, null);
+      effects.push({ kind: h.met ? 'metboom' : 'raze', x: h.x, y: h.y, r: h.r, life: 0.45, max: 0.45, seed: worldId });
+      for (const pl of players) if (!pl.dead && (pl.x - h.x) ** 2 + (pl.y - h.y) ** 2 < (h.r + PR * 0.4) ** 2) { hurtTarget(pl, h.dmg, null); if (h.slow) pl.slowT = 2.5; }
       Sound.sfx('boom');
     }
   }
@@ -4767,6 +4906,7 @@ function updateWeapons(dt) {
 }
 
 function updateHUD(force) {
+  $('speedBtn').classList.toggle('hidden', !!coop || !me || !(state === S.PLAYING || state === S.PAUSED || state === S.LEVELUP));
   if (!me) return;
   $('hpFill').style.width = (Math.max(0, me.hp) / me.maxHp * 100) + '%';
   $('hpText').textContent = Math.max(0, Math.ceil(me.hp)) + ' / ' + Math.round(me.maxHp);
@@ -4815,6 +4955,7 @@ function die() {
 }
 function gameOver() {
   clearRun();
+  { const n = stageOf(time); $('stageBtn').textContent = 'Retry level ' + n; $('stageBtn').classList.toggle('hidden', pg.on); $('stageBtn').onclick = () => retryStage(n); }
   $('overTitle').textContent = 'You fell';
   state = S.OVER;
   const isBest = time > (best[p.cls] || 0);
@@ -4826,7 +4967,7 @@ function gameOver() {
   $('hud').classList.add('hidden');
   $('againBtn').classList.remove('hidden');
   $('overScreen').classList.remove('hidden');
-  submitScore(time, '');
+  if (!runFromStage) submitScore(time, '');
   showBoard(true);
   recordRun({ sec: time, lvl: p.lvl, kills, cls: p.cls, boss: bossesKilled, king: kingsKilled, champ: champsKilled, mode: 'solo' });
 }
@@ -4862,9 +5003,10 @@ function render() {
   const S2 = (x, y) => [x - cam.x + W / 2, y - cam.y + H / 2];
   drawScenery(S2, cam);
   drawEvent(S2);
-  // red circles that are about to explode
+  // red circles that are about to explode (meteors fall from the sky onto theirs)
   for (const h of hazards) {
     const [x, y] = S2(h.x, h.y), k = 1 - Math.max(0, h.t) / (h.max || 1);
+    if (h.met) { drawMeteor(x, y, h.r, k); continue; }
     ctx.fillStyle = 'rgba(255, 30, 30, ' + (0.12 + 0.2 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, h.r, 0, TAU); ctx.fill();
     ctx.fillStyle = 'rgba(255, 40, 20, ' + (0.3 + 0.3 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, h.r * k, 0, TAU); ctx.fill();
     ctx.strokeStyle = 'rgba(255, 80, 60, 0.95)'; ctx.lineWidth = 3; ctx.shadowColor = '#ff2a1a'; ctx.shadowBlur = 14;
@@ -4944,6 +5086,11 @@ function render() {
       ctx.strokeStyle = 'rgba(200, 250, 255, ' + k + ')'; ctx.lineWidth = 12 * k + 2; ctx.shadowColor = '#7df9ff'; ctx.shadowBlur = 24;
       ctx.beginPath(); ctx.arc(x, y, f.r * (1.05 - k * 0.7), 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
       ctx.fillStyle = 'rgba(125, 249, 255, ' + (0.15 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * (1.05 - k * 0.7), 0, TAU); ctx.fill();
+    } else if (f.kind === 'metboom') {
+      const M = METEOR[f.seed | 0] || METEOR[0];
+      ctx.globalAlpha = k; ctx.fillStyle = M.c; ctx.beginPath(); ctx.arc(x, y, f.r * (1.3 - k * 0.3), 0, TAU); ctx.fill();
+      ctx.fillStyle = M.core; ctx.beginPath(); ctx.arc(x, y, f.r * 0.45 * (1.2 - k * 0.2), 0, TAU); ctx.fill();
+      ctx.globalAlpha = 1;
     } else if (f.kind === 'raze') {
       ctx.fillStyle = 'rgba(255, 50, 20, ' + (0.55 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * (1.25 - k * 0.25), 0, TAU); ctx.fill();
       ctx.fillStyle = 'rgba(10, 0, 0, ' + (0.6 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * 0.5 * (1.2 - k * 0.2), 0, TAU); ctx.fill();
@@ -5060,6 +5207,7 @@ function render() {
       ctx.beginPath(); ctx.arc(x, y, e.r * (1.6 - 0.5 * prog) + Math.sin(clock * 30) * 4, 0, TAU); ctx.fill();
       ctx.drawImage(sp.c, x - sp.size * sc / 2, y - sp.size * sc / 2, sp.size * sc, sp.size * sc);
     } else ctx.drawImage(sp.c, x - sp.size / 2, y - sp.size / 2 + bob, sp.size, sp.size);
+    if (e.type === 'elite') { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.6 + 0.3 * Math.sin(clock * 6)) + ')'; ctx.lineWidth = 4; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 10, 0, TAU); ctx.stroke(); ctx.shadowBlur = 0; }
     if (e.emp) { ctx.strokeStyle = 'rgba(255, 59, 42, ' + (0.5 + 0.3 * Math.sin(clock * 10)) + ')'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 7, 0, TAU); ctx.stroke(); }
     if (e.curseT > 0) { ctx.strokeStyle = 'rgba(157, 123, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y + bob, e.r + 4, 0, TAU); ctx.stroke(); }
     if (e.psnT > 0) { ctx.fillStyle = 'rgba(80, 255, 90, 0.28)'; ctx.beginPath(); ctx.arc(x, y + bob, e.r * 0.9, 0, TAU); ctx.fill(); }
@@ -5181,6 +5329,7 @@ function render() {
     ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
     ctx.shadowBlur = 0;
     drawHoly(x, y, me); drawUltFx(x, y, me);
+    if (me.slowT > 0) { ctx.strokeStyle = 'rgba(160, 220, 255, 0.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, PR + 7, 0, TAU); ctx.stroke(); }
     if (p.cls === 'fallen') drawFallenLook(x, y, me, 1, false);
     if (me.falcon) drawFalcon(x, y);
     drawOrb(ctx, x, y, PR, skinCol());
@@ -5294,6 +5443,7 @@ function render() {
   ctx.restore();
   // Demon King health bar and the 5-minute announcement
   drawMinimap();
+  drawStage();
   const king = enemies.find(e => e.type === 'champ' && !e.dead) || enemies.find(e => e.type === 'king' && !e.dead);
   if (king) {
     const bw = Math.min(420, W * 0.7), bx = (W - bw) / 2, by = 76;
@@ -5330,8 +5480,10 @@ function render() {
 // Fixed 60 updates per second
 const STEP = 1 / 60;
 let lastTime = 0, acc = 0;
+let gameSpeed = 1;
 function loop(now) {
-  acc += Math.min((now - lastTime) / 1000, 0.25);
+  // faster game speed: more simulation steps per frame (solo only)
+  acc += Math.min((now - lastTime) / 1000, 0.25) * (!coop && state === S.PLAYING ? gameSpeed : 1);
   lastTime = now;
   while (acc >= STEP) { update(STEP); acc -= STEP; }
   render();
@@ -5389,7 +5541,7 @@ window.addEventListener('keydown', e => {
 window.addEventListener('keyup', e => { if (KEYMAP[e.code]) keys[KEYMAP[e.code]] = false; });
 window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
 
-$('startBtn').addEventListener('click', () => { if (loadRun()) openMeta('continue'); else startGame(); });
+$('startBtn').addEventListener('click', () => openMeta('continue'));
 window.addEventListener('pagehide', () => { if (!coop && !pg.on && me && (state === S.PLAYING || state === S.PAUSED || state === S.LEVELUP)) saveRun(); });
 $('coopBtn').addEventListener('click', openCoop);
 $('createBtn').addEventListener('click', createRoom);
@@ -5412,6 +5564,7 @@ window.addEventListener('pagehide', () => { if (lobby && lobby.role === 'guest')
 $('againBtn').addEventListener('click', startGame);
 $('classBtn').addEventListener('click', backToStart);
 $('pauseBtn').addEventListener('click', pauseGame);
+$('speedBtn').addEventListener('click', () => { gameSpeed = gameSpeed === 1 ? 1.25 : gameSpeed === 1.25 ? 1.5 : 1; $('speedBtn').textContent = 'x' + gameSpeed; });
 $('resumeBtn').addEventListener('click', resumeGame);
 $('soundBtn').addEventListener('click', toggleSound);
 $('shopBtn').addEventListener('click', openShop);
