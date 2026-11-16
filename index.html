@@ -416,7 +416,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 7.0</span>
+    <span class="version">Version 7.1</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -461,13 +461,15 @@ const UPGRADES = [
   { id: 'h_grenade', cls: 'hunter', name: 'Grenade', max: 8, desc: 'Passive: every 12 / 11 / 10 seconds a grenade blows up right where you stand, blasting demons far away.', apply: p => { p.grenade++; } },
   { id: 'h_explode', cls: 'hunter', name: 'Explosive Arrows', max: 8, desc: 'Bolts explode when they hit, hurting every demon around the target.', apply: p => { p.explode++; } },
   { id: 'h_chain', cls: 'hunter', name: 'Chain Lightning', max: 8, desc: 'Bolts may spark lightning that jumps from demon to demon.', apply: p => { p.chain++; } },
+  { id: 'h_sharp', cls: 'hunter', name: 'Sharpshooter', max: 8, desc: '+6% chance to deal double damage.', apply: p => { p.w.crit += 0.06; } },
+  { id: 'h_quiver', cls: 'hunter', name: 'Light Quiver', max: 8, desc: 'Shoot 6% faster and run 3% faster.', apply: p => { p.w.cd /= 1.06; p.speed *= 1.03; } },
   { id: 'h_rapid', cls: 'hunter', name: 'Rapid Fire', max: 8, desc: 'Every few seconds you shoot twice as fast for 2 to 3.4 seconds.', apply: p => { p.rapid = (p.rapid || 0) + 1; } },
   { id: 'h_scatter', cls: 'hunter', name: 'Scatter Shot', max: 8, desc: 'Every 5th shot also fires a fan of 4 to 11 extra bolts (60% damage).', apply: p => { p.scatter = (p.scatter || 0) + 1; } },
   { id: 'h_frost', cls: 'hunter', name: 'Frost Arrows', max: 8, desc: 'Bolts chill demons: they move 20% to 48% slower for 1.5 s.', apply: p => { p.frost = (p.frost || 0) + 1; } },
   { id: 'h_mark', cls: 'hunter', name: "Hunter's Mark", max: 8, desc: 'Every few seconds the toughest demon nearby is marked: it takes 20% to 55% more damage from everyone for 5 s.', apply: p => { p.mark = (p.mark || 0) + 1; } },
   { id: 'h_hawk', cls: 'hunter', name: 'Hawk Eye', max: 8, desc: 'Bolts fly 10% farther and faster.', apply: p => { p.w.range *= 1.1; p.w.speed *= 1.1; } },
   { id: 'h_falcon', cls: 'hunter', name: 'Falcon', max: 8, desc: 'A falcon flies above you and shoots every time you do, for 65% to 100% of your damage. Multishot gives it more bolts (1/1/2/2/3).', apply: p => { p.falcon++; } },
-  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.1% to 1% of that demon\u2019s max HP (bosses: 0.01% to 0.08%; less in harder worlds).', apply: p => { p.leech = (p.leech || 0) + 1; } },
+  { id: 'h_leech', cls: 'hunter', name: 'Vampiric Bolts', max: 8, desc: 'Every bolt that hits heals you for 0.06% to 0.6% of that demon\u2019s max HP (bosses: 0.006% to 0.048%; less in harder worlds).', apply: p => { p.leech = (p.leech || 0) + 1; } },
   { id: 'w_dmg', cls: 'warrior', name: 'Heavy Blade', max: 8, desc: 'Cleave damage +25%.', apply: p => { p.w.dmg *= 1.25; } },
   { id: 'w_size', cls: 'warrior', name: 'Wide Swing', max: 8, desc: 'Cleave reaches 15% farther.', apply: p => { p.w.radius *= 1.15; } },
   { id: 'w_rate', cls: 'warrior', name: 'Fury', max: 8, desc: 'Cleave 15% faster.', apply: p => { p.w.cd *= 0.85; } },
@@ -475,6 +477,8 @@ const UPGRADES = [
   { id: 'w_slam', cls: 'warrior', name: 'Ground Slam', max: 8, desc: 'A shockwave that damages and stuns demons.', apply: p => { p.slam++; } },
   { id: 'w_armor', cls: 'warrior', name: 'Iron Skin', max: 8, desc: 'Take 2 less damage from every hit.', apply: p => { p.armor += 2; } },
   { id: 'w_blood', cls: 'warrior', name: 'Blood-thirst', max: 5, desc: 'Every demon you kill heals 0.2% of your max HP per level.', apply: p => { p.blood++; } },
+  { id: 'w_berserk', cls: 'warrior', name: 'Berserker', max: 8, desc: 'Swing 6% faster.', apply: p => { p.w.cd /= 1.06; } },
+  { id: 'w_warlord', cls: 'warrior', name: 'Warlord', max: 8, desc: '+5% damage and +0.5 HP per second.', apply: p => { p.might += 0.05; p.regen += 0.5; } },
   { id: 'w_seismic', cls: 'warrior', name: 'Seismic Wave', max: 8, desc: 'Every few seconds a shockwave tears through a line of demons in front of you.', apply: p => { p.seismic = (p.seismic || 0) + 1; } },
   { id: 'w_jugg', cls: 'warrior', name: 'Juggernaut', max: 8, desc: '+4% move speed and +5% max HP.', apply: p => { p.speed *= 1.04; p.maxHp *= 1.05; p.hp = Math.min(p.maxHp, p.hp * 1.05); } },
   { id: 'w_bash', cls: 'warrior', name: 'Shield Bash', max: 8, desc: 'Every few seconds you bash the closest demon: big damage and a 1.2 s stun.', apply: p => { p.bash = (p.bash || 0) + 1; } },
@@ -490,6 +494,8 @@ const UPGRADES = [
   { id: 'd_storm', cls: 'druid', name: 'Storm Call', max: 8, desc: 'Lightning strikes demons around you.', apply: p => { p.storm++; } },
   { id: 'd_tornado', cls: 'druid', name: 'Tornado', max: 8, desc: 'A whirlwind sweeps through demons and pulls them in.', apply: p => { p.tornado++; } },
   { id: 'd_regen', cls: 'druid', name: 'Nature’s Gift', max: 8, desc: 'You and your bears heal 2 more HP every second.', apply: p => { p.regen += 2; } },
+  { id: 'd_crow', cls: 'druid', name: 'Crow Flock', max: 8, desc: 'Crows circle you and peck at demons (1 to 5 crows, they peck harder with levels).', apply: p => { p.crows = (p.crows || 0) + 1; } },
+  { id: 'd_grove', cls: 'druid', name: 'Living Grove', max: 8, desc: 'ACTIVE (button, G or Space/E, then tap/click a spot): trees and rocks burst out of the ground, hurting demons. The grove stays until demons break it, heals with Nature\u2019s Gift and hits back with Bramble.', apply: p => { p.grove = (p.grove || 0) + 1; } },
   { id: 'd_spore', cls: 'druid', name: 'Spore Burst', max: 8, desc: 'Every few seconds a poison cloud bursts on a demon: damage and 30% slow around it.', apply: p => { p.spore = (p.spore || 0) + 1; } },
   { id: 'd_alpha', cls: 'druid', name: 'Alpha Pack', max: 8, desc: 'Wolves bite 6% harder. Levels 3 and 6 add one more wolf.', apply: p => { p.w.dmg *= 1.06; p.alphaLv = (p.alphaLv || 0) + 1; if (p.alphaLv === 3 || p.alphaLv === 6) p.wolves++; } },
   { id: 'd_bloom', cls: 'druid', name: 'Healing Bloom', max: 8, desc: 'Every few seconds flowers heal you and your bears for 5% to 12% of max HP.', apply: p => { p.bloom = (p.bloom || 0) + 1; } },
@@ -506,7 +512,9 @@ const UPGRADES = [
   { id: 'f_crit', cls: 'fallen', name: 'Deep Cuts', max: 8, desc: '+8% chance to deal double damage.', apply: p => { p.w.crit += 0.08; } },
   { id: 'f_hide', cls: 'fallen', name: 'Dark Hide', max: 8, desc: 'Take 5% less damage per level (up to 40%).', apply: p => { p.hide++; } },
   { id: 'f_twins', cls: 'fallen', name: 'Shadow Twins', max: 8, desc: 'Every 20 s, darker copies of you fight for 15 s: 2 copies, 3 at level 4, 4 at level 8. They deal 36% to 50% of your damage and have 45% to 80% of your HP.', apply: p => { p.twins++; } },
-  { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+15% to +50%) and heal from the damage you deal (3% to 13.5%, half on bosses).', apply: p => { p.feast++; } },
+  { id: 'f_feast', cls: 'fallen', name: 'Bloodfeast', max: 8, desc: 'Every 15 kills: for 8 s you slash faster (+15% to +50%) and heal from the damage you deal (1.8% to 8%, half on bosses).', apply: p => { p.feast++; } },
+  { id: 'f_momentum', cls: 'fallen', name: 'Dark Momentum', max: 8, desc: 'Slash 5% faster.', apply: p => { p.w.cd /= 1.05; } },
+  { id: 'f_abyss', cls: 'fallen', name: 'Abyssal Armor', max: 8, desc: '+0.75 armor and +4% max HP.', apply: p => { p.armor += 0.75; p.maxHp *= 1.04; p.hp = Math.min(p.maxHp, p.hp * 1.04); } },
   { id: 'f_rift', cls: 'fallen', name: 'Void Rift', max: 8, desc: 'Every few seconds a rift opens under a demon and pulls the demons around it in.', apply: p => { p.rift = (p.rift || 0) + 1; } },
   { id: 'f_siphon', cls: 'fallen', name: 'Soul Siphon', max: 8, desc: 'Every kill heals you for 0.4% of your max HP per level.', apply: p => { p.siphon = (p.siphon || 0) + 1; } },
   { id: 'f_terror', cls: 'fallen', name: 'Night Terror', max: 8, desc: 'Every few seconds a wave of dread stuns the demons around you for 1 s.', apply: p => { p.terror = (p.terror || 0) + 1; } },
@@ -520,6 +528,8 @@ const UPGRADES = [
   { id: 'p_zeal', cls: 'paladin', name: 'Zeal', max: 8, desc: 'Smite 15% faster and 15% wider. Levels 3 and 6 add one more smite target.', apply: p => { p.w.cd *= 0.85; p.w.splash *= 1.15; } },
   { id: 'p_aura', cls: 'paladin', name: 'Aura of Valor', max: 8, desc: 'Passive: you and teammates near you deal 8% more damage per level.', apply: p => { p.aura++; } },
   { id: 'p_heal', cls: 'paladin', name: 'Greater Heal', max: 8, desc: 'Your automatic heal restores 8% more HP and comes back 1.5 s sooner.', apply: p => { p.healPct += 0.08; } },
+  { id: 'p_swift', cls: 'paladin', name: 'Swift Justice', max: 8, desc: 'Smite 5% faster.', apply: p => { p.w.cd /= 1.05; } },
+  { id: 'p_templar', cls: 'paladin', name: 'Templar', max: 8, desc: '+5% max HP and +0.3 HP per second.', apply: p => { p.maxHp *= 1.05; p.hp = Math.min(p.maxHp, p.hp * 1.05); p.regen += 0.3; } },
   { id: 'p_blind', cls: 'paladin', name: 'Blinding Light', max: 8, desc: 'Every few seconds a flash stuns every demon around you for 0.8 s.', apply: p => { p.blind = (p.blind || 0) + 1; } },
   { id: 'p_crusader', cls: 'paladin', name: 'Crusader', max: 8, desc: '+6% damage and +0.5 armor.', apply: p => { p.might += 0.06; p.armor += 0.5; } },
   { id: 'p_hnova', cls: 'paladin', name: 'Holy Nova', max: 8, desc: 'Every few seconds holy light bursts around you: hurts demons and heals your team a little.', apply: p => { p.hnova = (p.hnova || 0) + 1; } },
@@ -1395,14 +1405,26 @@ function pgRestat() {
 // the level where a class has every skill (its own and the shared ones) at max
 function maxLevelFor(cls) { let n = 1; for (const u of UPGRADES) if (u.max && (u.cls === cls || u.cls === 'all')) n += u.max; return n; }
 const pgLvlOf = (l, cls) => l === 'max' ? maxLevelFor(cls) : l;
+// MAX: every skill goes straight to its top level, nothing to pick
+function pgMaxOut(pl) {
+  use(pl);
+  for (const u of UPGRADES) {
+    if (!u.max || !(u.cls === pl.cls || u.cls === 'all')) continue;
+    while ((pl.ups[u.id] || 0) < u.max) { u.apply(pl); pl.ups[u.id] = (pl.ups[u.id] || 0) + 1; }
+  }
+  pl.lvl = maxLevelFor(pl.cls); pl.pending = 0; pl.xp = 0; pl.xpNext = Math.round((4 + pl.lvl * 2.6 + pl.lvl * pl.lvl * 0.18) * 1.25); pl.hp = pl.maxHp;
+  unuse(pl); use(me);
+}
 function pgSetLevel(l) {
+  if (l === 'max' && pg.on && me) { pgMaxOut(me); toast('Every skill is at max level'); renderMeta(); updateHUD(true); return; }
   l = pgLvlOf(l, me ? me.cls : selClass);
   if (!pg.on || !me) return;
   if (l < me.lvl) {
     const x = me.x, y = me.y;
-    me = newPlayer(selClass); me.name = playerName || 'Player'; me.x = x; me.y = y;
+    const oid = me.id, otm = me.team; me = newPlayer(selClass); me.name = playerName || 'Player'; me.x = x; me.y = y; me.id = oid; me.team = otm;
     applyResearch(me, pgRes()); applyGear(me, gearStats(equipped()));
-    players = [me]; use(me);
+    if (!coop) players = [me]; else players = players.map(q => q.id === me.id ? me : q);
+    use(me);
     me.lvl = l; me.pending = l - 1;
   } else if (l > me.lvl) {
     me.pending += l - me.lvl; me.lvl = l;
@@ -1438,10 +1460,12 @@ function pgSetClass(cls) {
   if (!pg.on || !me || !CLASSES[cls]) return;
   const lv = me.lvl, x = me.x, y = me.y;
   selClass = cls; showClasses();
-  me = newPlayer(cls); me.name = playerName || 'Player'; me.x = x; me.y = y;
+  const oid = me.id, otm = me.team; me = newPlayer(cls); me.name = playerName || 'Player'; me.x = x; me.y = y; me.id = oid; me.team = otm;
   applyResearch(me, pgRes()); applyGear(me, gearStats(equipped()));
-  players = [me]; use(me);
+  if (!coop) players = [me]; else players = players.map(q => q.id === me.id ? me : q);
+  use(me);
   me.lvl = lv; me.pending = lv - 1; me.xp = 0; me.xpNext = Math.round((4 + lv * 2.6 + lv * lv * 0.18) * 1.25);
+  if (pg.lvl === 'max') pgMaxOut(me);
   toast(CLASSES[me.cls].name + ' \u00b7 Lv ' + me.lvl + ' \u00b7 ' + me.pending + ' skills to pick when you go back');
   renderMeta(); updateHUD(true);
 }
@@ -1458,6 +1482,7 @@ function startPlayground() {
   const startLv = pgLvlOf(pg.lvl, me.cls);
   me.lvl = startLv; me.pending = startLv - 1;
   me.xpNext = Math.round((4 + me.lvl * 2.6 + me.lvl * me.lvl * 0.18) * 1.25); me.xp = 0; me.hp = me.maxHp;
+  if (pg.lvl === 'max') pgMaxOut(me);
   $('pausePgBtn').classList.remove('hidden'); $('pauseGearBtn').classList.remove('hidden');
   banner = { text: 'PLAYGROUND', sub: 'Try anything. No stars, gems, items or records here.', life: 3 };
   updateHUD(true);
@@ -1499,7 +1524,7 @@ function renderPlayground(body) {
   for (const r of [1, 2, 3, 5]) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
   sec(pg.on ? 'LEVEL (lower: pick skills again \u00b7 higher: keep skills, pick the extra ones)' : 'STARTING LEVEL');
   w = wrap();
-  for (const l of [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max']) chip(w, l === 'max' ? 'MAX (Lv ' + maxLevelFor(me && pg.on ? me.cls : selClass) + ': every skill maxed)' : 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
+  for (const l of [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max']) chip(w, l === 'max' ? 'MAX (Lv ' + maxLevelFor(me && pg.on ? me.cls : selClass) + ': every skill maxed at once)' : 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
   sec('DEMON STRENGTH (new demons)');
   w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'HP x' + m, pg.mHp === m, () => { pg.mHp = m; savePg(); renderMeta(); });
   w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'Damage x' + m, pg.mDmg === m, () => { pg.mDmg = m; savePg(); renderMeta(); });
@@ -2125,14 +2150,15 @@ function use(pl) { p = pl; wolves = pl._wolves; bears = pl._bears; bullets = pl.
 function unuse(pl) { pl._bullets = bullets; pl._tornados = tornados; pl._grenades = grenades; }
 const PR = 14;
 
-const CLASS_DMG = { hunter: 1, druid: 1.1, warrior: 7.5, paladin: 5.5, fallen: 6.5 };
+// Balance rule: the Paladin always deals the least damage, the Druid always a little more than the rest
+const CLASS_DMG = { hunter: 1.8, druid: 1.7, warrior: 9.5, paladin: 1.9, fallen: 8 };
 function newPlayer(cls) {
   const c = CLASSES[cls];
   const pl = {
     x: 0, y: 0, cls, hp: c.hp, maxHp: c.hp, speed: c.speed, armor: c.armor, regen: c.regen, magnet: 80, xpMul: 1,
     lvl: 1, xp: 0, xpNext: 6, inv: 0, ups: {}, pickLog: [], volley: 0, blades: 0, slam: 0, wolves: 0, storm: 0, tornado: 0,
     thorns: 0, bears: 0, bearHp: 1, grenadeCd: 0, grenade: 0, blood: 0, quake: 0, guardT: 0, might: 1, explode: 0, chain: 0, poison: 0,
-    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, curse: 0, conse: 0, falcon: 0, whirl: 0, rage: 0, shout: 0, exec: 0, vines: 0, moon: 0, phantom: 0, souls: 0, soulHp: 0, echo: 0, dodge: 0, retri: 0, retriCd: 0, hammer: 0, angel: 0, angelCd: 0, giant: 0, frost: 0, mark: 0, bash: 0, bloom: 0, hnova: 0, sacred: 0, barrier: 0, terror: 0, rapid: 0, rapidT: 0, scatter: 0, volN: 0, seismic: 0, spore: 0, blind: 0, rift: 0, siphon: 0, nova: 0, novaCd: 0, resDmg: 1, _twins: [],
+    hide: 0, twins: 0, feast: 0, feastKills: 0, feastT: 0, step: 0, stepCd: 0, rend: 0, rendN: 0, curse: 0, conse: 0, falcon: 0, whirl: 0, rage: 0, shout: 0, exec: 0, vines: 0, moon: 0, phantom: 0, souls: 0, soulHp: 0, echo: 0, dodge: 0, retri: 0, retriCd: 0, hammer: 0, angel: 0, angelCd: 0, giant: 0, frost: 0, mark: 0, bash: 0, bloom: 0, hnova: 0, sacred: 0, barrier: 0, terror: 0, rapid: 0, rapidT: 0, scatter: 0, volN: 0, seismic: 0, spore: 0, blind: 0, rift: 0, siphon: 0, crows: 0, grove: 0, groveCd: 0, _groves: [], nova: 0, novaCd: 0, resDmg: 1, _twins: [],
     healCd: 0, healPct: 0.3, shield: 0, shieldCd: 0, shieldT: 0, aura: 0, judge: 0, auraMul: 1,
     ultCd: 0, ultT: 0, ultR: 0, ultMul: 1, ultHp: 0, waveT: 0, roarT: 0, form: 'wolf', pending: 0, dead: false, choosing: false, offer: null,
     _wolves: [], _bears: [], _bullets: [], _tornados: [], _grenades: [], id: 'solo', name: 'Player', skin: null,
@@ -2486,7 +2512,7 @@ function killEnemy(e) {
   kills++;
   const t = ETYPES[e.type];
   // Blood-thirst: the warrior who got the kill heals
-  if (p && p.blood && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.002 * p.blood);
+  if (p && p.blood && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.0012 * p.blood);
   // Bloodfeast: every 15 kills the Fallen goes into a frenzy for 8 seconds
   if (p && p.feast && !p.dead) { p.feastKills = (p.feastKills || 0) + 1; if (p.feastKills >= 15) { p.feastKills = 0; p.feastT = 8; effects.push({ kind: 'feast', x: p.x, y: p.y, r: 44, life: 0.6, max: 0.6, owner: p }); } }
   if (p && p.siphon && !p.dead) p.hp = Math.min(p.maxHp, p.hp + p.maxHp * 0.004 * Math.min(8, p.siphon));
@@ -3228,6 +3254,7 @@ function healRequest(targetId) {
 }
 function skill1() {
   if (!me || state !== S.PLAYING) return;
+  if (grovePress()) return;
   if (me.cls !== 'paladin' || me.dead || me.healCd > 0) return;
   return; // Paladin heals by itself now
   const alive = players.filter(q => !q.dead && q.team === me.team);
@@ -3264,6 +3291,7 @@ function skill2() {
 const SKILL_ICONS = {
   hunter: '<circle cx="11" cy="14" r="6"/><path d="M13.5 8.6L15 6.5h3M15 6.5l1.5-2"/>',
   paladin: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V16.5M7.5 12H16.5"/>',
+  druid: '<path d="M12 21V12"/><circle cx="12" cy="8" r="4.5"/><circle cx="7.5" cy="11" r="3"/><circle cx="16.5" cy="11" r="3"/><path d="M5 21h14"/>',
   fallen: '<circle cx="7" cy="15" r="3" stroke-dasharray="2 2"/><circle cx="17" cy="9" r="3"/><path d="M9.5 13.5L14.5 10.5M12.5 9.5L14.5 10.5L13.5 12.6"/>'
 };
 function setSkillIcons() { $('skillIcon').innerHTML = SKILL_ICONS[me && me.cls] || SKILL_ICONS.hunter; }
@@ -3286,7 +3314,7 @@ function explodeGrenade(x, y) {
 
 // ===== Fallen: half-moon slashes, shadow twins, bloodfeast, shadow step, demon form =====
 const FEAST_AS = [0, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5];
-const FEAST_LS = [0, 0.03, 0.045, 0.06, 0.075, 0.09, 0.105, 0.12, 0.135];
+const FEAST_LS = [0, 0.018, 0.027, 0.036, 0.045, 0.054, 0.063, 0.072, 0.081];
 const TWIN_DMG = [0, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5];
 const TWIN_HP = [0, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8];
 const STEP_CD = [10, 10, 9, 8, 7, 6, 5.5, 5, 4];
@@ -3384,6 +3412,9 @@ function updateTwins(dt) {
     b.x += b.vx * dt; b.y += b.vy * dt;
     pushOut(b, 12, 0);
     b.atk -= dt * fallenRate(p);
+    const LQt = WP().liq;
+    if (LQt.dmg && inLiquid(b.x, b.y)) { b.hp -= b.maxHp * LQt.dmg * dt; if (b.hp <= 0) { b.dead = true; return; } }
+    if (LQt.pull) { const pv = liquidPull(b.x, b.y); if (pv && pv[2] > 4) { b.x += pv[0] * LQt.pull * dt; b.y += pv[1] * LQt.pull * dt; } }
     if (b.atk <= 0) b.atk = fallenStrike(b, mul) ? p.w.cd * 1.1 : 0.15;
   });
   p._twins = p._twins.filter(b => !b.dead);
@@ -3499,12 +3530,144 @@ function drawMeteor(x, y, r, k) {
   ctx.shadowBlur = 0; ctx.fillStyle = M.core; ctx.beginPath(); ctx.arc(mx2 - 2, my2 - 2, 6, 0, TAU); ctx.fill();
   ctx.restore();
 }
-function drawFalcon(x, y) {
-  const fx = x + Math.sin(clock * 1.7) * 8, fy = y - 46 + Math.sin(clock * 3) * 3, flap = Math.sin(clock * 14) * 6;
+
+// ===== Druid: Crow Flock (passive) and Living Grove (the one active skill, aimed at a spot) =====
+const crowCount = c => Math.min(5, 1 + Math.floor((c.crows || 0) / 2));
+const groveCdOf = c => Math.max(10, 20 - 1.25 * Math.min(8, c.grove || 1));
+let grovesDraw = [], aiming = false, aimX = 0, aimY = 0, mouseX = -1, mouseY = -1;
+function updateCrows(dt) {
+  if (!p.crows) return;
+  p.t.crow = (p.t.crow === undefined ? 1 : p.t.crow) - dt;
+  if (p.t.crow > 0) return;
+  p.t.crow = 1.2;
+  const list = enemiesNear(p.x, p.y, 360).filter(e => !e.pvp && !ETYPES[e.type].ore && !ETYPES[e.type].still);
+  for (let i = 0; i < crowCount(p) && list.length; i++) {
+    const e = list[Math.floor(Math.random() * list.length)], a = clock * 2 + i * TAU / crowCount(p);
+    effects.push({ kind: 'crow', x: p.x + Math.cos(a) * 40, y: p.y - 30 + Math.sin(a) * 14, r: e.x, seed: e.y, life: 0.3, max: 0.3 });
+    damageEnemy(e, p.w.dmg * (0.5 + 0.08 * Math.min(8, p.crows)), 0, 0, 0);
+  }
+}
+function castGrove(c, tx, ty) {
+  if (!c || c.dead || !c.grove || c.groveCd > 0 || state !== S.PLAYING) return;
+  // never farther than 450 from the druid
+  const dx = tx - c.x, dy = ty - c.y, d = Math.hypot(dx, dy);
+  if (d > 450) { tx = c.x + dx / d * 450; ty = c.y + dy / d * 450; }
+  c.groveCd = pg.on ? 0 : groveCdOf(c);
+  const lv = Math.min(8, c.grove), mh = 300 * (1 + 0.35 * lv) * (1 + time / 300);
+  c._groves.push({ x: tx, y: ty, hp: mh, maxHp: mh, grove: true, owner: c, flash: 0, dead: false, seed: Math.random() * 6 });
+  while (c._groves.length > 2 + Math.floor(lv / 3)) c._groves.shift();
+  effects.push({ kind: 'vines', x: tx, y: ty, r: 130, life: 0.7, max: 0.7, seed: Math.random() * 6 });
+  effects.push({ kind: 'quake', x: tx, y: ty, r: 120, life: 0.6, max: 0.6, seed: Math.random() * 6 });
+  for (const e of enemiesNear(tx, ty, 120)) { const ex = e.x - tx, ey = e.y - ty, ed = Math.hypot(ex, ey) || 1; damageEnemy(e, c.w.dmg * (2 + 0.4 * lv), ex / ed * 260, ey / ed * 260, 0.6); }
+  if (c === me) shake = Math.max(shake, 8);
+  Sound.sfx('slam');
+}
+function updateGroves(dt) {
+  const regen = 2 * ((p.ups && p.ups.d_regen) || 0);
+  for (const g of p._groves) { if (!g.dead && regen) g.hp = Math.min(g.maxHp, g.hp + regen * dt); g.flash -= dt; }
+  p._groves = p._groves.filter(g => !g.dead);
+}
+// press the skill: aim; then tap / click where the grove should grow
+function grovePress() {
+  if (!me || me.cls !== 'druid' || !me.grove || me.dead || state !== S.PLAYING) return false;
+  if (me.groveCd > 0) return true;
+  aiming = !aiming;
+  if (aiming) { if (mouseX >= 0) { aimX = mouseX; aimY = mouseY; } else { aimX = W / 2; aimY = H / 2 - 150; } }
+  return true;
+}
+function placeGrove(sx, sy) {
+  aiming = false;
+  const cam = camPos(), wx = sx - W / 2 + cam.x, wy = sy - H / 2 + cam.y;
+  if (coop && coop.role === 'guest') { coop.gvc = (coop.gvc || 0) + 1; coop.gvx = Math.round(wx); coop.gvy = Math.round(wy); guestSend(true); return; }
+  castGrove(me, wx, wy);
+}
+function drawGroves(S2) {
+  const list = coop && coop.role === 'guest' ? grovesDraw : players.flatMap(q => q._groves || []);
+  for (const g of list) {
+    if (g.dead) continue;
+    const [x, y] = S2(g.x, g.y);
+    if (x < -80 || y < -80 || x > W + 80 || y > H + 80) continue;
+    ctx.save();
+    ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 14;
+    // rocks
+    ctx.fillStyle = '#1b1f2b'; ctx.strokeStyle = '#7d8494'; ctx.lineWidth = 2;
+    for (const [ox, oy, rr] of [[-26, 14, 12], [24, 16, 10], [-8, 22, 9], [14, -4, 8]]) { ctx.beginPath(); ctx.ellipse(x + ox, y + oy, rr, rr * 0.75, 0, 0, TAU); ctx.fill(); ctx.stroke(); }
+    // trunk and canopy
+    ctx.fillStyle = '#5a3a1e'; ctx.fillRect(x - 5, y - 18, 10, 30);
+    ctx.fillStyle = 'rgba(57, 255, 106, 0.85)';
+    for (const [ox, oy, rr] of [[0, -32, 20], [-16, -22, 14], [16, -22, 14], [0, -46, 12]]) { ctx.beginPath(); ctx.arc(x + ox, y + oy, rr, 0, TAU); ctx.fill(); }
+    ctx.shadowBlur = 0;
+    if (g.flash > 0) { ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'; ctx.beginPath(); ctx.arc(x, y - 20, 34, 0, TAU); ctx.fill(); }
+    const k = Math.max(0, Math.min(1, g.hp / g.maxHp));
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; ctx.fillRect(x - 24, y - 66, 48, 5); ctx.fillStyle = '#39ff6a'; ctx.fillRect(x - 24, y - 66, 48 * k, 5);
+    ctx.restore();
+  }
+}
+// the aiming circle (like a target: red rings, cross ticks, dot in the middle)
+function drawAim() {
+  if (!aiming) return;
+  const x = aimX, y = aimY, R = 34;
   ctx.save();
-  ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 12; ctx.strokeStyle = '#ffd54a'; ctx.fillStyle = '#fff1b8'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath(); ctx.moveTo(fx - 16, fy - 4 - flap); ctx.quadraticCurveTo(fx - 7, fy - 8, fx, fy); ctx.quadraticCurveTo(fx + 7, fy - 8, fx + 16, fy - 4 - flap); ctx.stroke();
-  ctx.beginPath(); ctx.arc(fx, fy + 1, 3.5, 0, TAU); ctx.fill();
+  ctx.shadowColor = '#ff3b3b'; ctx.shadowBlur = 14; ctx.strokeStyle = '#ff4d4d';
+  ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.stroke();
+  ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, R * 0.62, 0, TAU); ctx.stroke();
+  ctx.beginPath(); ctx.arc(x, y, R * 0.3, 0, TAU); ctx.stroke();
+  ctx.lineWidth = 3;
+  for (const [a, b] of [[0, 1], [1, 0], [0, -1], [-1, 0]]) { ctx.beginPath(); ctx.moveTo(x + a * R * 0.18, y + b * R * 0.18); ctx.lineTo(x + a * (R + 10), y + b * (R + 10)); ctx.stroke(); }
+  ctx.shadowBlur = 0; ctx.fillStyle = '#6b6466'; ctx.beginPath(); ctx.arc(x, y, 5, 0, TAU); ctx.fill();
+  ctx.font = '700 11px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd0d0';
+  ctx.fillText('tap / click to grow the grove', x, y + R + 24);
+  ctx.restore();
+}
+function drawCrows(x, y, n) {
+  ctx.save(); ctx.strokeStyle = '#7dffb2'; ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 8; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  for (let i = 0; i < n; i++) {
+    const a = clock * 2 + i * TAU / n, cx = x + Math.cos(a) * 40, cy = y - 30 + Math.sin(a) * 14, f2 = Math.sin(clock * 16 + i) * 3;
+    ctx.beginPath(); ctx.moveTo(cx - 7, cy - 2 - f2); ctx.lineTo(cx, cy + 1); ctx.lineTo(cx + 7, cy - 2 - f2); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawFalcon(x, y) {
+  // a neon kestrel seen from the front: wide striped wings, a fanned tail
+  const fx = x + Math.sin(clock * 1.7) * 8, fy = y - 52 + Math.sin(clock * 3) * 3, flap = Math.sin(clock * 12) * 5;
+  ctx.save(); ctx.translate(fx, fy); ctx.scale(0.42, 0.42);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  // tail fan with stripes
+  ctx.shadowColor = '#ffb347'; ctx.shadowBlur = 18;
+  ctx.fillStyle = 'rgba(30, 28, 40, 0.95)';
+  ctx.beginPath(); ctx.moveTo(-7, 14); ctx.lineTo(-26, 54); ctx.quadraticCurveTo(0, 66, 26, 54); ctx.lineTo(7, 14); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'; ctx.lineWidth = 2;
+  for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(0, 8, 16 + i * 10, Math.PI * 0.33, Math.PI * 0.67); ctx.stroke(); }
+  // wings
+  for (const sd of [-1, 1]) {
+    ctx.save(); ctx.scale(sd, 1);
+    ctx.shadowColor = '#ffb347'; ctx.shadowBlur = 18;
+    ctx.fillStyle = 'rgba(32, 36, 52, 0.95)';
+    ctx.beginPath(); ctx.moveTo(6, -8);
+    ctx.quadraticCurveTo(44, -30 - flap, 92, -20 - flap);
+    // feather tips
+    for (let j = 0; j < 6; j++) ctx.lineTo(90 - j * 13, -10 - flap * (1 - j / 6) + (j % 2 ? 8 : 0));
+    ctx.lineTo(10, 12); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.shadowBlur = 0;
+    // striped flight feathers
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2;
+    for (let j = 0; j < 6; j++) { const sx = 26 + j * 11; ctx.beginPath(); ctx.moveTo(sx, -22 - flap * (sx / 92)); ctx.lineTo(sx - 4, -2 - flap * (sx / 120)); ctx.stroke(); }
+    // warm shoulder
+    ctx.fillStyle = 'rgba(255, 170, 90, 0.75)'; ctx.beginPath(); ctx.ellipse(22, -10, 14, 7, -0.2, 0, TAU); ctx.fill();
+    ctx.restore();
+  }
+  // body and head
+  ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16;
+  const bg = ctx.createLinearGradient(0, -20, 0, 22); bg.addColorStop(0, '#ffe2b0'); bg.addColorStop(1, '#ff9a4a');
+  ctx.fillStyle = bg; ctx.beginPath(); ctx.ellipse(0, 4, 10, 20, 0, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -16, 9, 0, TAU); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = '#120a06';
+  ctx.beginPath(); ctx.arc(-3.5, -18, 2, 0, TAU); ctx.arc(3.5, -18, 2, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#ff7a1a'; ctx.beginPath(); ctx.moveTo(-2, -14); ctx.lineTo(2, -14); ctx.lineTo(0, -10); ctx.closePath(); ctx.fill();
+  // talons
+  ctx.strokeStyle = '#ffb347'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-4, 22); ctx.lineTo(-5, 28); ctx.moveTo(4, 22); ctx.lineTo(5, 28); ctx.stroke();
   ctx.restore();
 }
 function drawFallenLook(x, y, q, scale, dark) {
@@ -3609,7 +3772,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '7.0';
+const GAME_VERSION = '7.1';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -3829,7 +3992,7 @@ function enterLobby(code, role, mode) {
     }
     if (!lobby) return;
     if (!m) { leaveLobby('The host closed the room.'); return; }
-    if ((m.mode || 'coop') !== lobby.mode) { lobby.mode = m.mode || 'coop'; renderLobbyExtras(); }
+    if ((m.mode || 'coop') !== lobby.mode || !!m.pgm !== !!lobby.pgm) { lobby.mode = m.mode || 'coop'; lobby.pgm = !!m.pgm; renderLobbyExtras(); }
     if (m.started && lobby.role === 'guest') startCoop('guest');
   }));
 }
@@ -3840,8 +4003,14 @@ function renderLobbyExtras() {
   const vs = mode !== 'coop';
   row.textContent = '';
   const sp = document.createElement('span'); sp.className = 'info';
-  sp.textContent = !vs ? 'Mode: Co-op' : count <= 2 ? 'Mode: Versus · 2 players = 1 vs 1 (the host is Team A)' : 'Mode: Versus · pick your team';
+  sp.textContent = !vs ? 'Mode: Co-op' + (lobby.pgm ? ' \u00b7 PLAYGROUND (no rewards)' : '') : count <= 2 ? 'Mode: Versus · 2 players = 1 vs 1 (the host is Team A)' : 'Mode: Versus · pick your team';
   row.appendChild(sp);
+  // the host can turn the room into a playground for everyone
+  if (!vs && lobby.role === 'host') {
+    const b = document.createElement('button'); b.className = 'mode-btn' + (lobby.pgm ? ' on' : ''); b.textContent = lobby.pgm ? 'Playground: ON' : 'Playground: OFF';
+    b.addEventListener('click', () => { lobby.pgm = !lobby.pgm; api('/rooms/' + lobby.code + '/meta', 'PATCH', { pgm: lobby.pgm }); renderLobbyExtras(); });
+    row.appendChild(b);
+  }
   // teams only need picking when there are more than 2 players
   $('teamRow').classList.toggle('hidden', !vs || count <= 2);
   const mine = (lobby.roster[myId] && lobby.roster[myId].tm) || lobby.myTeam || 'A';
@@ -3911,6 +4080,7 @@ function startCoop(role, round) {
     lastK: 0, lastBk: 0, hostT: 0, over: false, round: round || 0, retry: {}, paused: false, pausedBy: '', lastRoster: 1
   };
   coop.mode = lobby.mode || 'coop';
+  coop.pgm = coop.mode === 'coop' && !!lobby.pgm;
   const teamOf = v => coop.mode === 'coop' ? 'A' : ((v && v.tm) || 'A');
   lobby = null;
   resetWorld();
@@ -3945,6 +4115,18 @@ function startCoop(role, round) {
   Sound.unlock(); Sound.resume(); Sound.sfx('level');
   Sound.startMusic(); Sound.setTempo(116);
   if (VS()) banner = { text: vsLabel().toUpperCase(), sub: 'Beat the other team. Demons attack everyone!', life: 3 };
+  // co-op playground: the host's playground settings, no rewards, nobody stays down
+  if (coop.pgm) {
+    pg.on = true; unlockIdx = WUNLOCK().length;
+    if (coop.role === 'host') {
+      for (const q of players) {
+        if (pg.lvl === 'max') { pgMaxOut(q); continue; }
+        const L = pgLvlOf(pg.lvl, q.cls); q.lvl = L; q.pending = L - 1; q.xp = 0; q.xpNext = Math.round((4 + L * 2.6 + L * L * 0.18) * 1.25);
+      }
+      $('pausePgBtn').classList.remove('hidden');
+    }
+    banner = { text: 'CO-OP PLAYGROUND', sub: 'Try anything together. No stars, gems, items or records.', life: 3 };
+  }
 }
 
 // Host: read what the guests send (their position, skill picks, grenade presses)
@@ -3969,6 +4151,7 @@ function onPlayersInput(data) {
     if (typeof v.ul === 'number' && v.ul > (q.lastUl || 0)) { q.lastUl = v.ul; castUlt(q); use(me); }
     if (typeof v.fm === 'string') setForm(q, v.fm);
     if (typeof v.fs === 'number' && v.fs > (q.lastFs || 0)) { q.lastFs = v.fs; hostStepFor(q, v.fsx, v.fsy); }
+    if (typeof v.gvc === 'number' && v.gvc > (q.lastGvc || 0)) { q.lastGvc = v.gvc; use(q); castGrove(q, +v.gvx || q.x, +v.gvy || q.y); unuse(q); use(me); }
     if (typeof v.nv === 'number' && v.nv > (q.lastNv || 0)) { q.lastNv = v.nv; use(q); castNova(q); unuse(q); use(me); }
   }
 }
@@ -4003,7 +4186,7 @@ function buildSnapshot() {
       slw: +(q.slowT || 0).toFixed(1), stn: +(q.stunT || 0).toFixed(1), tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura, br: r(q.barrier || 0),
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, cs: q.conse || 0, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
-      nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0, fa: q.falcon || 0,
+      nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0, fa: q.falcon || 0, cw: q.crows || 0, gd: +(q.groveCd || 0).toFixed(1),
       tw: (q._twins || []).map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100)]), ft: q.feastT > 0 ? 1 : 0, fc: +(q.stepCd || 0).toFixed(1),
       b: q._bears.map(b => [r(b.x), r(b.y), r(Math.max(0, b.hp) / b.maxHp * 100), b.dead ? 1 : 0, r(b.respawn), +(b.ang || 0).toFixed(2)])
     };
@@ -4015,14 +4198,16 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
-    gml: gemLog, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.met ? 1 : 0]), wd: worldId,
+    gv: players.flatMap(q => (q._groves || []).map(g => [r(g.x), r(g.y), +(Math.max(0, g.hp) / g.maxHp).toFixed(2)])), gml: gemLog, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.met ? 1 : 0]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
-    fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt' || f.kind === 'falcon') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
+    fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt' || f.kind === 'falcon' || f.kind === 'crow') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
   };
 }
 function coopDeath(pl) {
   if (pl.dead) return;
+  // co-op playground: get straight back up
+  if (pg.on) { pl.hp = pl.maxHp; pl.inv = 2; effects.push({ kind: 'heal', x: pl.x, y: pl.y, r: 70, life: 0.9, max: 0.9, owner: pl }); return; }
   pl.dead = true; pl.hp = 0; pl.deathTime = time;
   const c = pl.skin || skinCol();
   for (let i = 0; i < 70; i++) {
@@ -4226,11 +4411,11 @@ async function hostRetry() {
   await api('/rooms/' + code + '/state', 'PUT', { rd: round, t: 0, over: 0 });
   await api('/rooms/' + code + '/retry', 'DELETE');
   await api('/rooms/' + code + '/meta', 'PATCH', { round, paused: false });
-  lobby = { code, role: 'host', roster, streams: coop.streams, playersStream: coop.playersStream, mode: coop.mode };
+  lobby = { code, role: 'host', roster, streams: coop.streams, playersStream: coop.playersStream, mode: coop.mode, pgm: coop.pgm };
   startCoop('host', round);
 }
 function startRound(role, round) {
-  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, playersStream: coop.playersStream, stateStream: coop.stateStream, mode: coop.mode };
+  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, playersStream: coop.playersStream, stateStream: coop.stateStream, mode: coop.mode, pgm: coop.pgm };
   startCoop(role, round);
 }
 function coopLost(text) {
@@ -4239,6 +4424,7 @@ function coopLost(text) {
   showCoopOver(text);
 }
 function leaveCoop() {
+  pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   if (!coop) return;
   if (coop.stateStream) coop.streams.push(coop.stateStream);
   if (coop.role === 'host') { api('/rooms/' + coop.code + '/meta', 'PATCH', { ended: true }); const code = coop.code; setTimeout(() => api('/rooms/' + code, 'DELETE'), 3000); }
@@ -4266,12 +4452,12 @@ function guestSend(force) {
   if (!coop || coop.role !== 'guest' || coop.over) return;
   if (coop.sending && !force) return;
   coop.sending = true;
-  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr, sh: coop.sh || 0, ul: coop.ul || 0, fm: coop.fm || me.form || 'wolf', fs: coop.fs || 0, fsx: coop.fsx || 0, fsy: coop.fsy || 0, nv: coop.nv || 0 };
+  const body = { n: me.name, c: me.cls, s: skinInfo(), x: Math.round(me.x), y: Math.round(me.y), gr: coop.gr, sh: coop.sh || 0, ul: coop.ul || 0, fm: coop.fm || me.form || 'wolf', fs: coop.fs || 0, fsx: coop.fsx || 0, fsy: coop.fsy || 0, nv: coop.nv || 0, gvc: coop.gvc || 0, gvx: coop.gvx || 0, gvy: coop.gvy || 0 };
   if (coop.hl) body.hl = coop.hl;
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { metboom: 0.45, falcon: 0.3, whirl: 0.45, vines: 0.7, moon: 0.5, hline: 0.4, rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { crow: 0.3, metboom: 0.45, falcon: 0.3, whirl: 0.45, vines: 0.7, moon: 0.5, hline: 0.4, rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -4323,6 +4509,7 @@ function onSnapshot(s) {
   }
   evt = s.ev ? { kind: s.ev.k, x: s.ev.x, y: s.ev.y, st: s.ev.st, t: s.ev.t, pr: s.ev.pr, npc: s.ev.k === 'rescue' ? { x: s.ev.x, y: s.ev.y, hp: s.ev.nh, maxHp: 1, dead: false } : null, por: s.ev.k === 'portals' ? Array.from({ length: s.ev.pl }, () => ({ dead: false })) : null } : null;
   evts = evt ? [evt] : [];
+  grovesDraw = (s.gv || []).map(([x, y, k]) => ({ x, y, hp: k, maxHp: 1, flash: 0 }));
   hazards = (s.hz || []).map(([x, y, r, k, m]) => ({ x, y, r, t: k, max: 1, met: m }));
   if (typeof s.wd === 'number') setWorld(s.wd);
   grenades = (s.gr || []).map(([sx, sy, tx, ty, k]) => ({ sx, sy, tx, ty, t: k * 0.45, dur: 0.45 }));
@@ -4363,7 +4550,7 @@ function onSnapshot(s) {
       track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.oid = id;
       nt.set(key, o); twinsDraw.push(o); myTw.push(o);
     });
-    if (id === myId) { if (v.slw > (me.slowT || 0)) me.slowT = v.slw; if (v.stn > (me.stunT || 0)) me.stunT = v.stn; me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
+    if (id === myId) { me.crows = v.cw || 0; me.groveCd = v.gd || 0; me.grove = (v.u && v.u.d_grove) || 0; if (v.slw > (me.slowT || 0)) me.slowT = v.slw; if (v.stn > (me.stunT || 0)) me.stunT = v.stn; me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.barrier = v.br || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
@@ -4379,7 +4566,7 @@ function onSnapshot(s) {
     track(q, v.x, v.y); q.cls = CLASSES[v.c] ? v.c : 'hunter'; q.name = String(v.n || 'Player').slice(0, 12);
     q.team = v.tm || 'A';
     q.hp = v.hp; q.maxHp = v.mh; q.shieldT = v.st || 0; q.aura = v.au || 0; q.ultT = v.ut || 0; q.form = v.fm || 'wolf';
-    q.feastT = v.ft ? 1 : 0; q.conse = v.cs || 0; q.falcon = v.fa || 0;
+    q.feastT = v.ft ? 1 : 0; q.conse = v.cs || 0; q.falcon = v.fa || 0; q.crows = v.cw || 0;
     q.skin = skinFrom(v.s); q.dead = !!v.d; q.left = !!v.lf; q.revive = v.rv || 0; q.blades = v.bl || 0; q.bladeAng = v.ba || 0;
     list.push(q);
   }
@@ -4585,7 +4772,7 @@ function update(dt) {
     if (q.revive >= 3.5) revivePlayer(q);
   }
   allBears = []; allPets = [];
-  for (const pl of players) { for (const b of pl._bears) { allBears.push(b); allPets.push(b); } for (const b of (pl._twins || [])) allPets.push(b); }
+  for (const pl of players) { for (const b of pl._bears) { allBears.push(b); allPets.push(b); } for (const b of (pl._twins || [])) allPets.push(b); for (const g of (pl._groves || [])) allPets.push(g); }
   for (const e2 of evts) if (e2.npc && e2.st === 1 && !e2.npc.dead) allPets.push(e2.npc);
 
   // spawning
@@ -4659,7 +4846,10 @@ function update(dt) {
     }
     if (tb && md < e.r + 18) {
       e.atkCd -= dt;
-      if (e.atkCd <= 0) { e.atkCd = 0.6; hurtBear(tb, e.dmg); }
+      if (e.atkCd <= 0) {
+        e.atkCd = 0.6; hurtBear(tb, e.dmg);
+        if (tb.grove && tb.owner && tb.owner.bramble) { const prevP = p; p = tb.owner; damageEnemy(e, e.dmg * (1.2 + 0.5 * tb.owner.bramble) + 15 * tb.owner.bramble, 0, 0, 0); p = prevP; }
+      }
     }
     if (e.fear > 0) {
       e.fear -= dt;
@@ -5000,6 +5190,12 @@ function updateWeapons(dt) {
     }
   } else if (p.cls === 'fallen') {
     updateFallen(dt);
+  }
+  if (p.cls === 'druid') {
+    updateCrows(dt); updateGroves(dt); p.groveCd = Math.max(0, (p.groveCd || 0) - dt);
+  }
+  // (the chain below: paladin, then the druid's own weapon)
+  if (p.cls === 'hunter' || p.cls === 'warrior' || p.cls === 'fallen') {
   } else if (p.cls === 'paladin') {
     // automatic heal: whoever is under 80% HP, the weakest first
     if (p.healCd <= 0) {
@@ -5118,7 +5314,7 @@ function updateWeapons(dt) {
         // Vampiric Bolts: heal a share of the demon's max HP on every hit
         if (p.leech && !e.pvp && !p.dead && e.maxHp) {
           const lv = Math.min(8, p.leech) - 1, big = BIG_DEMONS[e.type];
-          const pct = big ? [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08][lv] : [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.75, 1][lv];
+          const pct = big ? [0.006, 0.012, 0.018, 0.024, 0.03, 0.036, 0.042, 0.048][lv] : [0.06, 0.12, 0.18, 0.24, 0.3, 0.36, 0.45, 0.6][lv];
           p.hp = Math.min(p.maxHp, p.hp + e.maxHp * pct / 100 * [1, 0.8, 0.6, 0.45, 0.35, 0.25, 0.2, 0.17][worldId]);
         }
         if (b.pierce-- <= 0) { b.life = 0; break; }
@@ -5157,7 +5353,7 @@ function updateHUD(force) {
     $(txt).textContent = cd > 0 ? Math.ceil(cd) : '';
     btn.classList.toggle('ready', cd <= 0);
   };
-  $('skillBtn').classList.add('hidden');
+  setBtn($('skillBtn'), 'skillCdText', live && me.cls === 'druid' && ((me.grove || (me.ups && me.ups.d_grove)) > 0), me.groveCd || 0, groveCdOf({ grove: me.grove || (me.ups && me.ups.d_grove) || 1 }));
   // ultimate (unlocks at level 6, gets stronger at 12 and 18)
   const ur = ultRank(me), ub = $('ultBtn');
   setBtn(ub, 'ultCdText', live && ur > 0, me.ultCd, me.cls === 'fallen' ? 60 : ULT_CD);
@@ -5272,6 +5468,10 @@ function render() {
       ctx.shadowBlur = 0;
       ctx.strokeStyle = 'rgba(255, 59, 92, ' + (0.22 * k) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(x, y, Rr, 0, TAU); ctx.stroke();
+    } else if (f.kind === 'crow') {
+      const [x2, y2] = S2(f.r, f.seed);
+      ctx.strokeStyle = 'rgba(120, 255, 160, ' + k + ')'; ctx.lineWidth = 2; ctx.shadowColor = '#39ff6a'; ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo((x + x2) / 2, Math.min(y, y2) - 40, x2, y2); ctx.stroke(); ctx.shadowBlur = 0;
     } else if (f.kind === 'falcon') {
       const [x2, y2] = S2(f.r, f.seed);
       ctx.strokeStyle = 'rgba(255, 213, 74, ' + k + ')'; ctx.lineWidth = 3; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 12;
@@ -5503,6 +5703,7 @@ function render() {
     ctx.fillStyle = '#39ff6a'; ctx.fillRect(x - 18, y - 28, 36 * Math.max(0, b.hp / b.maxHp), 4);
   }
   // Fallen twins
+  drawGroves(S2);
   drawTwins(S2, coop && coop.role === 'guest' ? twinsDraw : players.flatMap(q => q._twins || []));
   // co-op: the ring and your teammates
   if (coop) {
@@ -5540,6 +5741,7 @@ function render() {
       drawHoly(x, y, q); drawUltFx(x, y, q);
       if (q.cls === 'fallen') drawFallenLook(x, y, q, 1, false);
       if (q.falcon) drawFalcon(x, y);
+      if (q.crows) drawCrows(x, y, crowCount(q));
       drawOrb(ctx, x, y, PR, col);
       if (q.blades) for (let i = 0; i < q.blades; i++) {
         const a = q.bladeAng + i * TAU / q.blades;
@@ -5571,6 +5773,7 @@ function render() {
     if (me.slowT > 0) { ctx.strokeStyle = 'rgba(160, 220, 255, 0.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, PR + 7, 0, TAU); ctx.stroke(); }
     if (p.cls === 'fallen') drawFallenLook(x, y, me, 1, false);
     if (me.falcon) drawFalcon(x, y);
+    if (me.crows) drawCrows(x, y, crowCount(me));
     drawOrb(ctx, x, y, PR, skinCol());
     ctx.globalAlpha = 1;
     if (p.cls === 'warrior') {
@@ -5683,6 +5886,7 @@ function render() {
   // Demon King health bar and the 5-minute announcement
   drawMinimap();
   drawStage();
+  drawAim();
   const king = enemies.find(e => e.type === 'champ' && !e.dead) || enemies.find(e => e.type === 'king' && !e.dead);
   if (king) {
     const bw = Math.min(420, W * 0.7), bx = (W - bw) / 2, by = 76;
@@ -5743,11 +5947,13 @@ cv.addEventListener('pointerdown', e => {
   if (state !== S.PLAYING) return;
   e.preventDefault();
   const r = game.getBoundingClientRect();
+  if (aiming) { placeGrove(e.clientX - r.left, e.clientY - r.top); return; }
   stick.active = true; stick.id = e.pointerId;
   stick.ox = stick.x = e.clientX - r.left; stick.oy = stick.y = e.clientY - r.top;
   try { cv.setPointerCapture(e.pointerId); } catch (err) {}
 });
 cv.addEventListener('pointermove', e => {
+  { const r0 = game.getBoundingClientRect(); mouseX = e.clientX - r0.left; mouseY = e.clientY - r0.top; if (aiming) { aimX = mouseX; aimY = mouseY; } }
   if (!stick.active || e.pointerId !== stick.id) return;
   const r = game.getBoundingClientRect();
   stick.x = e.clientX - r.left; stick.y = e.clientY - r.top;
@@ -5768,6 +5974,8 @@ window.addEventListener('keydown', e => {
   }
   if (state === S.PLAYING && (e.code === 'Space' || e.code === 'KeyE')) { e.preventDefault(); skill1(); return; }
   if (state === S.PLAYING && e.code === KB.nova) { e.preventDefault(); skill2(); return; }
+  if (state === S.PLAYING && e.code === 'KeyG') { e.preventDefault(); grovePress(); return; }
+  if (aiming && e.code === 'Escape') { aiming = false; return; }
   if (state === S.PLAYING && e.code === KB.ult) { e.preventDefault(); ultPress(); return; }
   if (state === S.PLAYING && e.code === KB.form) { e.preventDefault(); formPress(); return; }
   if (e.code === 'Space' || e.code === 'Enter') {
