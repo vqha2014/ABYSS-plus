@@ -417,7 +417,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 7.4</span>
+    <span class="version">Version 7.5</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -3343,11 +3343,11 @@ function skill2() {
   castNova(me); updateHUD();
 }
 const SKILL_ICONS = {
-  hunter: '<circle cx="11" cy="14" r="6"/><path d="M13.5 8.6L15 6.5h3M15 6.5l1.5-2"/>',
+  hunter: '<path d="M4 18h16"/><path d="M6 18l2-5h8l2 5"/><path d="M9 13l-1-3M12 13V9M15 13l1-3"/><circle cx="12" cy="6" r="1.4"/>',
   paladin: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V16.5M7.5 12H16.5"/>',
-  warrior: '<path d="M5 19L12 5L19 19"/><path d="M8 19h8"/>',
+  warrior: '<path d="M4 20h16"/><path d="M5 17C7 6 17 6 19 17"/><path d="M16.5 14.5L19 17L21 14"/><circle cx="7" cy="11" r="1.5"/>',
   druid: '<path d="M12 21V12"/><circle cx="12" cy="8" r="4.5"/><circle cx="7.5" cy="11" r="3"/><circle cx="16.5" cy="11" r="3"/><path d="M5 21h14"/>',
-  fallen: '<circle cx="7" cy="15" r="3" stroke-dasharray="2 2"/><circle cx="17" cy="9" r="3"/><path d="M9.5 13.5L14.5 10.5M12.5 9.5L14.5 10.5L13.5 12.6"/>'
+  fallen: '<ellipse cx="12" cy="12" rx="5" ry="8.5"/><path d="M12 6.5c-2 2-2 9 0 11M12 6.5c2 2 2 9 0 11"/><path d="M3 12h4M17 12h4"/>'
 };
 function setSkillIcons() { $('skillIcon').innerHTML = SKILL_ICONS[me && me.cls] || SKILL_ICONS.hunter; }
 function hideSkills() { ['skillBtn', 'skill2Btn', 'ultBtn', 'formBtn', 'healPicker'].forEach(id => $(id).classList.add('hidden')); }
@@ -3689,8 +3689,14 @@ function castActive(c, tx, ty) {
     c._traps.push({ x: tx, y: ty, life: 30 });
     while (c._traps.length > 3 + Math.floor(lv / 3)) c._traps.shift();
     effects.push({ kind: 'step', x: tx, y: ty, r: 26, life: 0.4, max: 0.4 });
+  } else if (c.cls === 'warrior' && !c.remote) {
+    // leap up into the air; the smash happens when you land (see moveLocal)
+    c.leapAnim = { sx: c.x, sy: c.y, tx, ty, t: 0, dur: 0.55 };
+    c.inv = Math.max(c.inv || 0, 0.8);
+    Sound.sfx('slam');
+    return;
   } else if (c.cls === 'warrior' || c.cls === 'fallen') {
-    // jump / step to the spot (a guest has already moved itself there)
+    // fallen: step through the shadows (a guest has already moved itself there); a guest warrior has already landed
     if (!c.remote) { effects.push({ kind: 'step', x: c.x, y: c.y, r: 30, life: 0.4, max: 0.4 }); c.x = tx; c.y = ty; }
     c.inv = Math.max(c.inv || 0, 0.4);
     const R = c.cls === 'warrior' ? 160 : 140, dmg = c.w.dmg * (c.cls === 'warrior' ? 2.5 + 0.4 * lv : 2 + 0.35 * lv);
@@ -3756,7 +3762,8 @@ function placeGrove(sx, sy) {
   if (me.cls === 'druid' && mm && sx >= mm.x && sx <= mm.x + mm.s && sy >= mm.y && sy <= mm.y + mm.s) { wx = mm.cx + (sx - mm.x - mm.s / 2) / mm.k; wy = mm.cy + (sy - mm.y - mm.s / 2) / mm.k; }
   [wx, wy] = clampXY(wx, wy, 30);
   if (coop && coop.role === 'guest') {
-    if ((me.cls === 'warrior' || me.cls === 'fallen') && me.groveCd <= 0) { me.x = wx; me.y = wy; me.groveCd = actCdOf(me); }
+    if (me.cls === 'warrior' && me.groveCd <= 0) { me.leapAnim = { sx: me.x, sy: me.y, tx: wx, ty: wy, t: 0, dur: 0.55 }; me.groveCd = actCdOf(me); return; }
+    if (me.cls === 'fallen' && me.groveCd <= 0) { me.x = wx; me.y = wy; me.groveCd = actCdOf(me); }
     coop.gvc = (coop.gvc || 0) + 1; coop.gvx = Math.round(wx); coop.gvy = Math.round(wy); guestSend(true); return;
   }
   castActive(me, wx, wy);
@@ -3952,7 +3959,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '7.4';
+const GAME_VERSION = '7.5';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -4828,6 +4835,21 @@ function blockBySolids(o, r) {
 function moveLocal(dt) {
   refreshSolids();
   if (me.dead) return;
+  // warrior's Heroic Leap: fly in an arc, land, then smash
+  if (me.leapAnim) {
+    const L = me.leapAnim;
+    L.t += dt;
+    const k = Math.min(1, L.t / L.dur);
+    me.x = L.sx + (L.tx - L.sx) * k; me.y = L.sy + (L.ty - L.sy) * k;
+    me.inv = Math.max(me.inv || 0, 0.2);
+    if (k >= 1) {
+      me.leapAnim = null;
+      if (coop && coop.role === 'guest') { coop.gvc = (coop.gvc || 0) + 1; coop.gvx = Math.round(me.x); coop.gvy = Math.round(me.y); guestSend(true); }
+      else { const prevP = p; use(me); me.remote = true; me.groveCd = 0; castActive(me, me.x, me.y); me.remote = false; if (prevP !== me) use(prevP); me.groveCd = pg.on ? 0 : actCdOf(me); }
+      shake = Math.max(shake, 10);
+    }
+    return;
+  }
   let mx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), my = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
   if (stick.active) {
     const dx = stick.x - stick.ox, dy = stick.y - stick.oy, d = Math.hypot(dx, dy);
@@ -5936,7 +5958,12 @@ function render() {
   }
   // player
   if (state !== S.DYING && state !== S.OVER && !me.dead) {
-    const [x, y] = S2(me.x, me.y);
+    let [x, y] = S2(me.x, me.y);
+    if (me.leapAnim) {
+      const k = Math.min(1, me.leapAnim.t / me.leapAnim.dur), hgt = Math.sin(k * Math.PI) * 90;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'; ctx.beginPath(); ctx.ellipse(x, y + PR * 0.6, PR * (1 - hgt / 220), PR * 0.4 * (1 - hgt / 220), 0, 0, TAU); ctx.fill();
+      y -= hgt;
+    }
     if (VS()) drawTeamRing(x, y, me.team);
     const cc = CLASSES[p.cls].color;
     if (p.inv > 0 && Math.floor(clock * 20) % 2) ctx.globalAlpha = 0.5;
