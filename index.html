@@ -390,6 +390,7 @@
       <div id="mpChoice">
         <button class="btn" id="pickCoop">Co-op</button>
         <button class="btn btn-alt" id="pickVs" style="margin-left:0.6rem">Versus</button>
+        <button class="btn btn-alt" id="pickPg" style="margin-left:0.6rem">Playground</button>
       </div>
       <div id="coopMenu" class="hidden">
         <button class="btn" id="createBtn">Create room</button>
@@ -417,7 +418,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 7.5</span>
+    <span class="version">Version 7.6</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -1451,6 +1452,12 @@ function pgSpawn(type) {
   effects.push({ kind: 'summon', x: e.x, y: e.y, r: 60, life: 0.5, max: 0.5 });
   toast(PG_NAMES[type] + ' spawned');
 }
+function pgSetPvp(on) {
+  if (!coop || !coop.pgm) return;
+  coop.pvp = !!on;
+  players.forEach((q, i) => { q.team = coop.pvp ? 'P' + (i + 1) : 'A'; });
+  if (coop.role === 'host') api('/rooms/' + coop.code + '/meta', 'PATCH', { pvp: coop.pvp });
+}
 function pgEndEvents() {
   for (const e of evts) { if (e.por) for (const o of e.por) o.dead = true; if (e.tot) e.tot.dead = true; if (e.gob) e.gob.dead = true; if (e.el) e.el.dead = true; }
   evts = []; evt = null; evtT = 90;
@@ -1515,6 +1522,7 @@ function renderPlayground(body) {
   sec('WORLD' + (pg.on ? ' (changes right away)' : ''));
   let ww = wrap();
   WORLDS.forEach((wd, i) => chip(ww, wd.name, worldId === i, () => { if (!pg.on) pg.prevWorld = pg.prevWorld === undefined ? worldId : pg.prevWorld; setWorld(i); renderMeta(); }));
+  if (coop && coop.pgm && coop.role === 'host') { sec('PVP (players can hurt each other)'); const pw = wrap(); chip(pw, coop.pvp ? 'PvP: ON' : 'PvP: OFF', !!coop.pvp, () => { pgSetPvp(!coop.pvp); toast('PvP ' + (coop.pvp ? 'ON' : 'OFF')); renderMeta(); }); }
   sec('DEMONS');
   ww = wrap();
   chip(ww, pg.noDemons ? 'No demons: ON' : 'No demons: OFF', !!pg.noDemons, () => { pg.noDemons = !pg.noDemons; savePg(); renderMeta(); });
@@ -2166,6 +2174,7 @@ let nextSurge = 300, surgeCount = 0, surgeLeft = 0, surgeT = 0, kingsKilled = 0,
 let allPets = [], twinsDraw = [], hazards = [], oreT = 12, gemLog = '';
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
+const PVP = () => VS() || !!(coop && coop.pgm && coop.pvp);
 const ringR = () => VS() ? 650 : 380;
 const MODES = { coop: 'Co-op', vs: 'Versus', '1v1': '1 vs 1', '2v2': '2 vs 2', '1v2': '1 vs 2' };
 let mpMode = 'coop';
@@ -3959,7 +3968,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '7.5';
+const GAME_VERSION = '7.6';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -4101,8 +4110,10 @@ function coopMsg(t) { $('coopMsg').textContent = t || ''; }
 const MP_INFO = {
   menu: 'Play with up to 3 friends. Your class is the one you picked on the main screen.',
   coop: 'Team up against the demons. Everyone stays inside the ring and XP is shared.',
-  vs: 'Fight each other while fighting the demons. With 2 players it is 1 vs 1; with 3 or 4, everyone picks Team A or Team B.'
+  vs: 'Fight each other while fighting the demons. With 2 players it is 1 vs 1; with 3 or 4, everyone picks Team A or Team B.',
+  pg: 'A playground for up to 4 friends: no rewards, nobody stays down, and the host controls everything. The host can turn PvP on or off.'
 };
+let mpPg = false;
 function openCoop() {
   $('startScreen').classList.add('hidden'); showBoard(false);
   $('coopScreen').classList.remove('hidden');
@@ -4114,10 +4125,11 @@ function showMpChoice() {
   coopMsg('');
 }
 function chooseMp(mode) {
+  mpPg = mode === 'pg'; if (mpPg) mode = 'coop';
   mpMode = mode;
   $('mpChoice').classList.add('hidden'); $('coopMenu').classList.remove('hidden'); $('lobby').classList.add('hidden');
-  $('mpTitle').textContent = mode === 'vs' ? 'Versus' : 'Co-op';
-  $('mpInfo').textContent = MP_INFO[mode];
+  $('mpTitle').textContent = mpPg ? 'Playground' : mode === 'vs' ? 'Versus' : 'Co-op';
+  $('mpInfo').textContent = MP_INFO[mpPg ? 'pg' : mode];
   coopMsg('');
 }
 function closeStreams(list) { (list || []).forEach(es => { try { es.close(); } catch (e) {} }); }
@@ -4128,9 +4140,10 @@ async function createRoom() {
     for (let j = 0; j < 4; j++) code += ROOM_CHARS[Math.floor(Math.random() * ROOM_CHARS.length)];
     const exists = await api('/rooms/' + code + '/meta', 'GET');
     if (exists) continue;
-    const ok = await api('/rooms/' + code, 'PUT', { meta: { host: myId, started: false, mode: mpMode, at: { '.sv': 'timestamp' } }, players: { [myId]: myInfo() } });
+    const ok = await api('/rooms/' + code, 'PUT', { meta: { host: myId, started: false, mode: mpMode, pgm: mpPg && mpMode === 'coop', pvp: false, at: { '.sv': 'timestamp' } }, players: { [myId]: myInfo() } });
     if (!ok) { coopMsg('Can’t reach the game server. Co-op works on the GitHub link (not inside Claude) and needs internet.'); return; }
     enterLobby(code, 'host', mpMode);
+    if (lobby && mpPg) { lobby.pgm = true; renderLobbyExtras(); }
     return;
   }
   coopMsg('Please try again.');
@@ -4179,7 +4192,7 @@ function enterLobby(code, role, mode) {
     }
     if (!lobby) return;
     if (!m) { leaveLobby('The host closed the room.'); return; }
-    if ((m.mode || 'coop') !== lobby.mode || !!m.pgm !== !!lobby.pgm) { lobby.mode = m.mode || 'coop'; lobby.pgm = !!m.pgm; renderLobbyExtras(); }
+    if ((m.mode || 'coop') !== lobby.mode || !!m.pgm !== !!lobby.pgm || !!m.pvp !== !!lobby.pvp) { lobby.mode = m.mode || 'coop'; lobby.pgm = !!m.pgm; lobby.pvp = !!m.pvp; renderLobbyExtras(); }
     if (m.started && lobby.role === 'guest') startCoop('guest');
   }));
 }
@@ -4190,13 +4203,18 @@ function renderLobbyExtras() {
   const vs = mode !== 'coop';
   row.textContent = '';
   const sp = document.createElement('span'); sp.className = 'info';
-  sp.textContent = !vs ? 'Mode: Co-op' + (lobby.pgm ? ' \u00b7 PLAYGROUND (no rewards)' : '') : count <= 2 ? 'Mode: Versus · 2 players = 1 vs 1 (the host is Team A)' : 'Mode: Versus · pick your team';
+  sp.textContent = !vs ? (lobby.pgm ? 'Mode: Playground (no rewards) \u00b7 PvP ' + (lobby.pvp ? 'ON' : 'OFF') : 'Mode: Co-op') : count <= 2 ? 'Mode: Versus · 2 players = 1 vs 1 (the host is Team A)' : 'Mode: Versus · pick your team';
   row.appendChild(sp);
   // the host can turn the room into a playground for everyone
   if (!vs && lobby.role === 'host') {
     const b = document.createElement('button'); b.className = 'mode-btn' + (lobby.pgm ? ' on' : ''); b.textContent = lobby.pgm ? 'Playground: ON' : 'Playground: OFF';
     b.addEventListener('click', () => { lobby.pgm = !lobby.pgm; api('/rooms/' + lobby.code + '/meta', 'PATCH', { pgm: lobby.pgm }); renderLobbyExtras(); });
     row.appendChild(b);
+    if (lobby.pgm) {
+      const pv = document.createElement('button'); pv.className = 'mode-btn' + (lobby.pvp ? ' on' : ''); pv.textContent = lobby.pvp ? 'PvP: ON' : 'PvP: OFF';
+      pv.addEventListener('click', () => { lobby.pvp = !lobby.pvp; api('/rooms/' + lobby.code + '/meta', 'PATCH', { pvp: lobby.pvp }); renderLobbyExtras(); });
+      row.appendChild(pv);
+    }
   }
   // teams only need picking when there are more than 2 players
   $('teamRow').classList.toggle('hidden', !vs || count <= 2);
@@ -4268,6 +4286,7 @@ function startCoop(role, round) {
   };
   coop.mode = lobby.mode || 'coop';
   coop.pgm = coop.mode === 'coop' && !!lobby.pgm;
+  coop.pvp = coop.pgm && !!lobby.pvp;
   const teamOf = v => coop.mode === 'coop' ? 'A' : ((v && v.tm) || 'A');
   lobby = null;
   resetWorld();
@@ -4312,7 +4331,8 @@ function startCoop(role, round) {
       }
       $('pausePgBtn').classList.remove('hidden');
     }
-    banner = { text: 'CO-OP PLAYGROUND', sub: 'Try anything together. No stars, gems, items or records.', life: 3 };
+    if (coop.role === 'host') pgSetPvp(coop.pvp);
+    banner = { text: 'PLAYGROUND', sub: 'Try anything together. No rewards. PvP ' + (coop.pvp ? 'ON' : 'OFF') + '.', life: 3 };
   }
 }
 
@@ -4385,7 +4405,7 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
-    gv: players.flatMap(q => (q._groves || []).map(g => [r(g.x), r(g.y), +(Math.max(0, g.hp) / g.maxHp).toFixed(2), q.id])), cr: players.flatMap(q => (q._crowsE || []).map(c => [r(c.x), r(c.y)])), cst: players.flatMap(q => (q._cstorms || []).map(w => [r(w.x), r(w.y), r(w.r)])), trp: players.flatMap(q => (q._traps || []).map(t => [r(t.x), r(t.y)])), gml: gemLog, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.met ? 1 : 0]), wd: worldId,
+    gv: players.flatMap(q => (q._groves || []).map(g => [r(g.x), r(g.y), +(Math.max(0, g.hp) / g.maxHp).toFixed(2), q.id])), cr: players.flatMap(q => (q._crowsE || []).map(c => [r(c.x), r(c.y)])), cst: players.flatMap(q => (q._cstorms || []).map(w => [r(w.x), r(w.y), r(w.r)])), trp: players.flatMap(q => (q._traps || []).map(t => [r(t.x), r(t.y)])), gml: gemLog, pvp: coop && coop.pvp ? 1 : 0, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.met ? 1 : 0]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
     fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt' || f.kind === 'falcon' || f.kind === 'crow') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
@@ -4598,11 +4618,11 @@ async function hostRetry() {
   await api('/rooms/' + code + '/state', 'PUT', { rd: round, t: 0, over: 0 });
   await api('/rooms/' + code + '/retry', 'DELETE');
   await api('/rooms/' + code + '/meta', 'PATCH', { round, paused: false });
-  lobby = { code, role: 'host', roster, streams: coop.streams, playersStream: coop.playersStream, mode: coop.mode, pgm: coop.pgm };
+  lobby = { code, role: 'host', roster, streams: coop.streams, playersStream: coop.playersStream, mode: coop.mode, pgm: coop.pgm, pvp: coop.pvp };
   startCoop('host', round);
 }
 function startRound(role, round) {
-  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, playersStream: coop.playersStream, stateStream: coop.stateStream, mode: coop.mode, pgm: coop.pgm };
+  lobby = { code: coop.code, role, roster: {}, streams: coop.streams, playersStream: coop.playersStream, stateStream: coop.stateStream, mode: coop.mode, pgm: coop.pgm, pvp: coop.pvp };
   startCoop(role, round);
 }
 function coopLost(text) {
@@ -4688,6 +4708,7 @@ function onSnapshot(s) {
     for (const ch of s.gml.slice(coop.gemSeen || 0)) { const g = GEM_FROM[ch]; if (g) gainGem(g, me.x, me.y - 30); }
     coop.gemSeen = s.gml.length;
   }
+  if (coop) coop.pvp = !!s.pvp;
   if (typeof s.evr === 'string') {
     if (s.evr.length < (coop.evSeen || 0)) coop.evSeen = 0;
     const nw = s.evr.slice(coop.evSeen || 0);
@@ -4940,7 +4961,7 @@ function update(dt) {
     use(pl);
     // versus: the other team's players count as targets for this player's skills
     let real = null, prox = null;
-    if (VS()) {
+    if (PVP()) {
       real = enemies; enemiesReal = real;
       prox = players.filter(o => o.team !== pl.team && !o.dead).map(o => ({ pvp: true, q: o, x: o.x, y: o.y, r: PR, type: 'brute', hp: 1, maxHp: 1, kx: 0, ky: 0, stun: 0, flash: 0, bladeCd: 0, dead: false }));
       enemies = real.concat(prox);
@@ -5933,7 +5954,7 @@ function render() {
     for (const q of players) {
       if (q === me || q.dead) continue;
       const [x, y] = S2(q.x, q.y), col = q.skin || ORB_COLORS[0];
-      if (VS()) drawTeamRing(x, y, q.team);
+      if (PVP()) drawTeamRing(x, y, q.team);
       ctx.strokeStyle = CLASSES[q.cls].color; ctx.lineWidth = 2; ctx.shadowColor = CLASSES[q.cls].color; ctx.shadowBlur = 10;
       ctx.beginPath(); ctx.arc(x, y, PR + 7, clock * 2, clock * 2 + Math.PI * 1.5); ctx.stroke();
       ctx.shadowBlur = 0;
@@ -5964,7 +5985,7 @@ function render() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'; ctx.beginPath(); ctx.ellipse(x, y + PR * 0.6, PR * (1 - hgt / 220), PR * 0.4 * (1 - hgt / 220), 0, 0, TAU); ctx.fill();
       y -= hgt;
     }
-    if (VS()) drawTeamRing(x, y, me.team);
+    if (PVP()) drawTeamRing(x, y, me.team);
     const cc = CLASSES[p.cls].color;
     if (p.inv > 0 && Math.floor(clock * 20) % 2) ctx.globalAlpha = 0.5;
     ctx.strokeStyle = cc; ctx.lineWidth = 2; ctx.shadowColor = cc; ctx.shadowBlur = 12;
@@ -6203,6 +6224,7 @@ $('coopBackBtn').addEventListener('click', () => {
 });
 $('pickCoop').addEventListener('click', () => chooseMp('coop'));
 $('pickVs').addEventListener('click', () => chooseMp('vs'));
+$('pickPg').addEventListener('click', () => chooseMp('pg'));
 $('leaveBtn').addEventListener('click', leaveCoop);
 $('menuBtn').addEventListener('click', () => { closeShop(); if (coop) leaveCoop(); else { Sound.resume(); backToStart(); } });
 $('retryBtn').addEventListener('click', pressRetry);
