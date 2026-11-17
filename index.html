@@ -418,7 +418,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 7.6</span>
+    <span class="version">Version 7.7</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -1541,14 +1541,15 @@ function renderPlayground(body) {
   chip(w, 'All', pg.types.length === PG_TYPES.length, () => { pg.types = pg.types.length === PG_TYPES.length ? [] : PG_TYPES.slice(); savePg(); renderMeta(); });
   sec('SPAWN SPEED');
   w = wrap();
-  for (const r of [1, 2, 3, 5]) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
+  const mpLim = !!(coop && coop.pgm);
+  for (const r of [1, 2, 3, 5]) if (!mpLim || r <= 3) chip(w, 'x' + r, pg.rate === r, () => { pg.rate = r; savePg(); renderMeta(); });
   sec(pg.on ? 'LEVEL (lower: pick skills again \u00b7 higher: keep skills, pick the extra ones)' : 'STARTING LEVEL');
   w = wrap();
   for (const l of [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max']) chip(w, l === 'max' ? 'MAX (Lv ' + maxLevelFor(me && pg.on ? me.cls : selClass) + ': every skill maxed at once)' : 'Lv ' + l, pg.lvl === l, () => { pg.lvl = l; savePg(); if (pg.on) pgSetLevel(l); else renderMeta(); });
   sec('DEMON STRENGTH (new demons)');
-  w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'HP x' + m, pg.mHp === m, () => { pg.mHp = m; savePg(); renderMeta(); });
-  w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) chip(w, 'Damage x' + m, pg.mDmg === m, () => { pg.mDmg = m; savePg(); renderMeta(); });
-  w = wrap(); for (const m of [1, 1.25, 1.5, 2]) chip(w, 'Speed x' + m, pg.mSpd === m, () => { pg.mSpd = m; savePg(); renderMeta(); });
+  w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) if (!mpLim || m <= 3) chip(w, 'HP x' + m, pg.mHp === m, () => { pg.mHp = m; savePg(); renderMeta(); });
+  w = wrap(); for (const m of [0.5, 1, 2, 3, 5]) if (!mpLim || m <= 3) chip(w, 'Damage x' + m, pg.mDmg === m, () => { pg.mDmg = m; savePg(); renderMeta(); });
+  w = wrap(); for (const m of [1, 1.25, 1.5, 2]) if (!mpLim || m <= 1.5) chip(w, 'Speed x' + m, pg.mSpd === m, () => { pg.mSpd = m; savePg(); renderMeta(); });
   sec('RESEARCH LEVELS (playground only)');
   const rl = pgRes();
   for (const r of RESEARCH) {
@@ -2175,7 +2176,7 @@ let allPets = [], twinsDraw = [], hazards = [], oreT = 12, gemLog = '';
 let players = [], me = null, coop = null, allBears = [], killFx = [], bossesKilled = 0, nextEid = 1;
 const VS = () => !!(coop && coop.mode && coop.mode !== 'coop');
 const PVP = () => VS() || !!(coop && coop.pgm && coop.pvp);
-const ringR = () => VS() ? 650 : 380;
+const ringR = () => coop && coop.pgm ? Infinity : VS() ? 650 : 380;
 const MODES = { coop: 'Co-op', vs: 'Versus', '1v1': '1 vs 1', '2v2': '2 vs 2', '1v2': '1 vs 2' };
 let mpMode = 'coop';
 // e.g. "2 vs 1" from the actual teams
@@ -2685,7 +2686,7 @@ function pvpHit(att, q, dmg) {
   q.pvpCd = q.pvpCd || {};
   if ((q.pvpCd[att.id] || -1) > time) return;
   q.pvpCd[att.id] = time + 0.2;
-  const d = Math.max(1, dmg * PVP_SCALE - q.armor) * (q.hide ? 1 - 0.05 * Math.min(8, q.hide) : 1);
+  const d = Math.max(1, dmg * (coop && coop.pgm ? 0.15 : PVP_SCALE) - q.armor) * (q.hide ? 1 - 0.05 * Math.min(8, q.hide) : 1);
   q.hp -= d;
   if (q.cls === 'druid') q.guardT = 2;
   addText(q.x, q.y - 26, '-' + Math.round(d), '#ff9de9');
@@ -2803,7 +2804,9 @@ function groupCenter() {
   return n ? { x: x / n, y: y / n } : { x: me.x, y: me.y };
 }
 function spawnEnemy(type) {
-  const c = groupCenter(), a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60 + (coop ? ringR() * 0.5 : 0);
+  // playground rooms have no ring: demons appear around a random player instead of the middle of the group
+  const al = coop && coop.pgm ? players.filter(q => !q.dead) : null;
+  const c = al && al.length ? al[Math.floor(Math.random() * al.length)] : groupCenter(), a = rand(0, TAU), d = Math.hypot(W, H) / 2 + 60 + (coop && !coop.pgm ? ringR() * 0.5 : 0);
   return spawnAt(type, c.x + Math.cos(a) * d, c.y + Math.sin(a) * d);
 }
 // Hellhounds come in packs of three
@@ -2827,7 +2830,7 @@ function spawnAt(type, x, y) {
     atkCd: 0, dash: 0, wind: 0, dashT: rand(1, 3), dvx: 0, dvy: 0, sumT: rand(2, 4)
   };
   e.id = nextEid++;
-  if (pg.on && !ETYPES[type].ore && !ETYPES[type].still) { e.maxHp *= pg.mHp; e.hp *= pg.mHp; e.dmg *= pg.mDmg; e.speed *= pg.mSpd; }
+  if (pg.on && !ETYPES[type].ore && !ETYPES[type].still) { const L = coop && coop.pgm; const mh = L ? Math.min(3, pg.mHp) : pg.mHp; e.maxHp *= mh; e.hp *= mh; e.dmg *= L ? Math.min(3, pg.mDmg) : pg.mDmg; e.speed *= L ? Math.min(1.5, pg.mSpd) : pg.mSpd; }
   (enemiesReal || enemies).push(e);
   return e;
 }
@@ -3968,7 +3971,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '7.6';
+const GAME_VERSION = '7.7';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -4165,7 +4168,7 @@ function enterLobby(code, role, mode) {
   coopMsg('');
   $('mpChoice').classList.add('hidden');
   $('coopMenu').classList.add('hidden'); $('lobby').classList.remove('hidden');
-  $('mpTitle').textContent = lobby.mode === 'coop' ? 'Co-op' : 'Versus';
+  $('mpTitle').textContent = mpPg || lobby.pgm ? 'Playground' : lobby.mode === 'coop' ? 'Co-op' : 'Versus';
   $('mpInfo').textContent = MP_INFO[lobby.mode === 'coop' ? 'coop' : 'vs'];
   $('roomCode').textContent = code;
   $('coopStartBtn').classList.toggle('hidden', role !== 'host');
@@ -4203,14 +4206,17 @@ function renderLobbyExtras() {
   const vs = mode !== 'coop';
   row.textContent = '';
   const sp = document.createElement('span'); sp.className = 'info';
+  if (lobby.pgm) { $('mpTitle').textContent = 'Playground'; $('mpInfo').textContent = MP_INFO.pg; }
   sp.textContent = !vs ? (lobby.pgm ? 'Mode: Playground (no rewards) \u00b7 PvP ' + (lobby.pvp ? 'ON' : 'OFF') : 'Mode: Co-op') : count <= 2 ? 'Mode: Versus · 2 players = 1 vs 1 (the host is Team A)' : 'Mode: Versus · pick your team';
   row.appendChild(sp);
   // the host can turn the room into a playground for everyone
-  if (!vs && lobby.role === 'host') {
+  if (!vs && lobby.role === 'host' && !mpPg) {
     const b = document.createElement('button'); b.className = 'mode-btn' + (lobby.pgm ? ' on' : ''); b.textContent = lobby.pgm ? 'Playground: ON' : 'Playground: OFF';
     b.addEventListener('click', () => { lobby.pgm = !lobby.pgm; api('/rooms/' + lobby.code + '/meta', 'PATCH', { pgm: lobby.pgm }); renderLobbyExtras(); });
     row.appendChild(b);
-    if (lobby.pgm) {
+  }
+  if (!vs && lobby.role === 'host' && lobby.pgm) {
+    {
       const pv = document.createElement('button'); pv.className = 'mode-btn' + (lobby.pvp ? ' on' : ''); pv.textContent = lobby.pvp ? 'PvP: ON' : 'PvP: OFF';
       pv.addEventListener('click', () => { lobby.pvp = !lobby.pvp; api('/rooms/' + lobby.code + '/meta', 'PATCH', { pvp: lobby.pvp }); renderLobbyExtras(); });
       row.appendChild(pv);
@@ -4888,8 +4894,8 @@ function moveLocal(dt) {
   pushOut(me, PR, 0);
   blockBySolids(me, PR);
   clampObj(me, PR);
-  // Co-op ring: nobody can walk too far from the team
-  if (coop) {
+  // Co-op ring: nobody can walk too far from the team (no ring in a playground room)
+  if (coop && !coop.pgm) {
     const c = groupCenter(), dx = me.x - c.x, dy = me.y - c.y, d = Math.hypot(dx, dy);
     if (d > ringR()) { me.x = c.x + dx / d * ringR(); me.y = c.y + dy / d * ringR(); }
   }
@@ -4943,7 +4949,7 @@ function update(dt) {
     startIntro(ty, spawnEnemy(ty));
   }
   const gc = groupCenter();
-  nearObs = obstaclesNear(gc.x, gc.y, Math.max(W, H) * 0.9 + (coop ? ringR() : 0));
+  nearObs = obstaclesNear(gc.x, gc.y, Math.max(W, H) * 0.9 + (coop && !coop.pgm ? ringR() : 0));
   moveLocal(dt);
 
   // Aura of Valor: paladins raise the damage of everyone near them (themselves too)
@@ -5004,7 +5010,7 @@ function update(dt) {
   for (const e2 of evts) if (e2.npc && e2.st === 1 && !e2.npc.dead) allPets.push(e2.npc);
 
   // spawning
-  spawnT -= dt * (pg.on ? pg.rate : 1);
+  spawnT -= dt * (pg.on ? (coop && coop.pgm ? Math.min(3, pg.rate) : pg.rate) : 1);
   if (spawnT <= 0) {
     spawnT = Math.max(0.25, 1.2 - time * 0.004);
     const n = 1 + Math.floor(time / 75);
@@ -5926,7 +5932,7 @@ function render() {
   drawSpores(S2);
   drawTwins(S2, coop && coop.role === 'guest' ? twinsDraw : players.flatMap(q => q._twins || []));
   // co-op: the ring and your teammates
-  if (coop) {
+  if (coop && !coop.pgm) {
     const c = groupCenter(), [rx, ry] = S2(c.x, c.y);
     const edge = Math.hypot(me.x - c.x, me.y - c.y) / ringR();
     ctx.save();
