@@ -418,7 +418,7 @@
   </div>
 
   <div id="footer">
-    <span class="version">Version 7.7</span>
+    <span class="version">Version 7.8</span>
     <span class="author">Author: Ha Q. Vu - A5 K36 THCS Giang Vo - Ha Noi - Viet Nam<span class="note">This is a research and experimental project, not a commercial product.</span></span>
   </div>
 </div>
@@ -912,7 +912,14 @@ const ABYSS_COLORS = [
   { id: 'L_hellborn', name: 'Hellborn', main: '#ff2a00', light: '#ffd54a', dark: '#3a0000', price: 3000, legend: true, req: 'king', fx: 'flame' },
   { id: 'L_void', name: 'Void Crown', main: '#6a00ff', light: '#e0c8ff', dark: '#05001a', price: 4000, legend: true, req: 'king', fx: 'void' },
   { id: 'L_obsidian', name: 'Obsidian Fiend', main: '#ff1a1a', light: '#ff9a9a', dark: '#000000', price: 8000, legend: true, req: 'champ', fx: 'shards' },
-  { id: 'L_celestial', name: 'Celestial', main: '#ffffff', light: '#fff7c8', dark: '#ffb000', price: 10000, legend: true, req: 'champ', fx: 'halo' }
+  { id: 'L_celestial', name: 'Celestial', main: '#ffffff', light: '#fff7c8', dark: '#ffb000', price: 10000, legend: true, req: 'champ', fx: 'halo' },
+  { id: 'W_frost', name: 'Frostbite', main: '#9ae6ff', light: '#ffffff', dark: '#1d5f8a', price: 500, world: 2 },
+  { id: 'W_venom', name: 'Venom', main: '#7dff3a', light: '#e2ffc0', dark: '#1f5a00', price: 700, world: 3 },
+  { id: 'W_magma', name: 'Magma Heart', main: '#ff5a1f', light: '#ffd54a', dark: '#3a0a00', price: 900, world: 4 },
+  { id: 'W_void', name: 'Voidwalker', main: '#9d6bff', light: '#ffffff', dark: '#0a0014', price: 1100, world: 5 },
+  { id: 'W_seraph', name: 'Seraph', main: '#ffe9a8', light: '#ffffff', dark: '#b8860b', price: 1300, world: 6 },
+  { id: 'W_storm', name: 'Stormcaller', main: '#7fe9ff', light: '#fff7a0', dark: '#0a2a5a', price: 1500, world: 7 },
+  { id: 'W_dune', name: 'Dune Spirit', main: '#e0a060', light: '#fff0d0', dark: '#5a3010', price: 1700, world: 8 }
 ];
 let abyssOwned = [], abyssCurrent = '';
 try {
@@ -1401,9 +1408,10 @@ function renderCodes(body) {
 // ===== Playground: try anything, no rewards =====
 const PG_TYPES = ['imp', 'runner', 'charger', 'brute', 'splitter', 'wisp', 'necro', 'golem', 'bat', 'bomber', 'shade', 'hound', 'warlock', 'titan', 'ghoul', 'archer', 'banshee', 'scorpion'];
 const PG_NAMES = { imp: 'Imp', runner: 'Runner', charger: 'Charger', brute: 'Brute', splitter: 'Splitter', wisp: 'Wisp', necro: 'Necro', golem: 'Golem', bat: 'Bat', bomber: 'Bomber', shade: 'Shade', hound: 'Hound', warlock: 'Warlock', titan: 'Titan', ghoul: 'Ghoul', archer: 'Archer', banshee: 'Banshee', scorpion: 'Scorpion', boss: 'Abyss Boss', king: 'Demon King', champ: 'Hell Champion' };
+const pgNoCd = () => pg.on && pg.noCd !== false;
 const pg = { on: false, types: [], rate: 1, lvl: 1, mHp: 1, mDmg: 1, mSpd: 1, res: null };
-try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max'].includes(sv.lvl) ? sv.lvl : 1; pg.noDemons = !!sv.noDemons; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
-function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ noDemons: !!pg.noDemons, types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
+try { const sv = JSON.parse(localStorage.getItem('abyssPlusPlayground') || 'null'); if (sv) { pg.types = Array.isArray(sv.types) ? sv.types.filter(t => PG_TYPES.includes(t)) : []; pg.rate = [1, 2, 3, 5].includes(sv.rate) ? sv.rate : 1; pg.lvl = [1, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 'max'].includes(sv.lvl) ? sv.lvl : 1; pg.noDemons = !!sv.noDemons; pg.noCd = sv.noCd !== false; pg.mHp = +sv.mHp || 1; pg.mDmg = +sv.mDmg || 1; pg.mSpd = +sv.mSpd || 1; if (sv.res && typeof sv.res === 'object') pg.res = sv.res; } } catch (e) {}
+function savePg() { try { localStorage.setItem('abyssPlusPlayground', JSON.stringify({ noCd: pg.noCd !== false, noDemons: !!pg.noDemons, types: pg.types, rate: pg.rate, lvl: pg.lvl, mHp: pg.mHp, mDmg: pg.mDmg, mSpd: pg.mSpd, res: pg.res })); } catch (e) {} }
 const pgRes = () => { if (!pg.res) pg.res = Object.assign({}, prog.res.lv); return pg.res; };
 // re-do research and gear on the running character (playground)
 function pgRestat() {
@@ -1457,6 +1465,56 @@ function pgSetPvp(on) {
   coop.pvp = !!on;
   players.forEach((q, i) => { q.team = coop.pvp ? 'P' + (i + 1) : 'A'; });
   if (coop.role === 'host') api('/rooms/' + coop.code + '/meta', 'PATCH', { pvp: coop.pvp });
+}
+// the cursed chest: a neon chest, and the mimic it turns into
+let mimicEvt = null;
+function drawChest(x, y) {
+  ctx.save(); ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16;
+  ctx.fillStyle = '#2a1a0a'; ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2.5;
+  ctx.fillRect(x - 22, y - 10, 44, 26); ctx.strokeRect(x - 22, y - 10, 44, 26);
+  ctx.beginPath(); ctx.moveTo(x - 22, y - 10); ctx.quadraticCurveTo(x, y - 30, x + 22, y - 10); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#ffd54a'; ctx.fillRect(x - 4, y - 8, 8, 10);
+  ctx.restore();
+}
+function drawMimic(x, y) {
+  const chomp = Math.abs(Math.sin(clock * 6)) * 8;
+  ctx.save(); ctx.shadowColor = '#ff3bd0'; ctx.shadowBlur = 18; ctx.lineJoin = 'round';
+  // box with the open mouth
+  ctx.fillStyle = '#1a0a16'; ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2.5;
+  ctx.fillRect(x - 26, y - 6, 52, 30); ctx.strokeRect(x - 26, y - 6, 52, 30);
+  ctx.fillStyle = '#ff2a5a'; ctx.fillRect(x - 22, y - 6, 44, 8);
+  // lid tilted up
+  ctx.save(); ctx.translate(x - 26, y - 6); ctx.rotate(-0.5 - chomp / 40);
+  ctx.fillStyle = '#1a0a16'; ctx.fillRect(0, -18, 52, 18); ctx.strokeRect(0, -18, 52, 18);
+  ctx.fillStyle = '#ffffff'; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(4 + i * 8, 0); ctx.lineTo(8 + i * 8, 7); ctx.lineTo(12 + i * 8, 0); ctx.closePath(); ctx.fill(); }
+  ctx.fillStyle = '#ff3bd0'; ctx.beginPath(); ctx.arc(16, -9, 3, 0, TAU); ctx.arc(36, -9, 3, 0, TAU); ctx.fill();
+  ctx.restore();
+  // lower teeth and a long tongue
+  ctx.shadowBlur = 0; ctx.fillStyle = '#ffffff';
+  for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(x - 24 + i * 8, y - 6); ctx.lineTo(x - 20 + i * 8, y - 13); ctx.lineTo(x - 16 + i * 8, y - 6); ctx.closePath(); ctx.fill(); }
+  ctx.strokeStyle = '#ff7ad9'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x, y - 4); ctx.quadraticCurveTo(x + 30, y - 30 - chomp, x + 44, y - 12 + Math.sin(clock * 5) * 6); ctx.stroke();
+  // little legs
+  ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 3;
+  for (const sd of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + sd * 20, y + 24); ctx.lineTo(x + sd * 28, y + 32); ctx.stroke(); }
+  ctx.restore();
+}
+function drawCoin(x, y) {
+  const sq = Math.abs(Math.cos(clock * 3));
+  ctx.save(); ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.fillStyle = '#ffd54a'; ctx.strokeStyle = '#fff3b0'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(x, y, 12 * Math.max(0.2, sq), 12, 0, 0, TAU); ctx.fill(); ctx.stroke(); ctx.restore();
+}
+// the player picked a boss: the mimic spits it out (it flies up and lands like a Heroic Leap)
+function chooseMimic(tier) {
+  const e0 = mimicEvt; mimicEvt = null;
+  closeMeta();
+  if (!e0 || e0.st !== 1) { if (state === S.PAUSED) resumeGame(); return; }
+  const type = ['elite', 'boss', 'king'][tier], q = players.find(o => !o.dead) || me;
+  const a = Math.atan2(q.y - e0.y, q.x - e0.x), [tx, ty] = clampXY(e0.x + Math.cos(a) * 220, e0.y + Math.sin(a) * 220, 60);
+  const b = spawnAt(type, e0.x, e0.y);
+  b.leapT = 0.9; b.lsx = e0.x; b.lsy = e0.y; b.ltx = tx; b.lty = ty;
+  e0.boss = b; e0.tier = tier; e0.st = 2; e0.t = 60;
+  if (state === S.PAUSED) resumeGame();
 }
 function pgEndEvents() {
   for (const e of evts) { if (e.por) for (const o of e.por) o.dead = true; if (e.tot) e.tot.dead = true; if (e.gob) e.gob.dead = true; if (e.el) e.el.dead = true; }
@@ -1523,6 +1581,8 @@ function renderPlayground(body) {
   let ww = wrap();
   WORLDS.forEach((wd, i) => chip(ww, wd.name, worldId === i, () => { if (!pg.on) pg.prevWorld = pg.prevWorld === undefined ? worldId : pg.prevWorld; setWorld(i); renderMeta(); }));
   if (coop && coop.pgm && coop.role === 'host') { sec('PVP (players can hurt each other)'); const pw = wrap(); chip(pw, coop.pvp ? 'PvP: ON' : 'PvP: OFF', !!coop.pvp, () => { pgSetPvp(!coop.pvp); toast('PvP ' + (coop.pvp ? 'ON' : 'OFF')); renderMeta(); }); }
+  sec('ACTIVE SKILLS');
+  { const cw = wrap(); chip(cw, pg.noCd !== false ? 'No cooldowns: ON' : 'No cooldowns: OFF', pg.noCd !== false, () => { pg.noCd = pg.noCd === false; savePg(); renderMeta(); }); }
   sec('DEMONS');
   ww = wrap();
   chip(ww, pg.noDemons ? 'No demons: ON' : 'No demons: OFF', !!pg.noDemons, () => { pg.noDemons = !pg.noDemons; savePg(); renderMeta(); });
@@ -1566,8 +1626,8 @@ function renderPlayground(body) {
     for (const t of PG_TYPES.concat(['boss', 'king', 'champ'])) chip(w, PG_NAMES[t], false, () => { pgSpawn(t); renderMeta(); });
     sec('START AN EVENT NOW');
     w = wrap();
-    const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin', meteor: 'Meteor Shower', elite: 'Elite Hunt', chest: 'Cursed Chest', bounty: 'Bounty' };
-    for (const k of Object.keys(EVT_INFO)) chip(w, EVT_NAMES[k] || k, evts.some(e => e.kind === k), () => {
+    const EVT_NAMES = { rescue: 'Rescue', portals: 'Undead Portals', shrine: 'Cursed Shrine', totem: 'Demon Totem', goblin: 'Treasure Goblin', meteor: 'Meteor Shower', elite: 'Elite Hunt', chest: 'Cursed Chest', bounty: 'Bounty', coins: 'Treasure Hunt' };
+    for (const k of Object.keys(EVT_INFO).filter(k2 => !EVT_INFO[k2].hidden)) chip(w, EVT_NAMES[k] || k, evts.some(e => e.kind === k), () => {
       startEvent(k); evtT = 90; toast(EVT_NAMES[k] + ' started (' + evts.length + ' running)'); renderMeta();
     });
     chip(w, 'End all events', false, () => { pgEndEvents(); renderMeta(); }, !evts.length);
@@ -1694,7 +1754,8 @@ function openMeta(kind) {
   clearInterval(metaTimer);
   metaTimer = setInterval(() => { resTick(); if (metaKind === 'research') renderMeta(); }, 1000);
 }
-function closeMeta() { if (pg.on && me && (metaKind === 'gear' || metaKind === 'enhance')) { regear(me); updateHUD(true); }
+function closeMeta() {
+  if (metaKind === 'mimic' && mimicEvt) { metaKind = ''; chooseMimic(0); return; } if (pg.on && me && (metaKind === 'gear' || metaKind === 'enhance')) { regear(me); updateHUD(true); }
   waitBind = ''; $('metaModal').classList.add('hidden'); clearInterval(metaTimer); refreshMetaUI(); }
 function mrow(title, sub, act, cls) {
   const row = document.createElement('div'); row.className = 'mrow' + (cls ? ' ' + cls : '');
@@ -1733,6 +1794,12 @@ function renderMeta() {
   } else if (metaKind === 'gear') { renderGear(body);
   } else if (metaKind === 'enhance') { renderEnhance(body);
   } else if (metaKind === 'codes') { renderCodes(body);
+  } else if (metaKind === 'mimic') {
+    $('metaTitle').textContent = 'IT\u2019S A MIMIC!';
+    const note = document.createElement('div'); note.className = 'res-active';
+    note.textContent = 'The chest asks: which boss do you want to fight? Defeat it within 1 minute to win. Stronger boss, bigger reward!';
+    body.appendChild(note);
+    [['Elite Demon', 20], ['Abyss Boss', 50], ['Demon King', 175]].forEach(([nm, st], i) => mrow(nm, 'Reward: ' + st + ' stars', mbtn('Fight', true, () => chooseMimic(i))));
   } else if (metaKind === 'continue') { renderContinue(body);
   } else if (metaKind === 'levels') { renderLevels(body);
   } else if (metaKind === 'playground') { renderPlayground(body);
@@ -2027,7 +2094,7 @@ function renderShop() {
     return dot;
   };
   section('ABYSS COLORS');
-  ABYSS_COLORS.filter(c => !c.special && !c.legend).forEach(c => swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dotOf(c), bought => {
+  ABYSS_COLORS.filter(c => !c.special && !c.legend && !c.world).forEach(c => swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dotOf(c), bought => {
     if (bought) abyssOwned.push(c.id);
     abyssCurrent = c.id;
   }));
@@ -2036,6 +2103,17 @@ function renderShop() {
     if (bought) abyssOwned.push(c.id);
     abyssCurrent = c.id;
   }));
+  // world skins: reach the world first, then buy with stars
+  section('WORLD SKINS');
+  ABYSS_COLORS.filter(c => c.world).forEach(c => {
+    const open = prog.worldsOpen >= c.world, dot = dotOf(c);
+    dot.style.boxShadow = '0 0 14px ' + c.main;
+    if (open || abyssOwned.includes(c.id)) { swatch(c, abyssOwned.includes(c.id), c.id === abyssCurrent, c.price, dot, bought => { if (bought) abyssOwned.push(c.id); abyssCurrent = c.id; }); return; }
+    const b = document.createElement('button'); b.className = 'swatch'; b.disabled = true;
+    const nm = document.createElement('span'); nm.textContent = c.name;
+    const st = document.createElement('span'); st.className = 'state'; st.textContent = 'Reach ' + WORLDS[c.world - 1].name + ' \u00b7 ' + c.price + ' \u2605';
+    b.append(dot, nm, st); g.appendChild(b);
+  });
   // legendary: defeat the boss first, then buy with stars
   section('LEGENDARY');
   ABYSS_COLORS.filter(c => c.legend).forEach(c => {
@@ -2354,7 +2432,7 @@ function damageEnemy(e, dmg, kx, ky, stun) {
   if (e.dead) return;
   dmg *= ((p && p.auraMul) || 1) * ((p && p.might) || 1) * ((p && p.resDmg) || 1);
   if (p && p.cls === 'hunter' && p.ultT > 0) dmg *= p.ultMul;
-  if (e.pvp) { pvpHit(p, e.q, dmg); return; }
+  if (e.pvp) { if (e.grovePx) { hurtBear(e.grovePx, dmg * (coop && coop.pgm ? 0.15 : PVP_SCALE)); return; } pvpHit(p, e.q, dmg); return; }
   if (p) {
     if (p.rage) dmg *= 1 + 0.06 * Math.min(8, p.rage) * Math.max(0, 1 - p.hp / p.maxHp);
     if (p.exec && !BIG_DEMONS[e.type] && e.hp < e.maxHp * 0.2) dmg *= 1 + 0.15 * Math.min(8, p.exec);
@@ -2383,14 +2461,19 @@ const EVT_INFO = {
   goblin: { title: 'EVENT: TREASURE GOBLIN', sub: 'Catch the goblin within 30 s (2 gems)', goal: 'Catch the goblin', stars: 60 },
   meteor: { title: 'EVENT: METEOR SHOWER', sub: 'Meteors fall around you for 25 s. Stay alive and keep moving!', goal: 'Survive the meteors', stars: 40 },
   elite: { title: 'EVENT: ELITE HUNT', sub: 'Defeat the golden Elite Demon within 45 s', goal: 'Defeat the Elite Demon', stars: 55 },
-  chest: { title: 'EVENT: CURSED CHEST', sub: 'Open the chest and survive the demon waves for 20 s', goal: 'Guard the cursed chest', stars: 50 },
-  bounty: { title: 'EVENT: BOUNTY', sub: 'Defeat 40 demons within 40 s', goal: 'Bounty', stars: 45 }
+  chest: { title: 'EVENT: CURSED CHEST', sub: 'Walk up to the chest... if you dare!', goal: 'Open the cursed chest', stars: 50 },
+  bounty: { title: 'EVENT: BOUNTY', sub: 'Defeat 50 demons within 30 s', goal: 'Bounty', stars: 45 },
+  coins: { title: 'EVENT: TREASURE HUNT', sub: 'Collect 5 golden coins within 45 s', goal: 'Collect the coins', stars: 50 },
+  chest1: { title: 'MIMIC', sub: '', goal: 'Defeat the Elite Demon', stars: 20, hidden: true },
+  chest2: { title: 'MIMIC', sub: '', goal: 'Defeat the Abyss Boss', stars: 50, hidden: true },
+  chest3: { title: 'MIMIC', sub: '', goal: 'Defeat the Demon King', stars: 175, hidden: true }
 };
-const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g', meteor: 'm', elite: 'e', chest: 'c', bounty: 'b' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin', m: 'meteor', e: 'elite', c: 'chest', b: 'bounty' };
-let evt = null, evts = [], evtT = 90, evtLog = '';
+const EVT_CODE = { rescue: 'r', portals: 'p', shrine: 's', totem: 't', goblin: 'g', meteor: 'm', elite: 'e', chest: 'c', bounty: 'b', coins: 'o', chest1: 'x', chest2: 'y', chest3: 'z' }, EVT_FROM = { r: 'rescue', p: 'portals', s: 'shrine', t: 'totem', g: 'goblin', m: 'meteor', e: 'elite', c: 'chest', b: 'bounty', o: 'coins', x: 'chest1', y: 'chest2', z: 'chest3' };
+let lastEvtKind = '', evt = null, evts = [], evtT = 90, evtLog = '';
 function startEvent(pick) {
   const gc = groupCenter(), a = rand(0, TAU), d = rand(650, 900), [x, y] = clampXY(gc.x + Math.cos(a) * d, gc.y + Math.sin(a) * d, 200);
-  const kinds = Object.keys(EVT_INFO), kind = EVT_INFO[pick] ? pick : kinds[Math.floor(Math.random() * kinds.length)];
+  const kinds = Object.keys(EVT_INFO).filter(k => !EVT_INFO[k].hidden && k !== lastEvtKind), kind = EVT_INFO[pick] ? pick : kinds[Math.floor(Math.random() * kinds.length)];
+  lastEvtKind = kind;
   evt = { kind, x, y, st: 0, t: 45, pr: 0, spawnT: 2 };
   if (kind === 'rescue') evt.npc = { x, y, hp: 1, maxHp: 1, flash: 0, dead: false, npc: true };
   if (kind === 'portals') {
@@ -2401,7 +2484,8 @@ function startEvent(pick) {
   if (kind === 'goblin') { evt.st = 1; evt.t = 30; evt.gob = spawnAt('goblin', x, y); }
   if (kind === 'meteor') { evt.st = 1; evt.t = 25; evt.x = gc.x; evt.y = gc.y; }
   if (kind === 'elite') { evt.st = 1; evt.el = spawnAt('elite', x, y); }
-  if (kind === 'bounty') { evt.st = 1; evt.t = 40; evt.k0 = kills; evt.x = gc.x; evt.y = gc.y; }
+  if (kind === 'bounty') { evt.st = 1; evt.t = 30; evt.k0 = kills; evt.x = gc.x; evt.y = gc.y; }
+  if (kind === 'coins') { evt.st = 1; evt.t = 45; evt.pr = 0; evt.coins = Array.from({ length: 5 }, () => { const a = rand(0, TAU), d = rand(60, 380); const [cx, cy] = clampXY(x + Math.cos(a) * d, y + Math.sin(a) * d, 60); return { x: cx, y: cy, got: false }; }); }
   evts.push(evt);
   banner = { text: EVT_INFO[kind].title, sub: EVT_INFO[kind].sub + ' (+' + EVT_INFO[kind].stars + ' stars)', life: 3.2 };
   Sound.sfx('summon');
@@ -2446,15 +2530,37 @@ function updateEventOne(dt) {
     if (evt.t <= 0) endEvent(players.some(q => !q.dead));
   } else if (evt.kind === 'chest') {
     if (evt.st === 0) {
-      if (evtNear(130)) { evt.st = 1; evt.t = 20; evt.spawnT = 0.5; }
+      // walk up to it: the chest is a mimic! the game pauses and you pick a boss
+      if (evtNear(130)) { evt.st = 1; mimicEvt = evt; banner = { text: 'IT\u2019S A MIMIC!', sub: 'Pick the boss it spits out', life: 2 }; pauseGame(); openMeta('mimic'); }
       else if (evt.t <= 0) endEvent(null);
-    } else {
-      if (evt.spawnT <= 0) { evt.spawnT = 3; evtSpawnAround(evt.x, evt.y, 4, 260); }
-      if (evt.t <= 0) endEvent(players.some(q => !q.dead));
+    } else if (evt.st === 2) {
+      if (evt.boss.dead) { evt.kind = 'chest' + (evt.tier + 1); endEvent(true); }
+      else if (evt.t <= 0) {
+        // too slow: the boss vanishes in a puff of smoke and the mimic spits gem rocks at you
+        effects.push({ kind: 'puff', x: evt.boss.x, y: evt.boss.y, r: 90, life: 0.9, max: 0.9 });
+        evt.boss.dead = true; evt.st = 3; evt.t = 3; evt.gemsLeft = 5; evt.spawnT = 0.3;
+        banner = { text: 'TOO SLOW!', sub: 'The mimic spits gem rocks at you', life: 2 };
+      }
+    } else if (evt.st === 3) {
+      if (evt.gemsLeft > 0 && evt.spawnT <= 0) {
+        evt.spawnT = 0.4; evt.gemsLeft--;
+        const alive = players.filter(q => !q.dead);
+        if (alive.length) { const q = alive[Math.floor(Math.random() * alive.length)], a = rand(0, TAU), d = rand(0, 110); hazards.push({ x: q.x + Math.cos(a) * d, y: q.y + Math.sin(a) * d, r: 45, t: 1, max: 1, met: 1, gem: rollGem(), sx: evt.x, sy: evt.y, dmg: 30 * (1 + time / 240) }); }
+      }
+      if (evt.gemsLeft <= 0 && evt.t <= 0) endEvent(false);
     }
+  } else if (evt.kind === 'coins') {
+    const gcn = groupCenter(); let best = null, bd = Infinity;
+    for (const c of evt.coins) {
+      if (c.got) continue;
+      if (players.some(q => !q.dead && (q.x - c.x) ** 2 + (q.y - c.y) ** 2 < 40 * 40)) { c.got = true; evt.pr++; effects.push({ kind: 'heal', x: c.x, y: c.y, r: 40, life: 0.6, max: 0.6 }); Sound.sfx('level'); continue; }
+      const d = (c.x - gcn.x) ** 2 + (c.y - gcn.y) ** 2; if (d < bd) { bd = d; best = c; }
+    }
+    if (best) { evt.x = best.x; evt.y = best.y; }
+    if (evt.pr >= 5) endEvent(true); else if (evt.t <= 0) endEvent(false);
   } else if (evt.kind === 'bounty') {
     const gc3 = groupCenter(); evt.x = gc3.x; evt.y = gc3.y; evt.pr = kills - evt.k0;
-    if (evt.pr >= 40) endEvent(true); else if (evt.t <= 0) endEvent(false);
+    if (evt.pr >= 50) endEvent(true); else if (evt.t <= 0) endEvent(false);
   } else if (evt.kind === 'elite') {
     const el = evt.el;
     evt.x = el.x; evt.y = el.y;
@@ -2482,6 +2588,7 @@ function endEvent(ok) {
   if (evt.tot) evt.tot.dead = true;
   if (evt.gob && !evt.gob.dead) evt.gob.dead = true;
   if (evt.el && !evt.el.dead) evt.el.dead = true;
+  if (evt.boss && !evt.boss.dead && evt.st !== 2) evt.boss.dead = true;
   evt = null; evtT = 90;
 }
 function evtReward(kind, gem) {
@@ -2514,10 +2621,10 @@ function drawEventOne(S2, idx) {
     ctx.strokeStyle = 'rgba(200, 120, 255, 0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, 110, 0, TAU); ctx.stroke();
     if (evt.st === 1) { ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(x, y, 118, -Math.PI / 2, -Math.PI / 2 + TAU * Math.min(1, evt.pr / 20)); ctx.stroke(); }
     ctx.fillStyle = '#e0b3ff'; ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillText('SHRINE', x, y + 4);
+  } else if (evt.kind === 'coins') {
+    for (const c of (evt.coins || [{ x: evt.x, y: evt.y, got: false }])) { if (c.got) continue; const [cx, cy] = S2(c.x, c.y); drawCoin(cx, cy); }
   } else if (evt.kind === 'chest') {
-    // a glowing treasure chest
-    ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16; ctx.fillStyle = '#5a3a14'; ctx.fillRect(x - 18, y - 12, 36, 24);
-    ctx.fillStyle = '#ffd54a'; ctx.fillRect(x - 18, y - 4, 36, 4); ctx.fillRect(x - 3, y - 6, 6, 8); ctx.shadowBlur = 0;
+    if (evt.st === 0) drawChest(x, y); else if (evt.st !== 2) drawMimic(x, y);
     if (evt.st === 0) { ctx.strokeStyle = 'rgba(255, 213, 74, ' + (0.4 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([10, 8]); ctx.beginPath(); ctx.arc(x, y, 130, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
   } else if (evt.kind === 'totem') {
     ctx.strokeStyle = 'rgba(255, 59, 42, ' + (0.35 * pulse) + ')'; ctx.lineWidth = 2; ctx.setLineDash([12, 10]); ctx.beginPath(); ctx.arc(x, y, 450, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
@@ -2545,11 +2652,14 @@ function drawEventOne(S2, idx) {
   if (evt.kind === 'rescue') line += evt.st === 0 ? ' \u00b7 go to the survivor' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else if (evt.kind === 'portals') line += ' \u00b7 ' + (evt.por ? evt.por.filter(o => !o.dead).length + ' left \u00b7 ' : '') + Math.ceil(Math.max(0, evt.t)) + 's';
   else if (evt.kind === 'chest') line += evt.st === 0 ? ' \u00b7 go to the chest' : ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
-  else if (evt.kind === 'bounty') line += ' \u00b7 ' + Math.min(40, evt.pr | 0) + '/40 \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'bounty') line += ' \u00b7 ' + Math.min(50, evt.pr | 0) + '/50 \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'coins') line += ' \u00b7 ' + (evt.pr | 0) + '/5 \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'chest' && evt.st === 2) line = (EVT_INFO['chest' + (evt.tier + 1)] || EVT_INFO.chest).goal + ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
+  else if (evt.kind === 'chest' && evt.st === 3) line = 'The mimic is angry!';
   else if (evt.kind === 'totem' || evt.kind === 'goblin' || evt.kind === 'meteor' || evt.kind === 'elite') line += ' \u00b7 ' + Math.ceil(Math.max(0, evt.t)) + 's';
   else line += evt.st === 0 ? ' \u00b7 go to the shrine' : ' \u00b7 ' + Math.floor(evt.pr) + '/20s';
   ctx.font = '700 12px ui-monospace, Menlo, monospace'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255, 233, 168, 0.95)';
-  ctx.fillText('EVENT: ' + line, W / 2, H * 0.14 + idx * 16);
+  ctx.fillText('EVENT: ' + line, W / 2, Math.max(H * 0.14, 90) + idx * 16);
 }
 const BLADE_R = 105;
 function killEnemy(e) {
@@ -3219,7 +3329,7 @@ function setBearHp(c, on) {
 function castUlt(c) {
   const r = ultRank(c);
   if (!c || c.dead || !r || c.ultCd > 0) return;
-  c.ultR = r; c.ultCd = pg.on ? 0 : c.cls === 'fallen' ? 60 : ULT_CD; c.ultT = c.cls === 'fallen' ? DEMON_T[r] : ULT_TIME;
+  c.ultR = r; c.ultCd = pgNoCd() ? 0 : c.cls === 'fallen' ? 60 : ULT_CD; c.ultT = c.cls === 'fallen' ? DEMON_T[r] : ULT_TIME;
   if (c.cls === 'hunter') c.ultMul = [1, 1.5, 2, 2.5][r];
   else if (c.cls === 'warrior') { c.ultHp = [0, 50, 75, 100][r]; c.maxHp += c.ultHp; c.hp += c.ultHp; c.waveT = 0; }
   else if (c.cls === 'druid') { c.roarT = 0; if (c.form === 'bear') setBearHp(c, true); }
@@ -3269,7 +3379,8 @@ function tickUlt(c, dt) {
       const bear = c.form === 'bear', Rr = bear ? 420 : 300;
       c.roarT = bear ? 2 : 2.5;
       effects.push({ kind: bear ? 'roarB' : 'roar', x: c.x, y: c.y, r: Rr, life: 0.6, max: 0.6, owner: c });
-      for (const e of enemiesNear(c.x, c.y, Rr)) if (e.type !== 'boss' && e.type !== 'king' && e.type !== 'champ') { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
+      for (const e of enemiesNear(c.x, c.y, Rr)) if (e.type !== 'boss' && e.type !== 'king' && e.type !== 'champ' && e.type !== 'goblin' && !e.pvp) { e.fear = 1.6; e.fx = c.x; e.fy = c.y; }
+      if (PVP()) for (const q of players) if (!q.dead && q.team !== c.team && (q.x - c.x) ** 2 + (q.y - c.y) ** 2 < Rr * Rr) { q.fearT = 1.6; q.fearX = c.x; q.fearY = c.y; }
       if (c === me) Sound.sfx('boss');
     }
   }
@@ -3342,7 +3453,7 @@ function skill1() {
 const novaCdOf = c => [90, 90, 84, 78, 72, 66, 60, 55, 50, 45, 40][Math.min(10, c.nova || 0)];
 function castNova(c) {
   if (!c || c.dead || !c.nova || c.novaCd > 0 || state !== S.PLAYING) return;
-  c.novaCd = pg.on ? 0 : novaCdOf(c);
+  c.novaCd = pgNoCd() ? 0 : novaCdOf(c);
   const R = 330, dmg = (35 + 25 * c.nova) * hpScale(), cx = c.x, cy = c.y;
   effects.push({ kind: 'nova', x: cx, y: cy, r: R, life: 0.6, max: 0.6 });
   for (const e of enemiesNear(cx, cy, R)) { const dx = e.x - cx, dy = e.y - cy, d = Math.hypot(dx, dy) || 1; damageEnemy(e, dmg, dx / d * 800, dy / d * 800, 0.5); }
@@ -3584,6 +3695,17 @@ const METEOR = [
   { c: '#7fe9ff', core: '#fff7a0', hurt: 3.6, slow: 1 },
   { c: '#c8782e', core: '#ffd9a8', hurt: 4.3, slow: 1 }
 ];
+function drawGemRock(h, x, y, k) {
+  ctx.save();
+  ctx.globalAlpha = 0.25 + 0.35 * k; ctx.fillStyle = '#ff3bd0'; ctx.beginPath(); ctx.arc(x, y, h.r * k, 0, TAU); ctx.fill();
+  ctx.globalAlpha = 0.9; ctx.strokeStyle = '#ff7ad9'; ctx.lineWidth = 2.5; ctx.setLineDash([8, 6]); ctx.beginPath(); ctx.arc(x, y, h.r, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
+  // flies in an arc from the mimic (or drops from above)
+  const cam = camPos(), sx = h.sx !== undefined ? h.sx - cam.x + W / 2 : x, sy = h.sy !== undefined ? h.sy - cam.y + H / 2 : y - 400;
+  const gx = sx + (x - sx) * k, gy = sy + (y - sy) * k - Math.sin(k * Math.PI) * 160;
+  const gem = GEMS.find(g => g.id === h.gem) || GEMS[Math.floor((h.x * 7 + h.y) % GEMS.length + GEMS.length) % GEMS.length];
+  ctx.globalAlpha = 1; ctx.translate(gx, gy); ctx.rotate(clock * 5); drawOre(ctx, 18, gem.color);
+  ctx.restore();
+}
 function drawMeteor(x, y, r, k) {
   const M = METEOR[worldId] || METEOR[0];
   ctx.save();
@@ -3669,7 +3791,7 @@ function drawCrowStuff(S2) {
 }
 function castGrove(c, tx, ty) {
   if (!c || c.dead || !c.grove || c.groveCd > 0 || state !== S.PLAYING) return;
-  c.groveCd = pg.on ? 0 : groveCdOf(c);
+  c.groveCd = pgNoCd() ? 0 : groveCdOf(c);
   const lv = Math.min(8, c.grove), mh = 300 * (1 + 0.35 * lv) * (1 + time / 300);
   c._groves.push({ x: tx, y: ty, r: 38, hp: mh, maxHp: mh, grove: true, owner: c, flash: 0, dead: false, seed: Math.random() * 6 });
   effects.push({ kind: 'vines', x: tx, y: ty, r: 130, life: 0.7, max: 0.7, seed: Math.random() * 6 });
@@ -3696,7 +3818,7 @@ function castActive(c, tx, ty) {
   [tx, ty] = clampXY(tx, ty, 30);
   if (c.cls === 'druid') { castGrove(c, tx, ty); return; }
   const lv = actLv(c);
-  c.groveCd = pg.on ? 0 : actCdOf(c);
+  c.groveCd = pgNoCd() ? 0 : actCdOf(c);
   if (c.cls === 'hunter') {
     c._traps.push({ x: tx, y: ty, life: 30 });
     while (c._traps.length > 3 + Math.floor(lv / 3)) c._traps.shift();
@@ -3827,46 +3949,24 @@ function drawCrows(x, y, n) {
   ctx.restore();
 }
 function drawFalcon(x, y) {
-  // a neon kestrel seen from the front: wide striped wings, a fanned tail
-  const fx = x + Math.sin(clock * 1.7) * 8, fy = y - 52 + Math.sin(clock * 3) * 3, flap = Math.sin(clock * 12) * 5;
-  ctx.save(); ctx.translate(fx, fy); ctx.scale(0.42, 0.42);
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  // tail fan with stripes
-  ctx.shadowColor = '#ffb347'; ctx.shadowBlur = 18;
-  ctx.fillStyle = 'rgba(30, 28, 40, 0.95)';
-  ctx.beginPath(); ctx.moveTo(-7, 14); ctx.lineTo(-26, 54); ctx.quadraticCurveTo(0, 66, 26, 54); ctx.lineTo(7, 14); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2.5; ctx.stroke();
-  ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)'; ctx.lineWidth = 2;
-  for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(0, 8, 16 + i * 10, Math.PI * 0.33, Math.PI * 0.67); ctx.stroke(); }
-  // wings
+  // a small, simple neon falcon: wings, tail, body and head
+  const fx = x + Math.sin(clock * 1.7) * 8, fy = y - 44 + Math.sin(clock * 3) * 3, flap = Math.sin(clock * 12) * 4;
+  ctx.save(); ctx.translate(fx, fy); ctx.scale(0.3, 0.3);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.shadowColor = '#ffb347'; ctx.shadowBlur = 16;
+  ctx.fillStyle = 'rgba(30, 28, 44, 0.95)'; ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 3;
+  // tail
+  ctx.beginPath(); ctx.moveTo(-6, 14); ctx.lineTo(-18, 46); ctx.lineTo(18, 46); ctx.lineTo(6, 14); ctx.closePath(); ctx.fill(); ctx.stroke();
+  // wings with three feather tips
   for (const sd of [-1, 1]) {
-    ctx.save(); ctx.scale(sd, 1);
-    ctx.shadowColor = '#ffb347'; ctx.shadowBlur = 18;
-    ctx.fillStyle = 'rgba(32, 36, 52, 0.95)';
-    ctx.beginPath(); ctx.moveTo(6, -8);
-    ctx.quadraticCurveTo(44, -30 - flap, 92, -20 - flap);
-    // feather tips
-    for (let j = 0; j < 6; j++) ctx.lineTo(90 - j * 13, -10 - flap * (1 - j / 6) + (j % 2 ? 8 : 0));
-    ctx.lineTo(10, 12); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#ffd54a'; ctx.lineWidth = 2.5; ctx.stroke();
-    ctx.shadowBlur = 0;
-    // striped flight feathers
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)'; ctx.lineWidth = 2;
-    for (let j = 0; j < 6; j++) { const sx = 26 + j * 11; ctx.beginPath(); ctx.moveTo(sx, -22 - flap * (sx / 92)); ctx.lineTo(sx - 4, -2 - flap * (sx / 120)); ctx.stroke(); }
-    // warm shoulder
-    ctx.fillStyle = 'rgba(255, 170, 90, 0.75)'; ctx.beginPath(); ctx.ellipse(22, -10, 14, 7, -0.2, 0, TAU); ctx.fill();
-    ctx.restore();
+    ctx.beginPath(); ctx.moveTo(sd * 6, -6); ctx.lineTo(sd * 80, -20 - flap); ctx.lineTo(sd * 70, -6 - flap * 0.6); ctx.lineTo(sd * 60, -14 - flap * 0.5); ctx.lineTo(sd * 48, 0); ctx.lineTo(sd * 36, -6); ctx.lineTo(sd * 8, 12); ctx.closePath(); ctx.fill(); ctx.stroke();
   }
+  ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)'; ctx.lineWidth = 2.5;
+  for (const sd of [-1, 1]) for (let j = 0; j < 3; j++) { const sx = sd * (28 + j * 16); ctx.beginPath(); ctx.moveTo(sx, -14 - flap * (j + 1) / 4); ctx.lineTo(sx - sd * 4, 0); ctx.stroke(); }
   // body and head
-  ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 16;
-  const bg = ctx.createLinearGradient(0, -20, 0, 22); bg.addColorStop(0, '#ffe2b0'); bg.addColorStop(1, '#ff9a4a');
-  ctx.fillStyle = bg; ctx.beginPath(); ctx.ellipse(0, 4, 10, 20, 0, 0, TAU); ctx.fill();
-  ctx.beginPath(); ctx.arc(0, -16, 9, 0, TAU); ctx.fill();
-  ctx.shadowBlur = 0; ctx.fillStyle = '#120a06';
-  ctx.beginPath(); ctx.arc(-3.5, -18, 2, 0, TAU); ctx.arc(3.5, -18, 2, 0, TAU); ctx.fill();
-  ctx.fillStyle = '#ff7a1a'; ctx.beginPath(); ctx.moveTo(-2, -14); ctx.lineTo(2, -14); ctx.lineTo(0, -10); ctx.closePath(); ctx.fill();
-  // talons
-  ctx.strokeStyle = '#ffb347'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-4, 22); ctx.lineTo(-5, 28); ctx.moveTo(4, 22); ctx.lineTo(5, 28); ctx.stroke();
+  ctx.fillStyle = '#ffb36b'; ctx.shadowColor = '#ffd54a'; ctx.shadowBlur = 12;
+  ctx.beginPath(); ctx.ellipse(0, 4, 9, 17, 0, 0, TAU); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -15, 8, 0, TAU); ctx.fill();
+  ctx.shadowBlur = 0; ctx.fillStyle = '#ff7a1a'; ctx.beginPath(); ctx.moveTo(-2.5, -12); ctx.lineTo(2.5, -12); ctx.lineTo(0, -7); ctx.closePath(); ctx.fill();
   ctx.restore();
 }
 function drawFallenLook(x, y, q, scale, dark) {
@@ -3971,7 +4071,7 @@ function updateBears(dt) {
 
 // ===== Leaderboard (world via Firebase, falls back to this device) =====
 const LB_URL = 'https://level-plus-b1948-default-rtdb.asia-southeast1.firebasedatabase.app';
-const GAME_VERSION = '7.7';
+const GAME_VERSION = '7.8';
 const pad2 = x => String(x).padStart(2, '0');
 const fmtDate = t => { if (!t) return ''; const d = new Date(t); return pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()); };
 const DEVICE = (() => {
@@ -4396,7 +4496,7 @@ function buildSnapshot() {
   for (const q of players) {
     pl[q.id] = {
       x: r(q.x), y: r(q.y), hp: r(Math.max(0, q.hp)), mh: r(q.maxHp), lv: q.lvl, xp: +q.xp.toFixed(1), xn: q.xpNext, sp: r(q.speed),
-      slw: +(q.slowT || 0).toFixed(1), stn: +(q.stunT || 0).toFixed(1), tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura, br: r(q.barrier || 0),
+      slw: +(q.slowT || 0).toFixed(1), stn: +(q.stunT || 0).toFixed(1), fr: q.fearT > 0 ? [+q.fearT.toFixed(1), r(q.fearX), r(q.fearY)] : 0, tm: q.team || 'A', d: q.dead ? 1 : 0, lf: q.left ? 1 : 0, rv: +(q.revive || 0).toFixed(1), dt: r(q.deathTime || 0), of: q.offer || 0, gc: +q.grenadeCd.toFixed(1), gl: q.grenade, hc: +q.healCd.toFixed(1), ac: +(q.angelCd || 0).toFixed(1), uc: +q.ultCd.toFixed(1), ut: +q.ultT.toFixed(1), ur: q.ultR, fm: q.form, sc: +q.shieldCd.toFixed(1), sl: q.shield, st: +q.shieldT.toFixed(2), au: q.aura, br: r(q.barrier || 0),
       bl: q.blades, ba: +q.bladeAng.toFixed(2), u: q.ups, cs: q.conse || 0, n: q.name, c: q.cls, s: { m: q.skin.main, l: q.skin.light, d: q.skin.dark, f: q.skin.fx || '' },
       w: q._wolves.map(w => [r(w.x), r(w.y), +w.ang.toFixed(2)]),
       nc: +(q.novaCd || 0).toFixed(1), nv: q.nova || 0, fa: q.falcon || 0, cw: q.crows || 0, spx: q.spore ? [r(q.sporeX || 0), r(q.sporeY || 0)] : 0, gd: +(q.groveCd || 0).toFixed(1),
@@ -4411,7 +4511,7 @@ function buildSnapshot() {
     bu: players.flatMap(q => q._bullets).slice(0, 90).map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy)]),
     eb: ebullets.map(b => [r(b.x), r(b.y), r(b.vx), r(b.vy), b.champ ? 2 : b.king ? 1 : 0]),
     tn: players.flatMap(q => q._tornados).map(t => [r(t.x), r(t.y), r(t.r)]),
-    gv: players.flatMap(q => (q._groves || []).map(g => [r(g.x), r(g.y), +(Math.max(0, g.hp) / g.maxHp).toFixed(2), q.id])), cr: players.flatMap(q => (q._crowsE || []).map(c => [r(c.x), r(c.y)])), cst: players.flatMap(q => (q._cstorms || []).map(w => [r(w.x), r(w.y), r(w.r)])), trp: players.flatMap(q => (q._traps || []).map(t => [r(t.x), r(t.y)])), gml: gemLog, pvp: coop && coop.pvp ? 1 : 0, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.met ? 1 : 0]), wd: worldId,
+    gv: players.flatMap(q => (q._groves || []).map(g => [r(g.x), r(g.y), +(Math.max(0, g.hp) / g.maxHp).toFixed(2), q.id])), cr: players.flatMap(q => (q._crowsE || []).map(c => [r(c.x), r(c.y)])), cst: players.flatMap(q => (q._cstorms || []).map(w => [r(w.x), r(w.y), r(w.r)])), trp: players.flatMap(q => (q._traps || []).map(t => [r(t.x), r(t.y)])), gml: gemLog, gs: gameSpeed, pvp: coop && coop.pvp ? 1 : 0, evr: evtLog, ev: evt ? { k: evt.kind, x: r(evt.x), y: r(evt.y), st: evt.st, t: +evt.t.toFixed(1), pr: +(evt.pr || 0).toFixed(1), nh: evt.npc && evt.npc.maxHp ? +(Math.max(0, evt.npc.hp) / evt.npc.maxHp).toFixed(2) : 1, pl: evt.por ? evt.por.filter(o => !o.dead).length : 0 } : 0, hz: hazards.map(h => [r(h.x), r(h.y), r(h.r), +(h.t / h.max).toFixed(2), h.gem ? 2 : h.met ? 1 : 0]), wd: worldId,
     gr: players.flatMap(q => q._grenades).map(g => [r(g.sx), r(g.sy), r(g.tx), r(g.ty), +(g.t / g.dur).toFixed(2)]),
     fx: effects.filter(f => !f.sent).map(f => { f.sent = true; return [f.kind, r(f.x), r(f.y), r(f.r || 0), (f.kind === 'chainseg' || f.kind === 'dbolt' || f.kind === 'falcon' || f.kind === 'crow') ? r(f.seed) : +(f.seed || 0).toFixed(2), f.owner ? f.owner.id : 0]; }),
     kx: killFx.splice(0, killFx.length)
@@ -4637,6 +4737,7 @@ function coopLost(text) {
   showCoopOver(text);
 }
 function leaveCoop() {
+  gameSpeed = 1; $('speedBtn').textContent = 'x1';
   pg.on = false; $('pausePgBtn').classList.add('hidden'); $('pauseGearBtn').classList.add('hidden');
   if (!coop) return;
   if (coop.stateStream) coop.streams.push(coop.stateStream);
@@ -4670,7 +4771,7 @@ function guestSend(force) {
   if (coop.pick) body.pick = coop.pick;
   api('/rooms/' + coop.code + '/players/' + myId, 'PUT', body).finally(() => { if (coop) coop.sending = false; });
 }
-const FX_LIFE = { crow: 0.3, metboom: 0.45, falcon: 0.3, whirl: 0.45, vines: 0.7, moon: 0.5, hline: 0.4, rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
+const FX_LIFE = { puff: 0.9, crow: 0.3, metboom: 0.45, falcon: 0.3, whirl: 0.45, vines: 0.7, moon: 0.5, hline: 0.4, rend: 0.35, conse: 0.5, nova: 0.6, raze: 0.45, halfslash: 0.22, dbolt: 0.18, dsplash: 0.3, step: 0.4, feast: 0.6, chainseg: 0.25, charge: 2, quake: 0.7, roarB: 0.6, wave: 0.45, roar: 0.6, sanct: 0.8, zap: 0.35, smite: 0.35, judge: 0.5, heal: 0.8, shield: 0.4, revive: 0.8, cleave: 0.3, slam: 0.45, arrow: 0.35, bolt: 0.3, blast: 0.5, summon: 0.6, thorns: 0.3, death: 0.5 };
 function onSnapshot(s) {
   if (!coop || coop.role !== 'guest' || !s || typeof s !== 'object') return;
   if ((s.rd || 0) !== (coop.round || 0) || state === S.OVER) return;
@@ -4715,6 +4816,7 @@ function onSnapshot(s) {
     coop.gemSeen = s.gml.length;
   }
   if (coop) coop.pvp = !!s.pvp;
+  gameSpeed = s.gs || 1;
   if (typeof s.evr === 'string') {
     if (s.evr.length < (coop.evSeen || 0)) coop.evSeen = 0;
     const nw = s.evr.slice(coop.evSeen || 0);
@@ -4765,7 +4867,7 @@ function onSnapshot(s) {
       track(o, b[0], b[1]); o.hp = b[2]; o.maxHp = 100; o.oid = id;
       nt.set(key, o); twinsDraw.push(o); myTw.push(o);
     });
-    if (id === myId) { me.crows = v.cw || 0; me.groveCd = v.gd || 0; me.grove = (v.u && v.u.d_grove) || 0; me.spore = v.spx ? 1 : 0; if (v.spx) { me.sporeX = v.spx[0]; me.sporeY = v.spx[1]; } if (v.slw > (me.slowT || 0)) me.slowT = v.slw; if (v.stn > (me.stunT || 0)) me.stunT = v.stn; me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
+    if (id === myId) { me.crows = v.cw || 0; me.groveCd = v.gd || 0; me.grove = (v.u && v.u.d_grove) || 0; me.spore = v.spx ? 1 : 0; if (v.spx) { me.sporeX = v.spx[0]; me.sporeY = v.spx[1]; } if (v.slw > (me.slowT || 0)) me.slowT = v.slw; if (v.stn > (me.stunT || 0)) me.stunT = v.stn; if (v.fr && v.fr[0] > (me.fearT || 0)) { me.fearT = v.fr[0]; me.fearX = v.fr[1]; me.fearY = v.fr[2]; } me.falcon = v.fa || 0; me.novaCd = v.nc || 0; me.nova = v.nv || 0; me._twins = myTw; me.feastT = v.ft ? 1 : 0; me.stepCd = v.fc || 0; me.step = (v.u && v.u.f_step) || 0; }
     if (id === myId) {
       me.hp = v.hp; me.maxHp = v.mh; me.lvl = v.lv; me.xp = v.xp; me.xpNext = v.xn; me.speed = v.sp || me.speed;
       me.grenadeCd = v.gc || 0; me.grenade = v.gl || 0; me.healCd = v.hc || 0; me.angelCd = v.ac || 0; me.ultCd = v.uc || 0; me.ultT = v.ut || 0; me.ultR = v.ur || 0; if (!coop.fm) me.form = v.fm || 'wolf'; me.shieldCd = v.sc || 0; me.shield = v.sl || 0; me.shieldT = v.st || 0; me.aura = v.au || 0; me.conse = v.cs || 0; me.barrier = v.br || 0; me.blades = v.bl || 0; me.bladeAng = v.ba || 0; me.ups = v.u || {};
@@ -4872,7 +4974,7 @@ function moveLocal(dt) {
     if (k >= 1) {
       me.leapAnim = null;
       if (coop && coop.role === 'guest') { coop.gvc = (coop.gvc || 0) + 1; coop.gvx = Math.round(me.x); coop.gvy = Math.round(me.y); guestSend(true); }
-      else { const prevP = p; use(me); me.remote = true; me.groveCd = 0; castActive(me, me.x, me.y); me.remote = false; if (prevP !== me) use(prevP); me.groveCd = pg.on ? 0 : actCdOf(me); }
+      else { const prevP = p; use(me); me.remote = true; me.groveCd = 0; castActive(me, me.x, me.y); me.remote = false; if (prevP !== me) use(prevP); me.groveCd = pgNoCd() ? 0 : actCdOf(me); }
       shake = Math.max(shake, 10);
     }
     return;
@@ -4888,6 +4990,7 @@ function moveLocal(dt) {
   if (unst) { me.slowT = 0; me.stunT = 0; }
   if (me.slowT > 0) me.slowT -= dt;
   if (me.stunT > 0) { me.stunT -= dt; mx = 0; my = 0; }
+  if (me.fearT > 0) { me.fearT -= dt; const fdx = me.x - me.fearX, fdy = me.y - me.fearY, fd = Math.hypot(fdx, fdy) || 1; mx = fdx / fd; my = fdy / fd; }
   const spd = (me.slowT > 0 ? 0.55 : 1) * me.speed * (me.cls === 'druid' && me.ultT > 0 && me.form === 'wolf' ? 1.4 : 1) * (inLiquid(me.x, me.y) ? WP().liq.slow : 1);
   me.x += mx * spd * dt; me.y += my * spd * dt;
   if (WP().liq.pull) { const pv = liquidPull(me.x, me.y); if (pv && pv[2] > 4) { me.x += pv[0] * WP().liq.pull * dt; me.y += pv[1] * WP().liq.pull * dt; } }
@@ -4970,6 +5073,7 @@ function update(dt) {
     if (PVP()) {
       real = enemies; enemiesReal = real;
       prox = players.filter(o => o.team !== pl.team && !o.dead).map(o => ({ pvp: true, q: o, x: o.x, y: o.y, r: PR, type: 'brute', hp: 1, maxHp: 1, kx: 0, ky: 0, stun: 0, flash: 0, bladeCd: 0, dead: false }));
+      for (const o of players) if (o.team !== pl.team) for (const g of (o._groves || [])) if (!g.dead) prox.push({ pvp: true, grovePx: g, x: g.x, y: g.y, r: 38, type: 'brute', hp: 1, maxHp: 1, kx: 0, ky: 0, stun: 0, flash: 0, bladeCd: 0, dead: false });
       enemies = real.concat(prox);
     }
     updateWeapons(dt);
@@ -4988,6 +5092,7 @@ function update(dt) {
     }
     if (p.remote && p.slowT > 0) p.slowT -= dt;
     if (p.remote && p.stunT > 0) p.stunT -= dt;
+    if (p.remote && p.fearT > 0) p.fearT -= dt;
     p.retriCd = Math.max(0, (p.retriCd || 0) - dt); p.angelCd = Math.max(0, (p.angelCd || 0) - dt);
     p.guardT = Math.max(0, (p.guardT || 0) - dt);
     for (const g of grenades) { g.t += dt; if (g.t >= g.dur) { g.done = true; explodeGrenade(g.tx, g.ty); } }
@@ -5053,6 +5158,13 @@ function update(dt) {
   refreshSolids();
   for (const e of enemies) {
     if (e.dead) continue;
+    if (e.leapT > 0) {
+      e.leapT -= dt;
+      const k = Math.min(1, 1 - e.leapT / 0.9);
+      e.x = e.lsx + (e.ltx - e.lsx) * k; e.y = e.lsy + (e.lty - e.lsy) * k;
+      if (e.leapT <= 0) { effects.push({ kind: 'slam', x: e.x, y: e.y, r: 120, life: 0.5, max: 0.5 }); shake = Math.max(shake, 10); }
+      continue;
+    }
     if (e.psnT > 0) {
       e.psnT -= dt; e.psnTick = (e.psnTick || 0) - dt;
       if (e.psnTick <= 0) { e.psnTick = 0.5; const prevP = p; p = e.psnOwner || me; damageEnemy(e, e.psn * 0.5, 0, 0, 0); p = prevP; if (e.dead) continue; }
@@ -5558,7 +5670,7 @@ function updateWeapons(dt) {
 }
 
 function updateHUD(force) {
-  $('speedBtn').classList.toggle('hidden', !!coop || !me || !(state === S.PLAYING || state === S.PAUSED || state === S.LEVELUP));
+  $('speedBtn').classList.toggle('hidden', !!(coop && coop.role === 'guest') || !me || !(state === S.PLAYING || state === S.PAUSED || state === S.LEVELUP));
   if (!me) return;
   $('hpFill').style.width = (Math.max(0, me.hp) / me.maxHp * 100) + '%';
   $('hpText').textContent = Math.max(0, Math.ceil(me.hp)) + ' / ' + Math.round(me.maxHp);
@@ -5660,6 +5772,7 @@ function render() {
   // red circles that are about to explode (meteors fall from the sky onto theirs)
   for (const h of hazards) {
     const [x, y] = S2(h.x, h.y), k = 1 - Math.max(0, h.t) / (h.max || 1);
+    if (h.gem || h.met === 2) { drawGemRock(h, x, y, k); continue; }
     if (h.met) { drawMeteor(x, y, h.r, k); continue; }
     ctx.fillStyle = 'rgba(255, 30, 30, ' + (0.12 + 0.2 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, h.r, 0, TAU); ctx.fill();
     ctx.fillStyle = 'rgba(255, 40, 20, ' + (0.3 + 0.3 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, h.r * k, 0, TAU); ctx.fill();
@@ -5744,6 +5857,11 @@ function render() {
       ctx.strokeStyle = 'rgba(200, 250, 255, ' + k + ')'; ctx.lineWidth = 12 * k + 2; ctx.shadowColor = '#7df9ff'; ctx.shadowBlur = 24;
       ctx.beginPath(); ctx.arc(x, y, f.r * (1.05 - k * 0.7), 0, TAU); ctx.stroke(); ctx.shadowBlur = 0;
       ctx.fillStyle = 'rgba(125, 249, 255, ' + (0.15 * k) + ')'; ctx.beginPath(); ctx.arc(x, y, f.r * (1.05 - k * 0.7), 0, TAU); ctx.fill();
+    } else if (f.kind === 'puff') {
+      const g2 = 1.4 - 0.4 * k;
+      ctx.strokeStyle = 'rgba(230, 240, 255, ' + k + ')'; ctx.fillStyle = 'rgba(200, 210, 230, ' + (0.35 * k) + ')'; ctx.lineWidth = 3; ctx.shadowColor = '#e0f0ff'; ctx.shadowBlur = 12;
+      for (const [ox, oy, rr] of [[-0.45, 0.1, 0.38], [0.45, 0.1, 0.38], [0, -0.25, 0.45], [-0.2, 0.3, 0.35], [0.25, 0.3, 0.35], [0, 0.05, 0.4]]) { ctx.beginPath(); ctx.arc(x + ox * f.r * g2, y + oy * f.r * g2, rr * f.r * g2, 0, TAU); ctx.fill(); ctx.stroke(); }
+      ctx.shadowBlur = 0;
     } else if (f.kind === 'metboom') {
       const M = METEOR[f.seed | 0] || METEOR[0];
       ctx.globalAlpha = k; ctx.fillStyle = M.c; ctx.beginPath(); ctx.arc(x, y, f.r * (1.3 - k * 0.3), 0, TAU); ctx.fill();
@@ -5858,7 +5976,8 @@ function render() {
     const [x, y] = S2(e.x, e.y);
     const sp = sprites[e.type];
     if (x < -sp.size || y < -sp.size || x > W + sp.size || y > H + sp.size) continue;
-    const bob = Math.sin(clock * 6 + e.wob) * 1.5;
+    let bob = Math.sin(clock * 6 + e.wob) * 1.5;
+    if (e.leapT > 0) { const k = 1 - e.leapT / 0.9, hg = Math.sin(k * Math.PI) * 130; ctx.fillStyle = 'rgba(0, 0, 0, 0.45)'; ctx.beginPath(); ctx.ellipse(x, y + e.r * 0.6, e.r * (1 - hg / 300), e.r * 0.4, 0, 0, TAU); ctx.fill(); bob -= hg; }
     if (e.charging > 0) {
       const prog = 1 - e.charging / 2, sc = 1 - 0.18 * prog;
       ctx.fillStyle = 'rgba(255, 140, 40, ' + (0.15 + 0.35 * prog) + ')';
@@ -5931,11 +6050,12 @@ function render() {
   drawCrowStuff(S2);
   drawSpores(S2);
   drawTwins(S2, coop && coop.role === 'guest' ? twinsDraw : players.flatMap(q => q._twins || []));
-  // co-op: the ring and your teammates
-  if (coop && !coop.pgm) {
+  // co-op: the ring (not in a playground room) and your teammates
+  if (coop) {
     const c = groupCenter(), [rx, ry] = S2(c.x, c.y);
-    const edge = Math.hypot(me.x - c.x, me.y - c.y) / ringR();
+    const edge = coop.pgm ? 0 : Math.hypot(me.x - c.x, me.y - c.y) / ringR();
     ctx.save();
+    if (coop.pgm) ctx.globalAlpha = 0;
     ctx.setLineDash([14, 10]);
     ctx.lineDashOffset = -clock * 30;
     ctx.strokeStyle = edge > 0.85 ? 'rgba(255, 59, 92, 0.85)' : 'rgba(0, 240, 255, 0.45)';
@@ -6155,7 +6275,7 @@ let lastTime = 0, acc = 0;
 let gameSpeed = 1;
 function loop(now) {
   // faster game speed: more simulation steps per frame (solo only)
-  acc += Math.min((now - lastTime) / 1000, 0.25) * (!coop && state === S.PLAYING ? gameSpeed : 1);
+  acc += Math.min((now - lastTime) / 1000, 0.25) * (state === S.PLAYING ? gameSpeed : 1);
   lastTime = now;
   while (acc >= STEP) { update(STEP); acc -= STEP; }
   render();
